@@ -1,0 +1,266 @@
+@import "tailwindcss";
+
+/*
+ * THE PORT MAFIA — design tokens
+ *
+ * Palette logic: the interface lives in near-black. Charcoal surfaces sit
+ * a shade above the void so structure reads through elevation, not borders.
+ * Crimson/wine is a signal, not a decoration — reserved for active state,
+ * the accent line, and anything that needs to feel like a warning light.
+ *
+ * Type logic: Cinzel (inscriptional, monumental) carries every heading —
+ * it should feel like a name carved somewhere, not a UI label. Inter
+ * carries all reading text, kept quiet so the display face keeps its
+ * weight. JetBrains Mono handles anything that reads like a dossier:
+ * timestamps, tags, counts, agent codenames.
+ *
+ * "Higher Jump" and "Deadly Target Demo" (the wordmark fonts) are
+ * reserved for the favicon/logo mark and the future home-page hero.
+ * They are not part of the in-app type system — do not wire them into
+ * --font-display below.
+ */
+
+:root {
+  --pm-void: #08080a;
+  --pm-obsidian: #0d0d10;
+  --pm-charcoal: #141417;
+  --pm-charcoal-raised: #1b1b1f;
+  --pm-line: #232327;
+  --pm-line-soft: #1a1a1e;
+  --pm-ash: #8a8a92;
+  --pm-ash-dim: #57575f;
+  --pm-bone: #ece9e3;
+  --pm-bone-dim: #c8c5bf;
+  --pm-crimson: #8a1620;
+  --pm-crimson-bright: #b8202c;
+  --pm-crimson-dim: #33131a;
+  --pm-crimson-glow: rgba(184, 32, 44, 0.18);
+
+  --background: var(--pm-void);
+  --foreground: var(--pm-bone);
+
+  --font-display: var(--font-cinzel), "Times New Roman", serif;
+  --font-body: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-utility: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-void: var(--pm-void);
+  --color-obsidian: var(--pm-obsidian);
+  --color-charcoal: var(--pm-charcoal);
+  --color-charcoal-raised: var(--pm-charcoal-raised);
+  --color-line: var(--pm-line);
+  --color-line-soft: var(--pm-line-soft);
+  --color-ash: var(--pm-ash);
+  --color-ash-dim: var(--pm-ash-dim);
+  --color-bone: var(--pm-bone);
+  --color-bone-dim: var(--pm-bone-dim);
+  --color-crimson: var(--pm-crimson);
+  --color-crimson-bright: var(--pm-crimson-bright);
+  --color-crimson-dim: var(--pm-crimson-dim);
+
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-utility);
+  --font-serif: var(--font-display);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+* {
+  border-color: var(--pm-line);
+}
+
+::selection {
+  background: var(--pm-crimson-dim);
+  color: var(--pm-bone);
+}
+
+:focus-visible {
+  outline: 1.5px solid var(--pm-crimson-bright);
+  outline-offset: 2px;
+}
+
+/*
+ * Typography scale. Use these classes directly on text elements instead
+ * of composing font-family/size/weight utilities inline — changing the
+ * whole UI's voice later means editing the class, not every usage site.
+ */
+@layer components {
+  .pm-display-hero {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.75rem, 5vw, 4.25rem);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+    color: var(--pm-bone);
+  }
+
+  .pm-heading-1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.75rem;
+    line-height: 1.2;
+    letter-spacing: 0.005em;
+    color: var(--pm-bone);
+  }
+
+  .pm-heading-2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.3125rem;
+    line-height: 1.3;
+    color: var(--pm-bone);
+  }
+
+  .pm-heading-3 {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--pm-bone);
+  }
+
+  .pm-subheading {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--pm-ash);
+    letter-spacing: 0.005em;
+  }
+
+  .pm-body {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 0.9375rem;
+    line-height: 1.65;
+    color: var(--pm-bone-dim);
+  }
+
+  .pm-body-sm {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--pm-ash);
+  }
+
+  .pm-label {
+    font-family: var(--font-utility);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--pm-ash-dim);
+  }
+
+  .pm-mono-data {
+    font-family: var(--font-utility);
+    font-weight: 400;
+    font-size: 0.8125rem;
+    color: var(--pm-bone-dim);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/*
+ * driver.js theme override — matches the guided-tour popovers to the
+ * Port Mafia palette instead of the library default. Class names come
+ * from driver.js v1; verify against the installed version if a
+ * dependency bump changes them.
+ */
+.driver-popover.pm-tour-popover {
+  background: var(--pm-charcoal-raised);
+  border: 1px solid var(--pm-line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  max-width: 340px;
+}
+
+.pm-tour-popover .driver-popover-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.0625rem;
+  color: var(--pm-bone);
+  padding: 0;
+  margin-bottom: 8px;
+}
+
+.pm-tour-popover .driver-popover-description {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--pm-bone-dim);
+  padding: 0;
+}
+
+.pm-tour-popover .driver-popover-footer {
+  margin-top: 16px;
+}
+
+.pm-tour-popover .driver-popover-progress-text {
+  font-family: var(--font-utility);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pm-ash-dim);
+}
+
+.pm-tour-popover button.driver-popover-next-btn,
+.pm-tour-popover button.driver-popover-prev-btn {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  background: var(--pm-crimson);
+  color: var(--pm-bone);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 14px;
+  text-shadow: none;
+}
+
+.pm-tour-popover button.driver-popover-prev-btn {
+  background: transparent;
+  color: var(--pm-ash);
+}
+
+.pm-tour-popover button.driver-popover-close-btn {
+  color: var(--pm-ash-dim);
+}
+
+.pm-tour-popover .driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: var(--pm-charcoal-raised);
+}
+
+.pm-tour-popover .driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: var(--pm-charcoal-raised);
+}
+
+.pm-tour-popover .driver-popover-arrow-side-left.driver-popover-arrow {
+  border-left-color: var(--pm-charcoal-raised);
+}
+
+.pm-tour-popover .driver-popover-arrow-side-right.driver-popover-arrow {
+  border-right-color: var(--pm-charcoal-raised);
+}
+
+.driver-overlay {
+  background: rgba(4, 4, 5, 0.82) !important;
+}
