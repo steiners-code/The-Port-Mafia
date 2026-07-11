@@ -1,4 +1,5 @@
 import { Cinzel, Inter, JetBrains_Mono } from "next/font/google";
+import localFont from 'next/font/local'
 
 /**
  * Three type roles for the whole app — display, body, utility.
@@ -27,5 +28,13 @@ export const utilityFont = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   display: "swap",
 });
+
+const DeadlyTarget = localFont({
+  src: './font/DeadlyTargetDemo-rvB8A.ttf',
+})
+
+const HigherJump = localFont({
+  src: './font/Higher Jump.ttf',
+})
 
 export const fontVariables = `${displayFont.variable} ${bodyFont.variable} ${utilityFont.variable}`;
