@@ -1,0 +1,23 @@
+name: Deploy The Port Mafia
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Build & Run Containerized Stack
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository Source
+        uses: actions/checkout@v4
+
+      - name: Standardize and Rebuild Containers
+        run: |
+          docker compose down --remove-orphans
+
+          docker compose up --build -d
+
+          docker image prune -f
