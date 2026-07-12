@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: mafia
       POSTGRES_PASSWORD: mafia
-      POSTGRES_DB: mafia_core_db # Your master system database
+      POSTGRES_DB: mafia_core_db
     volumes:
       - mafia-db-data:/var/lib/postgresql/data
     networks:
