@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
 import { Inter } from "next/font/google";
-import { ThemeProvider } from "@/components/layout/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { AppProviders } from "@/components/layout/app-providers";
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -17,16 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning className={cn(fontVariables, "font-sans", inter.variable)}>
       <body className="antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <TooltipProvider>
-            {children}
-          </TooltipProvider>
-        </ThemeProvider>
+        <AppProviders>
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

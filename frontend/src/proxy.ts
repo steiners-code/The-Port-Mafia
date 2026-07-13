@@ -4,6 +4,7 @@ import { verifyJWT } from "./lib/auth";
 // -------------------------------- HELPER FUNCTION -----------------------------------
 
 const publicRoutes = ["/", "/auth/connect-home"];
+const HOME_URL = process.env.HOME_URL || "http://localhost:80";
 
 // -------------------------------- PROXY (MIDDLEWARE) -----------------------------------
 
@@ -24,7 +25,7 @@ export async function proxy(request: NextRequest) {
     const isValidToken = !!payload
 
     if (!isPublicRoute && !isValidToken) {
-        const loginUrl = new URL("https://localhost/auth/connect?app=the-port-mafia", request.url);
+        const loginUrl = new URL("/auth/connect?app=the-port-mafia", HOME_URL);
 
         loginUrl.searchParams.set("redirectTo", pathname);
         return NextResponse.redirect(loginUrl);

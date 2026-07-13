@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const permissions = [
     {
@@ -26,17 +28,19 @@ const permissions = [
 
 export default function ConnectHomePage() {
     const router = useRouter();
-    const [isAuthorizing, setIsAuthorizing] = useState(false);
 
-    const handleAuthorize = async () => {
-        setIsAuthorizing(true);
-        try {
-            await authorizeConnection();
-            router.push("/main");
-        } catch {
-            setIsAuthorizing(false);
-        }
-    };
+    const { mutate: authorizeMutation, isPending: isAuthorizing } = useMutation({
+        mutationFn: authorizeConnection,
+        onSuccess: (redirectUrl) => {
+            router.push(redirectUrl);
+        },
+        onError: (error) => {
+            toast.error("Couldn't authorize The Port Mafia", {
+                description: error.message,
+            });
+        },
+    });
+
 
     return (
         <div className="flex h-full items-center justify-center">
@@ -88,7 +92,7 @@ export default function ConnectHomePage() {
                         >
                             Cancel
                         </Button>
-                        <Button className="flex-1" onClick={handleAuthorize} disabled={isAuthorizing}>
+                        <Button className="flex-1" onClick={() => authorizeMutation()} disabled={isAuthorizing}>
                             {isAuthorizing ? "Authorizing..." : "Authorize"}
                         </Button>
                     </div>
