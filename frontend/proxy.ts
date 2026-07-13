@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyJWT } from "./lib/auth";
+import { verifyJWT } from "./src/lib/auth";
 
 // -------------------------------- HELPER FUNCTION -----------------------------------
 
-const publicRoutes = ["/"];
+const publicRoutes = ["/", "/auth/connect-home"];
 
 // -------------------------------- PROXY (MIDDLEWARE) -----------------------------------
 
