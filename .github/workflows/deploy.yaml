@@ -19,8 +19,10 @@ jobs:
           mkdir -p frontend
           cat <<EOF > frontend/.env
           JWT_PUBLIC_KEY="${{ secrets.JWT_PUBLIC_KEY }}"
-          HOME_URL="${{ secrets.HOME_URL }}"
-          SERVER_URL="${{ secrets.SERVER_URL }}"
+          NEXT_PUBLIC_HOME_URL="${{ secrets.HOME_URL }}"
+          NEXT_PUBLIC_SERVER_URL="${{ secrets.SERVER_URL }}"
+          NEXT_PUBLIC_DEFAULT_REDIRECT_URL="${{ secrets.FRONTEND_URL }}"
+          NEXT_PUBLIC_LINKEDIN_CLIENT_ID="${{ secrets.LINKEDIN_CLIENT_ID }}"
           NODE_ENV="production"
           EOF
 
