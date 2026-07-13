@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyJWT } from "./src/lib/auth";
+import { verifyJWT } from "./lib/auth";
 
 // -------------------------------- HELPER FUNCTION -----------------------------------
 
@@ -24,7 +24,7 @@ export async function proxy(request: NextRequest) {
     const isValidToken = !!payload
 
     if (!isPublicRoute && !isValidToken) {
-        const loginUrl = new URL("http://localhost:80/auth/connect?app=the-port-mafia", request.url);
+        const loginUrl = new URL("https://home.markaz.network/auth/connect?app=the-port-mafia", request.url);
 
         loginUrl.searchParams.set("redirectTo", pathname);
         return NextResponse.redirect(loginUrl);
