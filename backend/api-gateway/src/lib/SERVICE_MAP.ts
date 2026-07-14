@@ -3,5 +3,5 @@
 // to re-route request to the target host
 
 export const SERVICE_MAP = {
-    linkedin: "http://linkedin:3000",
+    linkedin: "http://mafia-linkedin:3000",
 } as const;
