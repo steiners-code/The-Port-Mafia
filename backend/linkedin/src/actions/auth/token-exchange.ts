@@ -1,6 +1,7 @@
-import { encrypt } from "../../lib/cypto";
 import { prisma } from "../../lib/db";
+import { encrypt } from "../../lib/crypto";
 import { calculateExpiryDate } from "../../lib/time";
+import { TypeLinkedinTokens } from "../../lib/types";
 
 export async function tokenExchange(code: string, redirect_uri: string, userId: string) {
     const { data: tokenData, ...tokenRes } = await getLinkedinTokens(code, redirect_uri);
@@ -10,8 +11,20 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
     if (!profileRes.success || !profileData) return profileRes;
 
     try {
-        await prisma.linkedinProfile.create({
-            data: {
+        await prisma.linkedinProfile.upsert({
+            where: {
+                userId: userId,
+            },
+            update: {
+                given_name: profileData.given_name,
+                family_name: profileData.family_name,
+                picture: profileData.picture,
+                email: profileData.email,
+                email_verified: profileData.email_verified,
+                locale_country: profileData.locale.country,
+                locale_language: profileData.locale.language,
+            },
+            create: {
                 userId,
                 sub: profileData.sub,
                 given_name: profileData.given_name,
@@ -27,7 +40,7 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
         return {
             status: 500,
             success: false,
-            message: "Could not save user's LinkedIn profile data in database.",
+            message: "Could not save or sync user's LinkedIn profile data.",
         }
     };
 
@@ -38,8 +51,16 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
         const access_token_expires_at = calculateExpiryDate(tokenData.expires_in);
         const refresh_token_expires_at = calculateExpiryDate(tokenData.refresh_token_expires_in);
 
-        await prisma.linkedinToken.create({
-            data: {
+        await prisma.linkedinToken.upsert({
+            where: { userId },
+            update: {
+                access_token: encrypted_access_token,
+                access_token_expires_at,
+                refresh_token: encrypted_refresh_token,
+                refresh_token_expires_at,
+                scope: tokenData.scope,
+            },
+            create: {
                 userId,
                 access_token: encrypted_access_token,
                 access_token_expires_at,
@@ -47,12 +68,12 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
                 refresh_token_expires_at,
                 scope: tokenData.scope,
             }
-        })
+        });
     } catch (error) {
         return {
             status: 500,
             success: false,
-            message: "Could not save user's linkedin tokens in database.",
+            message: "Could not save user's LinkedIn tokens in database.",
         }
     }
 
@@ -61,16 +82,6 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
         status: 200,
         message: "Successfully befriended LinkedIn!"
     }
-}
-
-type TypeLinkedinTokens = null | {
-    access_token: string,
-    expires_in: number,
-    refresh_token: string,
-    refresh_token_expires_in: number,
-    scope: string,
-    token_type: string,
-    id_token: string
 }
 
 export async function getLinkedinTokens(code: string, redirectUri: string) {
@@ -91,15 +102,29 @@ export async function getLinkedinTokens(code: string, redirectUri: string) {
             body: params.toString(),
         });
 
-        if (!res.ok) {
-            return { status: 400, success: false, message: "Failed to verify LinkedIn Account.", data: null };
-        }
+        if (!res.ok)
+            return {
+                status: 400,
+                success: false,
+                message: "Failed to verify LinkedIn Account.",
+                data: null
+            };
 
         const data: TypeLinkedinTokens = await res.json();
 
-        return { status: 200, success: true, message: "Successfully verified LinkedIn Account.", data };
+        return {
+            status: 200,
+            success: true,
+            message: "Successfully verified LinkedIn Account.",
+            data
+        };
     } catch (error) {
-        return { status: 500, success: false, message: "Unexpected Server Error!", data: null };
+        return {
+            status: 500,
+            success: false,
+            message: "Unexpected Server Error!",
+            data: null
+        };
     }
 }
 
@@ -125,14 +150,28 @@ export async function getLinkedinProfile(accessToken: string) {
             },
         });
 
-        if (!res.ok) {
-            return { status: 400, success: false, message: "Faield to fetch LinkedIn Profile", data: null };
-        }
+        if (!res.ok)
+            return {
+                status: 400,
+                success: false,
+                message: "Faield to fetch LinkedIn Profile",
+                data: null
+            };
 
         const data: TypeLinkedinProfile = await res.json();
 
-        return { status: 200, success: true, message: "LinkedIn connected successfully!", data };
+        return {
+            status: 200,
+            success: true,
+            message: "LinkedIn connected successfully!",
+            data
+        };
     } catch (error) {
-        return { status: 500, success: false, message: "Unexpected Server Error!", data: null };
+        return {
+            status: 500,
+            success: false,
+            message: "Unexpected Server Error!",
+            data: null
+        };
     }
 }
