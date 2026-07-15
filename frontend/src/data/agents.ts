@@ -8,13 +8,13 @@ export type Agent = {
   id: string;
   name: string;
   codename: string;
-  platform: string;
-  role: string;
-  tagline: string;
-  bio: string;
   avatarSrc?: string;
+  platform: string;
   route: string;
-  features: AgentFeature[];
+  colors: {
+    text: string,
+    background: string,
+  }
 };
 
 /**
@@ -24,57 +24,28 @@ export type Agent = {
  */
 export const agents: Agent[] = [
   {
-    id: "dazai",
+    id: "osamu-dazai",
     name: "Osamu Dazai",
-    codename: "The Handler",
-    platform: "Command",
-    role: "Oversight & Advisory",
-    tagline: "He doesn't post. He decides what's worth posting about.",
-    bio: "Dazai sits above every channel, compiling what each agent brings back and turning it into direction. He is the only one who talks to you directly.",
-    route: "/",
-    features: [],
+    codename: "No Longer Human",
+    avatarSrc: "/dazai-avatar.png",
+    platform: 'Main',
+    route: '/main',
+    colors: {
+      text: "text-[#3F332B] dark:text-[#B59B76]",
+      background: "bg-[#3F332B]/20 dark:bg-[#B59B76]/20",
+    },
   },
   {
-    id: "maha",
+    id: "maha-balor",
     name: "Maha Balor",
-    codename: "The Ledger",
-    platform: "LinkedIn",
-    role: "Network & Revenue",
-    tagline: "She turned an inheritance she never got into a network worth more than the one she lost.",
-    bio: "Merchant's daughter, self-taught in the arithmetic of favors. On LinkedIn, every connection is a line item — Maha keeps the books.",
-    route: "/linkedin",
-    features: [
-      {
-        id: "reconnaissance",
-        label: "Lead Reconnaissance",
-        description:
-          "She reads a thousand profiles before you've finished your coffee, and only surfaces the ones worth your time.",
-      },
-      {
-        id: "outreach",
-        label: "Ghostwritten Outreach",
-        description:
-          "Connection requests and follow-ups drafted in a voice indistinguishable from yours — sent while you're doing anything else.",
-      },
-      {
-        id: "dispatch",
-        label: "Content Dispatch",
-        description:
-          "Posts and articles written, timed, and released on a schedule she keeps better than most people keep promises.",
-      },
-      {
-        id: "ledger",
-        label: "Network Ledger",
-        description:
-          "Growth, engagement, and warm leads tracked like accounts receivable — nothing gets forgotten, nothing goes uncollected.",
-      },
-      {
-        id: "alerts",
-        label: "Silent Alerts",
-        description:
-          "When a reply is worth real money or real risk, she stops working quietly and puts it in front of you.",
-      },
-    ],
+    codename: "Orphan Merchandise",
+    avatarSrc: "/maha-avatar.png",
+    platform: 'LinkedIn',
+    route: '/linkedin',
+    colors: {
+      text: "text-[#5261B0] dark:text-[#7794D1]",
+      background: "bg-[#5261B0]/20 dark:bg-[#7794D1]/20",
+    },
   },
 ];
 

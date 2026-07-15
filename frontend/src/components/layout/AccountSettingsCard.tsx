@@ -4,29 +4,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import ConnectedAppsTabContent from "./ConnectedAppsTabContent";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import useSettings from "@/hooks/use-settings";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import connectedApps, { APPSTATUS } from "@/data/apps";
-import { cn } from "@/lib/utils";
+import { agents } from "@/data/agents";
 
 /**
  * Mock data — replace with your actual agent roster / connected-account
  * sources. Shaped this way so swapping in real data is a drop-in.
  */
-const agents = [
-    { id: "dazai", name: "Osamu Dazai", codename: "The Handler", platform: "Command" },
-    { id: "maha", name: "Maha Balor", codename: "The Ledger", platform: "LinkedIn" },
-];
 
 export function AccountSettingsDialog({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
     const { theme, setTheme } = useSettings();
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="min-w-[60vw] h-[60vh] flex! flex-col! items-start! overflow-hidden! gap-6!">
+            <DialogContent className="min-w-[60vw] min-h-[60vh] flex! flex-col! items-start! overflow-hidden! gap-6!">
                 <DialogHeader className="h-fit">
                     <DialogTitle>Account Settings</DialogTitle>
                     <DialogDescription>Your profile, connections, agents, and preferences.</DialogDescription>
@@ -54,55 +50,7 @@ export function AccountSettingsDialog({ open, setOpen }: { open: boolean, setOpe
                         <Button variant="outline" size="sm">Edit Profile</Button>
                     </TabsContent>
 
-                    <TabsContent value="connections" className="pt-2">
-                        <div className="flex flex-col">
-                            {connectedApps.map((app, index) => {
-                                const Icon = app.icon;
-                                const isConnected = app.status === APPSTATUS.CONNECTED;
-                                const isUnavailable = app.status === APPSTATUS.UNAVAILABLE;
-                                return (
-                                    <div key={app.id} className="">
-                                        <div className={cn(
-                                            "px-4 rounded-sm group flex items-center justify-between py-2 my-2 transition-colors",
-                                            app.colors.bg
-                                        )}>
-                                            <div className="flex items-center gap-2.5">
-                                                <Icon
-                                                    size={18}
-                                                    weight={isConnected ? "fill" : "regular"}
-                                                    className={cn("transition-colors", app.colors.logo)}
-                                                />
-                                                <span className={cn("text-sm", !isConnected && "text-muted-foreground", app.colors.text)}>
-                                                    {app.name}
-                                                </span>
-                                            </div>
-
-                                            {isConnected ? (
-                                                <div className="flex items-center gap-2">
-                                                    <Badge variant="secondary">Connected</Badge>
-                                                    <Button variant="ghost" size="sm">Disconnect</Button>
-                                                </div>
-                                            ) : isUnavailable ? (
-                                                <Badge variant="outline" className="text-muted-foreground">
-                                                    Coming soon
-                                                </Badge>
-                                            ) : (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className={cn("cursor-pointer", app.colors.button)}
-                                                    onClick={app?.connectAction}
-                                                >
-                                                    Connect Now
-                                                </Button>
-                                            )}
-                                        </div>
-                                        {index < connectedApps.length - 1 && <Separator className="opacity-40!" />}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </TabsContent>
+                    <ConnectedAppsTabContent />
 
                     <TabsContent value="agents" className="pt-2">
                         <div className="flex flex-col">
@@ -110,6 +58,7 @@ export function AccountSettingsDialog({ open, setOpen }: { open: boolean, setOpe
                                 <div key={agent.id}>
                                     <div className="flex items-center gap-3 py-2.5">
                                         <Avatar className="size-9">
+                                            <AvatarImage src={agent.avatarSrc} className="object-cover aspect-square" />
                                             <AvatarFallback>
                                                 {agent.name.split(" ").map((p) => p[0]).join("")}
                                             </AvatarFallback>

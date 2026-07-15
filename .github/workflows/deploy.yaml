@@ -38,13 +38,20 @@ jobs:
 
       - name: Create LinkedIn Environment File
         run: |
-          mkdir -p backend/api-gateway
+          mkdir -p backend/linkedin
           cat <<EOF > backend/linkedin/.env
-          DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          DATABASE_URL="${{ secrets.LINKEDIN_DATABASE_URL }}"
           LINKEDIN_CLIENT_ID="${{ secrets.LINKEDIN_CLIENT_ID }}"
           LINKEDIN_CLIENT_SECRET="${{ secrets.LINKEDIN_CLIENT_SECRET }}"
           ENCRYPTION_KEY="${{ secrets.ENCRYPTION_KEY }}"
           CRON_API_SECRET="${{ secrets.CRON_API_SECRET }}"
+          EOF
+
+      - name: Create Main Environment File
+        run: |
+          mkdir -p backend/main
+          cat <<EOF > backend/main/.env
+          DATABASE_URL="${{ secrets.MAIN_DATABASE_URL }}"
           EOF
 
       - name: Standardize and Rebuild Containers

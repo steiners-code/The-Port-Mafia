@@ -1,7 +1,9 @@
 import { prisma } from "../../lib/db";
 import { encrypt } from "../../lib/crypto";
-import { calculateExpiryDate } from "../../lib/time";
+import { APPSTATUS } from "../../lib/enums";
 import { TypeLinkedinTokens } from "../../lib/types";
+import { calculateExpiryDate } from "../../lib/time";
+import { updateLinkedInStatus } from "../user/update-connection-status";
 
 export async function tokenExchange(code: string, redirect_uri: string, userId: string) {
     const { data: tokenData, ...tokenRes } = await getLinkedinTokens(code, redirect_uri);
@@ -69,18 +71,21 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
                 scope: tokenData.scope,
             }
         });
+
+        const res = await updateLinkedInStatus(userId, APPSTATUS.CONNECTED);
+        if (!res.success) console.error(JSON.stringify(res, null, 4))
+
+        return {
+            success: true,
+            status: 200,
+            message: "Successfully befriended LinkedIn!"
+        }
     } catch (error) {
         return {
             status: 500,
             success: false,
             message: "Could not save user's LinkedIn tokens in database.",
         }
-    }
-
-    return {
-        success: true,
-        status: 200,
-        message: "Successfully befriended LinkedIn!"
     }
 }
 

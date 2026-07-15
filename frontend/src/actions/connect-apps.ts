@@ -38,7 +38,7 @@ export async function exchangeLinkedInCode(code: string): Promise<ExchangeResult
         if (res.status !== 200) {
             return {
                 success: false,
-                message: res.data?.error ?? "LinkedIn didn't confirm the connection.",
+                message: res.data?.message ?? "LinkedIn didn't confirm the connection.",
                 redirectUrl: "",
             };
         }
@@ -48,7 +48,7 @@ export async function exchangeLinkedInCode(code: string): Promise<ExchangeResult
             message: "",
             redirectUrl: res.data?.redirectUrl ?? "/linkedin",
         };
-    } catch {
+    } catch (error) {
         return {
             success: false,
             message: "An unexpected error occurred!",

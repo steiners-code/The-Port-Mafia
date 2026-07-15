@@ -11,7 +11,20 @@ services:
       - mafia-network
       - global-database-network
     depends_on:
+      - main-service
       - linkedin-service
+
+  main-service:
+    build: ./backend/main
+    container_name: mafia-main
+    restart: always
+    env_file:
+      - ./backend/main/.env
+    networks:
+      - mafia-network
+      - global-database-network
+    depends_on:
+      - frontend
 
   linkedin-service:
     build: ./backend/linkedin
@@ -22,8 +35,6 @@ services:
     networks:
       - mafia-network
       - global-database-network
-    depends_on:
-      - frontend
 
   frontend:
     build: ./frontend
