@@ -1,5 +1,20 @@
 export enum LOGLEVEL {
-    ERROR,
-    INFO,
-    WARN
+    ERROR = "ERROR",
+    INFO = "INFO",
+    WARN = "WARN"
+}
+
+export enum APPTYPE {
+    LINKEDIN = "LINKEDIN",
+    X = "X",
+    REDDIT = "REDDIT",
+    FACEBOOK = "FACEBOOK",
+    INSTAGRAM = "INSTAGRAM",
+    THREADS = "THREADS",
+    TIKTOK = "TIKTOK"
+}
+
+export enum APPSTATUS {
+    CONNECTED = "CONNECTED",
+    DISCONNECTED = "DISCONNECTED"
 }

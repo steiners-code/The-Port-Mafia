@@ -2,8 +2,9 @@ import { prisma } from "../../lib/db";
 import { differenceInDays } from 'date-fns';
 import { decrypt, encrypt } from "../../lib/crypto";
 import { calculateExpiryDate } from "../../lib/time";
+import { APPSTATUS, LOGLEVEL } from "../../lib/enums";
 import { Logs, TypeLinkedinTokens } from "../../lib/types";
-import { LOGLEVEL } from "../../lib/enums";
+import { updateLinkedInStatus } from "../user/update-connection-status";
 
 export async function cronTokenRefresh() {
     let index = 0;
@@ -145,7 +146,7 @@ export async function purgreUserTokens(userId: string) {
         });
 
         await warnUserReconnect(userId)
-        // TODO: Update user's linkedin status to RECONNECT under connected app table
+        await updateLinkedInStatus(userId, APPSTATUS.DISCONNECTED)
 
         return {
             status: 200,
