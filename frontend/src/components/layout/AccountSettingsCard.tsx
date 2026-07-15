@@ -10,22 +10,19 @@ import { Button } from "@/components/ui/button";
 import useSettings from "@/hooks/use-settings";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { agents } from "@/data/agents";
 
 /**
  * Mock data — replace with your actual agent roster / connected-account
  * sources. Shaped this way so swapping in real data is a drop-in.
  */
-const agents = [
-    { id: "dazai", name: "Osamu Dazai", codename: "The Handler", platform: "Command" },
-    { id: "maha", name: "Maha Balor", codename: "The Ledger", platform: "LinkedIn" },
-];
 
 export function AccountSettingsDialog({ open, setOpen }: { open: boolean, setOpen: (open: boolean) => void }) {
     const { theme, setTheme } = useSettings();
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogContent className="min-w-[60vw] h-[60vh] flex! flex-col! items-start! overflow-hidden! gap-6!">
+            <DialogContent className="min-w-[60vw] min-h-[60vh] flex! flex-col! items-start! overflow-hidden! gap-6!">
                 <DialogHeader className="h-fit">
                     <DialogTitle>Account Settings</DialogTitle>
                     <DialogDescription>Your profile, connections, agents, and preferences.</DialogDescription>
@@ -61,6 +58,7 @@ export function AccountSettingsDialog({ open, setOpen }: { open: boolean, setOpe
                                 <div key={agent.id}>
                                     <div className="flex items-center gap-3 py-2.5">
                                         <Avatar className="size-9">
+                                            <AvatarImage src={agent.avatarSrc} className="object-cover aspect-square" />
                                             <AvatarFallback>
                                                 {agent.name.split(" ").map((p) => p[0]).join("")}
                                             </AvatarFallback>

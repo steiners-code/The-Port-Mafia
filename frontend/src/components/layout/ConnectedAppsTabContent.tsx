@@ -33,9 +33,9 @@ const ConnectedAppsTabContent = () => {
                                     <Icon
                                         size={18}
                                         weight={app.enable ? "fill" : "regular"}
-                                        className={cn("transition-colors", !app.enable && "text-shadow-muted!", app.colors.logo)}
+                                        className={cn("transition-colors", app.colors.logo)}
                                     />
-                                    <span className={cn("text-sm", !app.enable && "text-muted-foreground!", app.colors.text)}>
+                                    <span className={cn("text-sm transition-colors", !app.enable && "text-muted-foreground!", app.colors.text)}>
                                         {app.name}
                                     </span>
                                 </div>
@@ -43,10 +43,7 @@ const ConnectedAppsTabContent = () => {
                                 {isLoading ? (
                                     <Loader size={16} className='animate-spin size-4' />
                                 ) : appMap?.[app.id as APPTYPE] === APPSTATUS.CONNECTED ? (
-                                    <div className="flex items-center gap-2">
-                                        <Badge variant="secondary">Connected</Badge>
-                                        <Button variant="ghost" size="sm">Disconnect</Button>
-                                    </div>
+                                    <Badge variant="secondary" className='bg-transparent! text-green-600 dark:text-green-400'>Connected</Badge>
                                 ) : app.enable && appMap?.[app.id as APPTYPE] === "DISCONNECTED" ? (
                                     <Button
                                         variant="ghost"
@@ -57,7 +54,7 @@ const ConnectedAppsTabContent = () => {
                                         Connect Now
                                     </Button>
                                 ) : (
-                                    <Badge variant="outline" className="text-muted-foreground">
+                                    <Badge variant="outline" className="text-muted-foreground border-none">
                                         Coming soon
                                     </Badge>
                                 )}

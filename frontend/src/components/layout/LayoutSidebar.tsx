@@ -1,19 +1,18 @@
 "use client";
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSubButton, SidebarMenuSubItem, SidebarRail, useSidebar } from "../ui/sidebar"
-import { Popover, PopoverContent, PopoverHeader, PopoverTrigger, PopoverDescription, PopoverTitle } from "../ui/popover";
-import { Gear, Translate, Question, BookOpen, UsersFour, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarRail, useSidebar } from "../ui/sidebar";
+import { GearIcon, TranslateIcon, QuestionIcon, BookOpenIcon, UsersFourIcon, SignOutIcon } from "@phosphor-icons/react";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { AccountSettingsDialog } from "./AccountSettingsCard";
 import { usePathname } from "next/navigation";
 import { Separator } from "../ui/separator";
 import { getRoutes } from "@/data/routes";
+import { Button } from "../ui/button";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "../ui/button";
-import useSettings from "@/hooks/use-settings";
-import { AccountSettingsDialog } from "./AccountSettingsCard";
-import { useState } from "react";
 
 const LayoutSidebar = () => {
     const { open } = useSidebar()
@@ -90,11 +89,11 @@ export function AccountMenu({ open, onLogout }: { open: boolean; onLogout?: () =
     const [settingsOpen, setOpen] = useState(false)
 
     const menuItems = [
-        { label: "Settings", icon: Gear, onClick: () => { setOpen(!settingsOpen) } },
-        { label: "Language", icon: Translate, onClick: () => { } },
-        { label: "Help", icon: Question, onClick: () => { } },
-        { label: "Learn More", icon: BookOpen, onClick: () => { } },
-        { label: "Explore Talent", icon: UsersFour, onClick: () => { } },
+        { label: "Settings", icon: GearIcon, onClick: () => { setOpen(!settingsOpen) } },
+        { label: "Language", icon: TranslateIcon, onClick: () => { } },
+        { label: "Help", icon: QuestionIcon, onClick: () => { } },
+        { label: "Learn More", icon: BookOpenIcon, onClick: () => { } },
+        { label: "Explore Talent", icon: UsersFourIcon, onClick: () => { } },
     ];
 
     return (
@@ -155,7 +154,7 @@ export function AccountMenu({ open, onLogout }: { open: boolean; onLogout?: () =
                                 onClick={onLogout}
                                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-destructive hover:bg-destructive/10"
                             >
-                                <SignOut size={16} />
+                                <SignOutIcon size={16} />
                                 Logout
                             </Button>
                         </PopoverContent>
