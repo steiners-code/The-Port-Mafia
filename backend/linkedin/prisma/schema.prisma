@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["linkedin", "public"]
+}
+
+model LinkedinProfile {
+  userId String @id @unique
+
+  picture         String
+  given_name      String
+  family_name     String?
+  email           String  @unique
+  locale_country  String
+  locale_language String
+
+  sub            String  @unique
+  email_verified Boolean @default(false)
+
+  token LinkedinToken?
+
+  @@schema("linkedin")
+}
+
+model LinkedinToken {
+  userId String @id @unique
+
+  access_token            String
+  access_token_expires_at DateTime
+
+  refresh_token            String
+  refresh_token_expires_at DateTime
+
+  scope String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  linkedinProfile LinkedinProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@schema("linkedin")
+}

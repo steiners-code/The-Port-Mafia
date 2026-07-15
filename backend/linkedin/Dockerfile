@@ -12,4 +12,6 @@ COPY . .
 
 EXPOSE 3000
 
-CMD [ "bun", "run", "start" ]
+RUN chmod +x start.sh
+
+CMD ["./start.sh"]

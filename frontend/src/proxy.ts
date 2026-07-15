@@ -4,7 +4,7 @@ import { verifyJWT } from "./lib/auth";
 // -------------------------------- HELPER FUNCTION -----------------------------------
 
 const publicRoutes = ["/", "/auth/connect-home"];
-const HOME_URL = process.env.HOME_URL || "http://localhost:80";
+const HOME_URL = process.env.NEXT_PUBLIC_HOME_URL || "http://localhost:80";
 
 // -------------------------------- PROXY (MIDDLEWARE) -----------------------------------
 

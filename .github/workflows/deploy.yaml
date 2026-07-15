@@ -21,6 +21,7 @@ jobs:
           JWT_PUBLIC_KEY="${{ secrets.JWT_PUBLIC_KEY }}"
           NEXT_PUBLIC_HOME_URL="${{ secrets.HOME_URL }}"
           NEXT_PUBLIC_SERVER_URL="${{ secrets.SERVER_URL }}"
+          NEXT_PUBLIC_FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
           NEXT_PUBLIC_DEFAULT_REDIRECT_URL="${{ secrets.FRONTEND_URL }}"
           NEXT_PUBLIC_LINKEDIN_CLIENT_ID="${{ secrets.LINKEDIN_CLIENT_ID }}"
           NODE_ENV="production"
@@ -33,6 +34,17 @@ jobs:
           JWT_PUBLIC_KEY="${{ secrets.JWT_PUBLIC_KEY }}"
           JWT_PRIVATE_KEY="${{ secrets.JWT_PRIVATE_KEY }}"
           FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
+          EOF
+
+      - name: Create LinkedIn Environment File
+        run: |
+          mkdir -p backend/api-gateway
+          cat <<EOF > backend/linkedin/.env
+          DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          LINKEDIN_CLIENT_ID="${{ secrets.LINKEDIN_CLIENT_ID }}"
+          LINKEDIN_CLIENT_SECRET="${{ secrets.LINKEDIN_CLIENT_SECRET }}"
+          ENCRYPTION_KEY="${{ secrets.ENCRYPTION_KEY }}"
+          CRON_API_SECRET="${{ secrets.CRON_API_SECRET }}"
           EOF
 
       - name: Standardize and Rebuild Containers

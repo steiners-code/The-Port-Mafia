@@ -1,7 +1,7 @@
 const MainAgentPage = () => {
     return (
         <div>
-            Main Agent Page
+            Dazai's den
         </div>
     )
 }

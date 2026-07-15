@@ -1,14 +1,12 @@
 services:
   api-gateway:
     build: ./backend/api-gateway
-    container_name: api-gateway
+    container_name: mafia-api-gateway
     restart: always
     ports:
       - "3810:3000"
     env_file:
       - ./backend/api-gateway/.env
-    environment:
-      - DATABASE_URL=postgresql://steiners:steiners@postgres:5432/mafia_db
     networks:
       - mafia-network
       - global-database-network
@@ -17,8 +15,10 @@ services:
 
   linkedin-service:
     build: ./backend/linkedin
-    container_name: linkedin-service
+    container_name: mafia-linkedin
     restart: always
+    env_file:
+      - ./backend/linkedin/.env
     networks:
       - mafia-network
       - global-database-network

@@ -7,10 +7,16 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
-    "elysia": "latest"
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "date-fns": "^4.4.0",
+    "elysia": "latest",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "@types/pg": "^8.20.0",
+    "bun-types": "latest",
+    "prisma": "^7.8.0"
   },
   "module": "src/index.js"
 }

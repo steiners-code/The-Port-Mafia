@@ -83,7 +83,6 @@ const app = new Elysia()
             httpOnly: true,
             maxAge: 7 * 24 * 3600,
             path: '/',
-            domain: '.markaz.network',
             sameSite: 'lax',
             secure: true,
           })
@@ -130,8 +129,6 @@ const app = new Elysia()
           httpOnly: true,
           maxAge: 7 * 24 * 3600,
           path: '/',
-
-          domain: '.markaz.network',
           sameSite: 'lax',
           secure: true,
         })
@@ -153,7 +150,7 @@ const app = new Elysia()
     // Protected Routes - all the routes targeting a specifc service are protected by-default
     // and required a valid JWT in headers to work. Otherwise '400, Unauthorised' is returned
     .all('/:service/*', async ({ params, request, set, status, proxyTo, verifyUser }) => {
-      const userId = verifyUser();
+      const userId = await verifyUser();
       if (!userId) {
         set.headers[
           'XXX-Authenticate'
@@ -162,10 +159,10 @@ const app = new Elysia()
         return status(400, "Unauthorised!")
       }
 
-      return proxyTo(params.service, params['*'], request, String(userId));
+      return proxyTo(params.service, params['*'], request, userId);
     })
   )
-  .get('/', () => "API-GATEWAY is Healthy!")
+  .get('/health', () => "API-GATEWAY is Healthy!")
   .listen(3000);
 
 console.log(`API Gateway is running at ${app.server?.hostname}:${app.server?.port}`);
