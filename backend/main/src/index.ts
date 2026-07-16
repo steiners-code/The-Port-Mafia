@@ -1,7 +1,9 @@
 import { Elysia } from "elysia";
 import { userRoutes } from "./routes/user";
+import { authRoutes } from "./routes/auth";
 
 const app = new Elysia()
+  .use(authRoutes)
   .use(userRoutes)
   .get("/health", () => "Main Service is Healthy!")
   .listen(3000);

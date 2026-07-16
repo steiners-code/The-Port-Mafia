@@ -18,7 +18,7 @@ const app = new Elysia()
   .use(bearer())
 
   // this initializes functions that can be used within the api-gateway for each request.
-  .derive(({ set, jwt, cookie: { auth } }) => ({
+  .derive(({ set, jwt, cookie: { auth }, server }) => ({
 
     // this function takes the bearer token (handled by elysia bearer() middleware) and verify the provided JWT
     // payload containing either `false` or user information is returned.
@@ -50,6 +50,13 @@ const app = new Elysia()
       const url = `${targetHost}/${subPath}${new URL(req.url).search}`;
       const proxyHeaders = new Headers(req.headers);
 
+      if (!proxyHeaders.has('x-forwarded-for')) {
+        const clientIp = server?.requestIP(req)?.address;
+        if (clientIp) {
+          proxyHeaders.set('x-forwarded-for', clientIp);
+        }
+      }
+
       if (userId) proxyHeaders.set('X-User-Id', userId);
 
       return fetch(url, {
@@ -62,89 +69,9 @@ const app = new Elysia()
 
   .group('/api/v1', (app) => app
     // Public Routes - '/auth' routes are made public for authorization/authentication
-    .all('/auth/connect-home', async ({ query, cookie: { auth }, ['sign-jwt']: signJwt, status }) => {
-      try {
-        const { pid, redirect_uri } = query;
-
-        if (process.env.NODE_ENV === "development") {
-          const token = await signJwt.sign({
-            userId: "sktest-userid-f66369ff0a80430e76c744e71835e08e02b879d845e55b11",
-            firstName: "John",
-            lastName: "Doe",
-            email: "email@example.com",
-            refreshed: false
-          });
-
-          const defaultDestination = new URL('/linkedin?connection-successful=true', process.env.FRONTEND_URL).toString();
-          const clientDestination = redirect_uri ? decodeURIComponent(redirect_uri) : defaultDestination;
-
-          auth.set({
-            value: token,
-            httpOnly: true,
-            maxAge: 7 * 24 * 3600,
-            path: '/',
-            sameSite: 'lax',
-            secure: true,
-          })
-
-          return status(200, {
-            success: true,
-            redirectUrl: clientDestination
-          });
-        }
-
-        if (!pid) {
-          return status(400, { error: 'Bad Request: Missing profile authorization target (pid)' });
-        }
-
-        const homeServiceUrl = SERVICE_MAP['home' as keyof typeof SERVICE_MAP];
-
-        const verifyResponse = await fetch(`${homeServiceUrl}/auth/verify-pid?pid=${pid}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (verifyResponse.status !== 200) {
-          return status(400, {
-            success: false,
-            error: 'Unauthorized: The profile identification token is invalid or expired.'
-          });
-        }
-
-        const userData = await verifyResponse.json();
-
-        const token = await signJwt.sign({
-          userId: String(userData.userId),
-          firstName: String(userData.firstName),
-          lastName: userData.lastName ? String(userData.lastName) : undefined,
-          email: String(userData.email),
-          refreshed: false
-        });
-
-        const defaultDestination = new URL('/linkedin?connection-successful=true', process.env.FRONTEND_URL).toString();
-        const clientDestination = redirect_uri ? decodeURIComponent(redirect_uri) : defaultDestination;
-
-        auth.set({
-          value: token,
-          httpOnly: true,
-          maxAge: 7 * 24 * 3600,
-          path: '/',
-          sameSite: 'lax',
-          secure: true,
-        })
-
-        return status(200, {
-          success: true,
-          redirectUrl: clientDestination
-        });
-
-      } catch (error) {
-        return status(500, {
-          success: false,
-          error: 'Internal Gateway Error: Handshake validation broke down.',
-          details: error instanceof Error ? error.message : String(error)
-        });
-      }
+    .all('/auth/*', async ({ params, request, proxyTo }) => {
+      console.log(`API_GATEWAY: Redirecting user to: /auth/${params['*']}`);
+      return proxyTo('main', `/auth/${params['*']}`, request);
     })
 
     // Protected Routes - all the routes targeting a specifc service are protected by-default

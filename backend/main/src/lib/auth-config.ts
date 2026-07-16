@@ -1,13 +1,13 @@
-import { importPublicKey } from "./keys";
-import { jwt } from '@elysiajs/jwt';
+import { importPrivateKey } from "./keys";
 import { Elysia, t } from 'elysia';
+import jwt from "@elysia/jwt";
 
-if (!process.env.JWT_PUBLIC_KEY) {
+if (!process.env.JWT_PRIVATE_KEY) {
     throw new Error("FATAL: JWT cryptographic keys are missing from environment variables!");
 }
 
 // Import them directly on startup
-const publicKey = await importPublicKey(process.env.JWT_PUBLIC_KEY);
+const privateKey = await importPrivateKey(process.env.JWT_PRIVATE_KEY);
 
 // auth-config.ts reads the public key for decoding, 
 // gets the cryptographic publicKey and uses @elysiajs/jwt
@@ -18,9 +18,9 @@ export const authConfig = new Elysia({ name: 'auth-config' })
     .use(
         jwt({
             name: 'jwt',
-            secret: publicKey,
+            secret: privateKey,
             alg: 'RS256',
-            exp: '7d',
+            exp: '15m',
             schema: t.Object({
                 userId: t.String(),
                 firstName: t.String(),
