@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyJWT } from "./lib/auth";
+import { auth } from "./lib/auth";
 
 // -------------------------------- HELPER FUNCTION -----------------------------------
 
 const publicRoutes = ["/", "/auth/connect-home"];
-const HOME_URL = process.env.NEXT_PUBLIC_HOME_URL || "http://localhost:80";
 
 // -------------------------------- PROXY (MIDDLEWARE) -----------------------------------
 
 // This is the proxy (middleware) function. 
-// It will check the route and get payload from siged JWT
+// It will check the route and get payload from signed JWT
 // from cookies checks the validity and the route.
 // if JWT is valid with auth route ---> Go to dashboard brother
 // if nothing above then proceed.
@@ -17,28 +16,13 @@ const HOME_URL = process.env.NEXT_PUBLIC_HOME_URL || "http://localhost:80";
 
 export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
-
     const isPublicRoute = publicRoutes.includes(pathname);
 
-    const token = request.cookies.get("auth")?.value;
-    const payload = token ? await verifyJWT(token) : null;
-    const isValidToken = !!payload
-
-    if (!isPublicRoute && !isValidToken) {
-        const loginUrl = new URL("/auth/connect?app=the-port-mafia", HOME_URL);
-
-        loginUrl.searchParams.set("redirectTo", pathname);
-        return NextResponse.redirect(loginUrl);
+    if (!isPublicRoute) {
+        return auth(request);
     }
 
-    const response = NextResponse.next();
-    const requestHeaders = new Headers(request.headers);
-    if (payload) {
-        response.headers.set("x-user-id", payload.userId);
-        requestHeaders.set("x-user-id", payload.userId);
-    }
-
-    return response;
+    return NextResponse.next();
 }
 
 // -------------------------------- ROUTE MATCHER -----------------------------------
