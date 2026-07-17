@@ -1,15 +1,22 @@
-import { createHash } from "crypto";
 import { createOpaqueRefreshToken } from "../../lib/crypto";
-import { prisma } from "../../lib/db";
-import { addDays } from "date-fns";
 import { verifyFingerprint } from "./verify-signature";
+import { prisma } from "../../lib/db";
+import { createHash } from "crypto";
+import { addDays } from "date-fns";
 
 export async function authorizeUser(redirectUrl: string, ipAddress: string | null, userAgent: string | null, pid?: string) {
     try {
+        console.log("@@REDIRECT_URL: ", redirectUrl)
+        console.log("@@IP_ADDRESS: ", ipAddress)
+        console.log("@@USER_AGENT: ", userAgent)
+        console.log("@@PID: ", pid)
+
         const defaultDestination = new URL('/linkedin?connection-successful=true', process.env.FRONTEND_URL).toString();
         const clientDestination = redirectUrl ? decodeURIComponent(redirectUrl) : defaultDestination;
 
         const { success, payload, ...payloadRes } = await getUserPayload(pid);
+        console.log("@@PAYLOAD: ", payload)
+        console.log("@@PAYLOAD_RES: ", payloadRes)
         if (!success || !payload) return { success, ...payloadRes };
 
         const session = await prisma.session.create({
@@ -22,6 +29,8 @@ export async function authorizeUser(redirectUrl: string, ipAddress: string | nul
         });
 
         const { success: tokenSuccess, refreshToken, ...tokenRes } = await getRefreshToken(session.id);
+        console.log("@@REFRESH_TOKEN:", refreshToken)
+        console.log("@@TOKEN_RES:", tokenRes)
         if (!tokenSuccess || !refreshToken) return { ...tokenRes }
 
         return {

@@ -12,6 +12,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
 
         const { success, payload, refreshToken, ...res } = await authorizeUser(redirect_uri, ipAddress, userAgent, pid);
         if (!success || !payload || !refreshToken) return status(res.status, { message: res.message, details: res.details })
+        console.log("@@AUTHORIZE_USER: ", res)
 
         const token = await jwt.sign(payload);
 
@@ -44,7 +45,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         const irToken = refresh.value as string;
 
         const { refreshToken, payload, ...res } = await refreshJWT(irToken, ipAddress, userAgent);
-        console.log(refreshToken, payload, res);
+        console.log("@@REFRESH_JWT: ", res);
 
         if (!refreshToken) return status(res.status, { code: res.code, message: res.message, details: res.details })
 

@@ -7,6 +7,9 @@ services:
       - "3810:3000"
     env_file:
       - ./backend/api-gateway/.env
+    volumes:
+      - ./backend/api-gateway:/usr/src/app
+      - /usr/src/app/node_modules
     networks:
       - mafia-network
       - global-database-network
@@ -20,11 +23,12 @@ services:
     restart: always
     env_file:
       - ./backend/main/.env
+    volumes:
+      - ./backend/main:/usr/src/app
+      - /usr/src/app/node_modules
     networks:
       - mafia-network
       - global-database-network
-    depends_on:
-      - frontend
 
   linkedin-service:
     build: ./backend/linkedin
@@ -32,20 +36,28 @@ services:
     restart: always
     env_file:
       - ./backend/linkedin/.env
+    volumes:
+      - ./backend/linkedin:/usr/src/app
+      - /usr/src/app/node_modules
     networks:
       - mafia-network
       - global-database-network
+  #   depends_on:
+  #     - frontend
 
-  frontend:
-    build: ./frontend
-    container_name: mafia-frontend
-    restart: always
-    ports:
-      - "81:3000"
-    networks:
-      - mafia-network
-    env_file:
-      - ./frontend/.env
+  # frontend:
+  #   build: ./frontend
+  #   container_name: mafia-frontend
+  #   restart: always
+  #   volumes:
+  #     - ./frontend:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   ports:
+  #     - "81:3000"
+  #   networks:
+  #     - mafia-network
+  #   env_file:
+  #     - ./frontend/.env
 
 networks:
   mafia-network:
@@ -53,3 +65,59 @@ networks:
 
   global-database-network:
     external: true
+
+# services:
+#   api-gateway:
+#     build: ./backend/api-gateway
+#     container_name: mafia-api-gateway
+#     restart: always
+#     ports:
+#       - "3810:3000"
+#     env_file:
+#       - ./backend/api-gateway/.env
+#     networks:
+#       - mafia-network
+#       - global-database-network
+#     depends_on:
+#       - main-service
+#       - linkedin-service
+
+#   main-service:
+#     build: ./backend/main
+#     container_name: mafia-main
+#     restart: always
+#     env_file:
+#       - ./backend/main/.env
+#     networks:
+#       - mafia-network
+#       - global-database-network
+#     depends_on:
+#       - frontend
+
+#   linkedin-service:
+#     build: ./backend/linkedin
+#     container_name: mafia-linkedin
+#     restart: always
+#     env_file:
+#       - ./backend/linkedin/.env
+#     networks:
+#       - mafia-network
+#       - global-database-network
+
+#   frontend:
+#     build: ./frontend
+#     container_name: mafia-frontend
+#     restart: always
+#     ports:
+#       - "81:3000"
+#     networks:
+#       - mafia-network
+#     env_file:
+#       - ./frontend/.env
+
+# networks:
+#   mafia-network:
+#     driver: bridge
+
+#   global-database-network:
+#     external: true
