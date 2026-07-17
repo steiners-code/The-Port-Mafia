@@ -38,7 +38,7 @@ export default function ConnectHomePage() {
                 return;
             }
 
-            router.push(res.redirectUrl);
+            // router.push(res.redirectUrl);
         },
         onError: () => {
             toast.error("Couldn't authorize The Port Mafia", {

@@ -13,6 +13,8 @@ export async function authorizeConnection() {
         // after verification, server returns a response with cookies set for jwt
         // if (NODE_ENV === "development") {
         const res = await api.post(getUrl("/auth/connect-home"));
+        console.log("@@RES", res)
+        console.log("@@RES_DATA", res.data)
 
         if (res.status !== 200) {
             return { success: false, message: res.data.error || "An unexpected error occurred!", redirectUrl: "" }
