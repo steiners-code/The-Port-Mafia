@@ -47,6 +47,7 @@ async function refreshWithLock(refreshToken: string, forwardedIp: string | null,
     if (existing) return existing;
 
     const promise = fetch(getUrl('/auth/refresh'), {
+        method: "POST",
         headers: {
             "Cookie": `refresh=${refreshToken}`,
             "cf-connecting-ip": connectingIp || "",
@@ -56,9 +57,11 @@ async function refreshWithLock(refreshToken: string, forwardedIp: string | null,
         }
     })
         .then(res => res.json())
-        .finally(() => refreshLocks.delete(refreshToken));
+        .finally(() => refreshLocks.delete(refreshToken))
+        .catch((error) => console.error(error));
 
     refreshLocks.set(refreshToken, promise);
+
     return promise;
 }
 
@@ -67,8 +70,6 @@ export async function auth(request: NextRequest) {
 
     const token = request.cookies.get("auth")?.value;
     const refreshToken = request.cookies.get("refresh")?.value;
-
-    console.log(token, refreshToken);
 
     let payload = token ? await verifyJWT(token) : null;
 
@@ -84,8 +85,6 @@ export async function auth(request: NextRequest) {
     }
 
     try {
-        const url = getUrl('/auth/refresh');
-
         const forwardedIp = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "";
         const connectingIp = request.headers.get("cf-connecting-ip") || "";
         const ua = request.headers.get("user-agent") || "";

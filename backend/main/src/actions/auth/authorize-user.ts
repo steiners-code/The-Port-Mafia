@@ -6,7 +6,7 @@ import { addDays } from "date-fns";
 
 export async function authorizeUser(redirectUrl: string, ipAddress: string | null, userAgent: string | null, pid?: string) {
     try {
-        const defaultDestination = new URL('/linkedin?connection-successful=true', process.env.FRONTEND_URL).toString();
+        const defaultDestination = new URL('/main?connection-successful=true', process.env.FRONTEND_URL).toString();
         const clientDestination = redirectUrl ? decodeURIComponent(redirectUrl) : defaultDestination;
 
         const { success, payload, ...payloadRes } = await getUserPayload(pid);
