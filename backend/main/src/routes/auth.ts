@@ -10,7 +10,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         const ipAddress = headers['x-forwarded-for'] || null;
         const userAgent = headers['user-agent'] || null;
 
-        const { success, payload, refreshToken, ...res } = await authorizeUser(redirect_uri, ipAddress, userAgent, pid);
+        const { success, payload, refreshToken, ...res } = await authorizeUser(pid, ipAddress, userAgent, redirect_uri);
         if (!success || !payload || !refreshToken) return status(res.status, { message: res.message, details: res.details })
 
         const auth = await jwt.sign(payload);
@@ -40,6 +40,6 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         })
     }, {
         cookie: t.Cookie({
-            refresh: t.String({ error: "Missing: Token `refresh` is required." }),
+            refresh: t.String({ error: "Missing: Cookie `refresh` is required." }),
         })
     })

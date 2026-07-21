@@ -26,7 +26,7 @@ export const authConfig = new Elysia({ name: 'auth-config' })
                 firstName: t.String(),
                 lastName: t.Optional(t.String()),
                 email: t.String(),
-                refreshed: t.Boolean(),
+                auth_time: t.Date(),
             })
         })
     )

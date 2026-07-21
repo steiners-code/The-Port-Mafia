@@ -4,7 +4,7 @@ import { prisma } from "../../lib/db";
 import { createHash } from "crypto";
 import { addDays } from "date-fns";
 
-export async function authorizeUser(redirectUrl: string, ipAddress: string | null, userAgent: string | null, pid?: string) {
+export async function authorizeUser(pid: string, ipAddress: string | null, userAgent: string | null, redirectUrl?: string) {
     try {
         const defaultDestination = new URL('/main?connection-successful=true', process.env.FRONTEND_URL).toString();
         const clientDestination = redirectUrl ? decodeURIComponent(redirectUrl) : defaultDestination;
@@ -43,24 +43,6 @@ export async function authorizeUser(redirectUrl: string, ipAddress: string | nul
 }
 
 export async function getUserPayload(pid?: string, userId?: string) {
-    // TODO: REMOVE
-    if (process.env.NODE_ENV === "development") {
-        const payload = {
-            userId: "sktest-userid-f66369ff0a80430e76c744e71835e08e02b879d845e55b11",
-            firstName: "John",
-            lastName: "Doe",
-            email: "email@example.com",
-            refreshed: false
-        };
-
-        return {
-            status: 200,
-            success: true,
-            message: "Development Bypass: Successfully identified user profile.",
-            payload,
-        }
-    };
-
     try {
         let params: string | undefined;
 
@@ -83,7 +65,9 @@ export async function getUserPayload(pid?: string, userId?: string) {
         const homeServiceUrl = process.env.HOME_URL;
         if (!homeServiceUrl) return { status: 404, success: false, message: "Server Error: HOME_URL not found." };
 
-        const res = await fetch(`${homeServiceUrl}/auth/verify?${params}`, {
+        const target = new URL("/api/v1/auth/verify", homeServiceUrl).toString();
+
+        const res = await fetch(`${target}?${params}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -103,7 +87,7 @@ export async function getUserPayload(pid?: string, userId?: string) {
             firstName: String(userData.firstName),
             lastName: userData.lastName ? String(userData.lastName) : undefined,
             email: String(userData.email),
-            refreshed: false
+            auth_time: new Date()
         };
 
         return {

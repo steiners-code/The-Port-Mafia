@@ -30,7 +30,11 @@ export function getRedirectUrl(searchParams: URLSearchParams): string {
 }
 
 export function getLoginUrl(pathname: string): string {
-  const loginUrl = new URL("/auth/connect?app=the-port-mafia", HOME_URL);
+  const callbackUrl = new URL("/auth/connect", FRONTEND_URL).toString();
+
+  const loginUrl = new URL("/auth/connect", HOME_URL);
+  loginUrl.searchParams.set("app", "the-port-mafia");
+  loginUrl.searchParams.set("callbackUrl", callbackUrl);
   loginUrl.searchParams.set("redirectTo", pathname);
 
   return loginUrl.toString();
