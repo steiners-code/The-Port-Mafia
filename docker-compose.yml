@@ -64,7 +64,7 @@ services:
     image: curlimages/curl:latest
     container_name: cron-linkedin-token-refresh
     networks:
-      - home-network
+      - mafia-network
     entrypoint: [ "true" ]
     labels:
       ofelia.enabled: "true"
@@ -78,7 +78,7 @@ services:
     image: curlimages/curl:latest
     container_name: cron-db-cleanup
     networks:
-      - home-network
+      - mafia-network
     entrypoint: [ "true" ]
     labels:
       ofelia.enabled: "true"
