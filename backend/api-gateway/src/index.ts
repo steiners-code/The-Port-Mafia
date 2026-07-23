@@ -74,6 +74,12 @@ const app = new Elysia()
       return proxyTo('main', `/auth/${params['*']}`, request);
     })
 
+    // Public Routes - '/cron' routes are made public
+    .all('/:service/cron/*', async ({ params, request, proxyTo }) => {
+      console.log(`API_GATEWAY: Redirecting user to: /cron/${params['*']}`);
+      return proxyTo(params["service"], `/cron/${params['*']}`, request);
+    })
+
     // Protected Routes - all the routes targeting a specifc service are protected by-default
     // and required a valid JWT in headers to work. Otherwise '400, Unauthorised' is returned
     .all('/:service/*', async ({ params, request, set, status, proxyTo, verifyUser }) => {

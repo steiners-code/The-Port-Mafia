@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
     }
 
     const { success, message, redirectUrl } = await authorizeConnection(pid, state, redirectTo);
-    console.log(message)
 
     if (!success || !redirectUrl) {
         return new NextResponse(`Authentication Failed: ${message}`, { status: 400 });

@@ -16,8 +16,6 @@ export async function getAppConnections() {
 
         const data = res.data as TypeAppData;
 
-        console.log(data);
-
         if (res.status !== 200 || !data.data)
             return null
 

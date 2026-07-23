@@ -14,6 +14,12 @@ jobs:
       - name: Checkout Repository Source
         uses: actions/checkout@v4
 
+      - name: Create Root Environment File (Compose variable substitution)
+        run: |
+          cat <<EOF > .env
+          CRON_API_SECRET="${{ secrets.CRON_API_SECRET }}"
+          EOF
+
       - name: Create Frontend Environment File
         run: |
           mkdir -p frontend
@@ -55,6 +61,7 @@ jobs:
           DATABASE_URL="${{ secrets.MAIN_DATABASE_URL }}"
           FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
           HOME_SERVER_URL="${{ secrets.HOME_SERVER_URL }}"
+          CRON_API_SECRET="${{ secrets.CRON_API_SECRET }}"
           NODE_ENV="development"
           EOF
 
