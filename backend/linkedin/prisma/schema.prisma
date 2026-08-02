@@ -44,3 +44,278 @@ model LinkedinToken {
 
   @@schema("linkedin")
 }
+
+enum LinkedinPostCategory {
+  EDUCATIONAL
+  PERSONAL
+  BUILD_IN_PUBLIC
+  ADAPTIVE
+
+  @@schema("linkedin")
+}
+
+enum LinkedinPostStatus {
+  DRAFT
+  SCHEDULED
+  POSTED
+  FAILED
+
+  @@schema("linkedin")
+}
+
+enum LinkedinMediaType {
+  IMAGE
+  CAROUSEL
+  NONE
+
+  @@schema("linkedin")
+}
+
+model LinkedinPost {
+  id            String   @id @default(cuid())
+  userId        String
+  weekStartDate DateTime
+
+  category       LinkedinPostCategory
+  angle          String?
+  title          String
+  hook           String
+  body           String
+  cta            String
+  hook_technique String
+  body_technique String
+  cta_technique  String
+  comment        String
+  mediaType      LinkedinMediaType
+  templateId     String?
+  contentSlots   Json?
+
+  status          LinkedinPostStatus @default(DRAFT)
+  scheduledDay    String?
+  scheduledWindow String?
+  postedAt        DateTime?
+
+  techniques  LinkedinPostTechnique[]
+  performance LinkedinPostPerformance[]
+  slotUsage   LinkedinSlotUsage?
+
+  createdAt DateTime @default(now())
+
+  @@schema("linkedin")
+}
+
+model LinkedinPostTechnique {
+  postId String
+  post   LinkedinPost @relation(fields: [postId], references: [id])
+
+  techniqueSlug String
+  technique     LinkedinTechnique @relation(fields: [techniqueSlug], references: [slug])
+
+  createdAt DateTime @default(now())
+
+  @@id([postId, techniqueSlug])
+  @@schema("linkedin")
+}
+
+enum LinkedinTechniqueRole {
+  HOOK
+  BODY
+  CTA
+
+  @@schema("linkedin")
+}
+
+model LinkedinTechnique {
+  id   String @id @default(cuid())
+  slug String @unique
+
+  role        LinkedinTechniqueRole
+  description String
+  content     String
+  category    LinkedinPostCategory
+
+  linkedinPostTechniques LinkedinPostTechnique[]
+
+  @@schema("linkedin")
+}
+
+model LinkedinPostPerformance {
+  id String @id @default(cuid())
+
+  postId String
+  post   LinkedinPost @relation(fields: [postId], references: [id])
+
+  day         Int // 1–7, days since this post's postedAt
+  reactions   Int
+  comments    Int
+  reposts     Int
+  impressions Int?
+
+  capturedAt DateTime @default(now())
+
+  @@unique([postId, day])
+  @@schema("linkedin")
+}
+
+model LinkedinAccountSnapshot {
+  id               String   @id @default(cuid())
+  userId           String
+  connectionsTotal Int
+  followersTotal   Int
+  date             DateTime
+
+  capturedAt DateTime @default(now())
+
+  @@unique([userId, date])
+  @@schema("linkedin")
+}
+
+model LinkedinWeekSlotAllocation {
+  id            String               @id @default(cuid())
+  userId        String
+  weekStartDate DateTime
+  category      LinkedinPostCategory
+  allocated     Int
+
+  @@unique([userId, weekStartDate, category])
+  @@schema("linkedin")
+}
+
+model LinkedinSlotUsage {
+  id            String               @id @default(cuid())
+  postId        String               @unique
+  post          LinkedinPost         @relation(fields: [postId], references: [id])
+  weekStartDate DateTime
+  category      LinkedinPostCategory
+  consumedAt    DateTime             @default(now())
+
+  @@schema("linkedin")
+}
+
+enum LinkedinTriggerType {
+  SYSTEM
+  CRON
+  USER
+
+  @@schema("linkedin")
+}
+
+enum LinkedinContentType {
+  TEXT
+  TOOL
+  MEDIA
+  THOUGHT
+
+  @@schema("linkedin")
+}
+
+enum LinkedinContentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+
+  @@schema("linkedin")
+}
+
+enum LinkedinLogLevel {
+  INFO
+  SUCCESS
+  ERROR
+
+  @@schema("linkedin")
+}
+
+model LinkedinChat {
+  id     String @id @default(cuid())
+  userId String
+
+  messages LinkedinChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("linkedin")
+}
+
+model LinkedinChatMessage {
+  id     String       @id @default(cuid())
+  chatId String
+  chat   LinkedinChat @relation(fields: [chatId], references: [id])
+
+  triggerType LinkedinTriggerType
+
+  contents LinkedinMessageContent[]
+
+  createdAt DateTime @default(now())
+
+  @@schema("linkedin")
+}
+
+model LinkedinMessageContent {
+  id            String              @id @default(cuid())
+  chatMessageId String
+  chatMessage   LinkedinChatMessage @relation(fields: [chatMessageId], references: [id])
+
+  sequence    Int
+  contentType LinkedinContentType
+  status      LinkedinContentStatus @default(PENDING)
+
+  message String?
+  output  Json?
+
+  logs LinkedinLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("linkedin")
+}
+
+model LinkedinLog {
+  id        String                 @id @default(cuid())
+  contentId String
+  content   LinkedinMessageContent @relation(fields: [contentId], references: [id])
+
+  level   LinkedinLogLevel
+  message String
+
+  createdAt DateTime @default(now())
+
+  @@schema("linkedin")
+}
+
+enum LinkedinFileType {
+  USER
+  EXPERIENCE
+
+  @@schema("linkedin")
+}
+
+model LinkedinFile {
+  id       String           @id @default(cuid())
+  userId   String
+  fileType LinkedinFileType
+  content  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, fileType])
+  @@schema("linkedin")
+}
+
+model LinkedinMemory {
+  id     String  @id @default(cuid())
+  userId String
+  chatId String? // the conversation this memory originated from, if any
+
+  slug    String
+  title   String
+  content String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, slug])
+  @@schema("linkedin")
+}
