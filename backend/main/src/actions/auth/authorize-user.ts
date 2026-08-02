@@ -1,5 +1,5 @@
 import { createOpaqueRefreshToken } from "../../lib/crypto";
-import { APPSTATUS, APPTYPE } from "../../generated/prisma";
+import { AppStatus, AppType } from "../../generated/prisma";
 import { verifyFingerprint } from "./verify-signature";
 import { prisma } from "../../lib/db";
 import { createHash } from "crypto";
@@ -48,9 +48,9 @@ export async function authorizeUser(pid: string, ipAddress: string | null, userA
         if (!tokenSuccess || !refreshToken) return { success, ...tokenRes, details: "IDK" }
 
         await prisma.connectedApps.upsert({
-            where: { userId_app: { userId: payload.userId, app: APPTYPE.HOME } },
-            create: { userId: payload.userId, app: APPTYPE.HOME, status: APPSTATUS.CONNECTED },
-            update: { status: APPSTATUS.CONNECTED }
+            where: { userId_app: { userId: payload.userId, app: AppType.HOME } },
+            create: { userId: payload.userId, app: AppType.HOME, status: AppStatus.CONNECTED },
+            update: { status: AppStatus.CONNECTED }
         })
 
         return {

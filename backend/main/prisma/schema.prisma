@@ -38,12 +38,12 @@ model RefreshToken {
   @@schema("main")
 }
 
-model connectedApps {
+model ConnectedApps {
   id String @id @default(uuid())
 
   userId String
-  app    APPTYPE
-  status APPSTATUS
+  app    AppType
+  status AppStatus
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -52,7 +52,7 @@ model connectedApps {
   @@schema("main")
 }
 
-enum APPTYPE {
+enum AppType {
   HOME
   LINKEDIN
   X
@@ -65,9 +65,237 @@ enum APPTYPE {
   @@schema("main")
 }
 
-enum APPSTATUS {
+enum AppStatus {
   CONNECTED
   DISCONNECTED
+
+  @@schema("main")
+}
+
+enum MainTriggerType {
+  SYSTEM
+  CRON
+  USER
+
+  @@schema("main")
+}
+
+enum MainContentType {
+  TEXT
+  TOOL
+  MEDIA
+  THOUGHT
+
+  @@schema("main")
+}
+
+enum MainContentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+
+  @@schema("main")
+}
+
+enum MainLogLevel {
+  INFO
+  SUCCESS
+  ERROR
+
+  @@schema("main")
+}
+
+model MainChat {
+  id     String @id @default(cuid())
+  userId String
+
+  messages MainChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("main")
+}
+
+model MainChatMessage {
+  id     String   @id @default(cuid())
+  chatId String
+  chat   MainChat @relation(fields: [chatId], references: [id])
+
+  triggerType MainTriggerType
+
+  contents MainMessageContent[]
+
+  createdAt DateTime @default(now())
+
+  @@schema("main")
+}
+
+model MainMessageContent {
+  id            String          @id @default(cuid())
+  chatMessageId String
+  chatMessage   MainChatMessage @relation(fields: [chatMessageId], references: [id])
+
+  sequence    Int
+  contentType MainContentType
+  status      MainContentStatus @default(PENDING)
+
+  message String?
+  output  Json?
+
+  logs MainLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("main")
+}
+
+model MainLog {
+  id        String             @id @default(cuid())
+  contentId String
+  content   MainMessageContent @relation(fields: [contentId], references: [id])
+
+  level   MainLogLevel
+  message String
+
+  createdAt DateTime @default(now())
+
+  @@schema("main")
+}
+
+enum MainFileType {
+  USER
+  MEMORY
+
+  @@schema("main")
+}
+
+model MainFile {
+  id       String       @id @default(cuid())
+  userId   String
+  fileType MainFileType
+  content  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, fileType])
+  @@schema("main")
+}
+
+model MainJournal {
+  id     String @id @default(cuid())
+  userId String
+
+  date     DateTime
+  contents MainJournalContent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@schema("main")
+}
+
+model MainJournalContent {
+  id String @id @default(cuid())
+
+  content String
+
+  journalId   String
+  mainJournal MainJournal @relation(fields: [journalId], references: [id])
+
+  tags MainJournalTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("main")
+}
+
+model MainJournalTag {
+  tagId String
+  tag   MainTag @relation(fields: [tagId], references: [id])
+
+  journalContentId String
+  journalContent   MainJournalContent @relation(fields: [journalContentId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@id([tagId, journalContentId])
+  @@schema("main")
+}
+
+model MainTag {
+  id String @id @default(nanoid())
+
+  slug        String  @unique
+  description String?
+
+  journalTags MainJournalTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("main")
+}
+
+enum SubAgent {
+  MAHA
+
+  @@schema("main")
+}
+
+enum MainTaskStatus {
+  PENDING
+  INPROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@schema("main")
+}
+
+enum MainTaskLevel {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+
+  @@schema("main")
+}
+
+model MainTask {
+  id String @id @default(cuid())
+
+  title   String
+  content Json
+
+  level    MainTaskLevel  @default(MEDIUM)
+  status   MainTaskStatus @default(PENDING)
+  progress Int            @default(0)
+
+  comments MainTaskComment[]
+
+  subAgent         SubAgent
+  subAgentRole     String
+  subAgentPlatform AppType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("main")
+}
+
+model MainTaskComment {
+  id      String @id @default(cuid())
+  content String
+
+  taskId String
+  task   MainTask @relation(fields: [taskId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@schema("main")
 }

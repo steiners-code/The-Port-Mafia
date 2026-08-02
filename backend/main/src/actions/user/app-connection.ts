@@ -1,7 +1,7 @@
-import { APPSTATUS, APPTYPE } from "../../generated/prisma";
+import { AppStatus, AppType } from "../../generated/prisma";
 import { prisma } from "../../lib/db";
 
-export async function userAppConnection(app: APPTYPE, status: APPSTATUS, userId: string) {
+export async function userAppConnection(app: AppType, status: AppStatus, userId: string) {
     try {
         await prisma.connectedApps.upsert({
             where: { userId_app: { userId, app } },
@@ -35,17 +35,17 @@ export async function getUserConnectedApps(userId: string) {
             connectedApps.map(({ app, status }) => [app, status])
         );
 
-        const appStatusMap = Object.fromEntries(
-            Object.values(APPTYPE).map((app) => [
+        const AppStatusMap = Object.fromEntries(
+            Object.values(AppType).map((app) => [
                 app,
-                connectedMap[app] ?? APPSTATUS.DISCONNECTED
+                connectedMap[app] ?? AppStatus.DISCONNECTED
             ])
-        ) as Record<APPTYPE, APPSTATUS>;
+        ) as Record<AppType, AppStatus>;
 
         return {
             status: 200,
             message: "Successfully retrieved connected apps.",
-            data: appStatusMap
+            data: AppStatusMap
         }
     } catch (error) {
         return {
