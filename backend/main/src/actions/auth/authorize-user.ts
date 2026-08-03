@@ -8,8 +8,9 @@ import { addDays } from "date-fns";
 type Payload = {
     userId: string,
     firstName: string,
-    lastName?: string | null,
+    lastName: string | undefined,
     email: string,
+    auth_time: Date,
 }
 
 type PayloadData = {
@@ -32,7 +33,7 @@ export async function authorizeUser(pid: string, ipAddress: string | null, userA
         const defaultDestination = new URL('/main?connection-successful=true', process.env.FRONTEND_URL).toString();
         const clientDestination = redirectUrl ? decodeURIComponent(redirectUrl) : defaultDestination;
 
-        const { success, payload, ...payloadRes } = await getUserPayload(pid);
+        const { success, payload, ...payloadRes } = await getUserPayload({ pid });
         if (!success || !payload) return { success, ...payloadRes };
 
         const session = await prisma.session.create({
@@ -71,7 +72,7 @@ export async function authorizeUser(pid: string, ipAddress: string | null, userA
     }
 }
 
-export async function getUserPayload(pid?: string, userId?: string) {
+export async function getUserPayload({ pid, userId }: { pid?: string, userId?: string }) {
     try {
         let params: string | undefined;
 
@@ -228,7 +229,7 @@ export async function refreshJWT(token: string, ipAddress: string | null, userAg
             }
         });
 
-        const { success, payload, ...res } = await getUserPayload(session.userId);
+        const { success, payload, ...res } = await getUserPayload({ userId: session.userId });
         if (!success || !payload) return { code: 'ERROR', ...res, details: "Unable to fetch payload. Please re-authorize with Home." };
 
         return {
