@@ -185,6 +185,7 @@ export async function auth(request: NextRequest) {
         return response;
 
     } catch (error) {
+        console.log(error)
         // Network failure (Gateway is offline / unreachable)
         const errorUrl = new URL("/error", request.url);
         errorUrl.searchParams.set("message", "Network Error");

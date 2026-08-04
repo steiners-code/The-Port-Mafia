@@ -1,7 +1,7 @@
 "use client";
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuItem, SidebarRail, useSidebar } from "../ui/sidebar";
-import { GearIcon, TranslateIcon, QuestionIcon, BookOpenIcon, UsersFourIcon, SignOutIcon } from "@phosphor-icons/react";
+import { GearIcon, TranslateIcon, QuestionIcon, BookOpenIcon, UsersFourIcon, SignOutIcon, SidebarSimpleIcon } from "@phosphor-icons/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { AccountSettingsDialog } from "./AccountSettingsCard";
@@ -15,7 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const LayoutSidebar = () => {
-    const { open } = useSidebar()
+    const { open, setOpen, setOpenMobile, openMobile, isMobile } = useSidebar()
     const path = usePathname();
     const routes = getRoutes();
 
@@ -24,17 +24,32 @@ const LayoutSidebar = () => {
             <SidebarHeader>
                 <div className="min-h-10 py-4 flex items-center justify-center gap-1 overflow-hidden whitespace-nowrap border-b border-separate">
                     {open ? (
-                        <>
-                            <h1 className="higherjump_4c60f0c3-module__7zFtra__className">The Port</h1>
-                            <h1 className="text-[1.35rem] text-[#a70707] dark:text-[#d50404] deadlytarget_233401d3-module__DMNnEa__className">Mafia</h1>
-                        </>
+                        <div className="w-full flex items-center justify-between overflow-hidden flex-nowrap">
+                            <div className="w-full flex items-center justify-center gap-1 overflow-hidden whitespace-nowrap">
+                                <h1 className="higherjump_4c60f0c3-module__7zFtra__className">The Port</h1>
+                                <h1 className="text-[1.35rem] text-[#a70707] dark:text-[#d50404] deadlytarget_233401d3-module__DMNnEa__className">Mafia</h1>
+                            </div>
+
+                            {isMobile && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="cursor-pointer"
+                                    onClick={() => {
+                                        setOpenMobile(!openMobile)
+                                    }}
+                                >
+                                    <SidebarSimpleIcon className="size-5 text-muted-foreground" />
+                                </Button>
+                            )}
+                        </div>
                     ) : (
                         <Image
                             src="/favicon.png"
                             alt="Logo"
-                            width={32}
-                            height={32}
-                            className="rounded-md object-cover"
+                            width={38}
+                            height={38}
+                            className="rounded-sm object-cover"
                         />
                     )}
                 </div>
@@ -52,20 +67,18 @@ const LayoutSidebar = () => {
                                 {route.children.map(child => (
                                     <SidebarMenuItem key={child.href} className={cn("flex items-center gap-2", child.colors.text)}>
                                         {open ? (
-                                            <Link href={child.href} className={cn("ml-3! first:ml-2!", path === child.href && "underline")}>
+                                            <Link href={child.href} className={cn("ml-3! first:ml-2! transition-colors", path === child.href && "underline")}>
                                                 {child.label}
                                             </Link>
                                         ) : (
-                                            <Link href={child.href} className={cn("mx-auto p-0.5! rounded-xs!", child.href === path && child.colors.background)}>
-                                                <Avatar className="size-8! outline-none! border-transparent! rounded-none!">
-                                                    <AvatarImage
-                                                        src={child.avatar}
-                                                        className="object-cover aspect-square! border-none!"
-                                                    />
-                                                    <AvatarFallback>
-                                                        {child.label.split(' ')[0].charAt(0) + child.label.split(' ')[1].charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                            <Link href={child.href} className={cn("mx-auto rounded-sm! transition-colors", child.href === path && child.colors.background, child.colors.hover)}>
+                                                <Image
+                                                    width={120}
+                                                    height={120}
+                                                    alt={child.label.split(' ')[0].charAt(0) + child.label.split(' ')[1].charAt(0)}
+                                                    src={child?.avatar}
+                                                    className="size-10 object-top object-cover aspect-square border border-border pt-0.5 rounded-sm"
+                                                />
                                             </Link>
                                         )}
                                     </SidebarMenuItem>
