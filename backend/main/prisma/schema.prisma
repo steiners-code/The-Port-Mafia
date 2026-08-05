@@ -8,6 +8,20 @@ datasource db {
   schemas  = ["main"]
 }
 
+model UserProfile {
+  userId    String  @id
+  firstName String
+  lastName  String?
+  email     String
+
+  connectedApps ConnectedApps[]
+  mainChat      MainChat?
+
+  updatedAt DateTime @updatedAt
+
+  @@schema("main")
+}
+
 model Session {
   id String @id @default(uuid())
 
@@ -42,6 +56,8 @@ model ConnectedApps {
   id String @id @default(uuid())
 
   userId String
+  user   UserProfile @relation(fields: [userId], references: [userId])
+
   app    AppType
   status AppStatus
 
@@ -106,8 +122,10 @@ enum MainLogLevel {
 }
 
 model MainChat {
-  id     String @id @default(cuid())
-  userId String @unique
+  id String @id @default(cuid())
+
+  userId String      @unique
+  user   UserProfile @relation(fields: [userId], references: [userId])
 
   messages MainChatMessage[]
 
