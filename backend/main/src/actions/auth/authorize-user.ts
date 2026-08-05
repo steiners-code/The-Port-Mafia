@@ -121,6 +121,8 @@ export async function getUserPayload({ pid, userId }: { pid?: string, userId?: s
             auth_time: new Date()
         };
 
+        await updateUserProfile(payload)
+
         return {
             status: 200,
             success: true,
@@ -232,6 +234,8 @@ export async function refreshJWT(token: string, ipAddress: string | null, userAg
         const { success, payload, ...res } = await getUserPayload({ userId: session.userId });
         if (!success || !payload) return { code: 'ERROR', ...res, details: "Unable to fetch payload. Please re-authorize with Home." };
 
+        await updateUserProfile(payload)
+
         return {
             status: 200,
             code: 'SUCCESS',
@@ -247,4 +251,21 @@ export async function refreshJWT(token: string, ipAddress: string | null, userAg
             details: error instanceof Error ? error.message : "Unexpected Server Error!"
         }
     }
+}
+
+export async function updateUserProfile(payload: Payload) {
+    await prisma.userProfile.upsert({
+        where: { userId: payload.userId },
+        create: {
+            userId: payload.userId,
+            firstName: payload.firstName,
+            lastName: payload.lastName,
+            email: payload.email,
+        },
+        update: {
+            firstName: payload.firstName,
+            lastName: payload.lastName,
+            email: payload.email,
+        },
+    });
 }
