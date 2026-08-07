@@ -3,6 +3,7 @@
 import { useState, useRef, type ChangeEvent, type KeyboardEvent } from "react";
 import { getAgentByPathname } from "@/data/agents";
 import { usePathname } from "next/navigation";
+import { useChat } from "@/hooks/use-chat";
 import { Textarea } from "../ui/textarea";
 import { Button } from "@base-ui/react";
 import { ArrowUp } from "lucide-react";
@@ -10,6 +11,7 @@ import { cn } from "@/lib/utils";
 
 const LayoutFooter = () => {
     const pathname = usePathname()
+    const { sendMessage } = useChat()
     const [value, setValue] = useState<string>("")
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
@@ -18,7 +20,7 @@ const LayoutFooter = () => {
     const handleSend = () => {
         const trimmed = value.trim()
         if (!trimmed) return
-        // onSend?.(trimmed)
+        sendMessage(trimmed)
         setValue("")
     }
 
@@ -45,7 +47,7 @@ const LayoutFooter = () => {
                         value={value}
                         onChange={handleInput}
                         onKeyDown={handleKeyDown}
-                        className="w-full max-h-60 min-h-20 mb-10 thin-scrollbar resize-none bg-transparent! border-none focus-visible:ring-0! text-sm leading-6 placeholder:text-muted-foreground"
+                        className="react-markdown w-full max-h-60 min-h-20 mb-10 thin-scrollbar resize-none bg-transparent! border-none focus-visible:ring-0! text-sm leading-6 placeholder:text-muted-foreground"
                         placeholder="Do you have anything of concern?"
                     />
 

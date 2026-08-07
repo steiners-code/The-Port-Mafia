@@ -1,19 +1,7 @@
-import ChatMessage from "@/components/chat/ChatMessage"
-import { TRIGGER, TYPE, STATUS } from "@/lib/enums"
+import Chat from "@/components/chat/Chat"
 
 const MainAgentPage = () => {
-    return (
-        <div className="max-w-3xl px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
-            <ChatMessage data={{ trigger: TRIGGER.USER, contents: [{ id: '8164789164', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "Yo! Dazai-kun!" }] }} />
-            <ChatMessage data={{ trigger: TRIGGER.SYSTEM, contents: [{ id: '54645654774', status: STATUS.COMPLETED, type: TYPE.THOUGHT, message: "Let me think for some time.", output: "Lorem ipsum dolor sit amet consectetur, adipisicing elit. Explicabo veritatis vel ullam fugit atque odit quas optio ipsam, sit, et placeat quisquam facilis, perspiciatis ipsa deserunt velit sunt molestias illum? Quo ratione doloribus sunt perspiciatis placeat totam, nostrum dolorum dignissimos enim, exercitationem officiis laboriosam repudiandae minus cum repellat ex odit nobis consequatur molestias, corporis minima praesentium a eligendi. Aliquam dicta exercitationem unde alias maiores ratione ipsam culpa autem repellat maxime, in ex. Suscipit beatae pariatur magni distinctio praesentium dolorem, ipsum quae ab architecto laboriosam aliquam soluta illum nam expedita recusandae excepturi quo ullam laborum, cumque odit molestias fugit. Quod, cumque qui quidem quisquam quibusdam ipsa ad hic autem perferendis aut libero! Soluta numquam odio sit, quas porro dignissimos laboriosam vel! Ducimus quaerat pariatur optio ipsa nisi earum unde quis ullam reprehenderit minus quidem harum ad, impedit nam illum consequuntur laborum hic quod possimus illo fuga nulla incidunt neque! Maxime nam harum saepe ullam possimus praesentium tempore atque deserunt consequatur unde error facilis libero animi, vitae dolor obcaecati. Iusto iste magnam magni nostrum, labore molestias vero quidem, fuga eaque, provident accusantium explicabo repudiandae rerum aspernatur! Exercitationem officia laborum nisi repellat voluptates alias sequi aspernatur, commodi aliquid? Esse reiciendis temporibus consequuntur iusto." }, { id: '1235346346', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "Ah, hello. Calling me '-kun'? How affectionate. I suppose I can spare a few moments between orchestrating miracles—what's on your mind?" }] }} />
-            <ChatMessage data={{ trigger: TRIGGER.USER, contents: [{ id: '235235245246', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "I'm Ateeb, your boss if I may" }] }} />
-            <ChatMessage data={{ trigger: TRIGGER.SYSTEM, contents: [{ id: '32523523236', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "Ah, Ateeb! No need for 'if I may'—if you'd like to take ultimate responsibility for everything I manage behind the scenes, far be it from me to stop you. What can I handle for you today?" }] }} />
-            <ChatMessage data={{ trigger: TRIGGER.USER, contents: [{ id: '236236246246', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "How Maha is doing?" }] }} />
-            <ChatMessage data={{ trigger: TRIGGER.SYSTEM, contents: [{ id: '236246246246', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "Maha is doing just fine. Smooth sailing in her lane. If there were anything urgent enough to bother you with, I'd have brought it to you already—so the quiet on her end just means I'm doing my job. Did you need something specific passed along to her?" }] }} />
-            <ChatMessage data={{ trigger: TRIGGER.USER, contents: [{ id: '24624624626246', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "I mean, with the LinkedIn. Any progress with that dead-ass account of mine? You know" }] }} />
-            <ChatMessage data={{ trigger: TRIGGER.SYSTEM, contents: [{ id: '246246246246246', status: STATUS.COMPLETED, type: TYPE.TEXT, message: "Calling your own profile 'dead-ass'? Such harsh words for something we're turning around! Don't worry, Maha is laying the groundwork, and I'm keeping an eye on the trajectory. Building momentum on a quiet account takes a little calculated setup, but we're moving it toward actual value. When there's a real milestone or something that genuinely needs your sign-off, I'll bring it straight to you." }] }} />
-        </div>
-    )
+    return <Chat />
 }
 
 export default MainAgentPage

@@ -192,8 +192,16 @@
     margin-top: 0;
   }
 
-  .react-markdown p {
-    margin: 0;
+  .markdown-content p {
+    margin-block: 0.75rem;
+  }
+
+  .markdown-content p:first-child {
+    margin-top: 0;
+  }
+
+  .markdown-content p:last-child {
+    margin-bottom: 0;
   }
 
   /* Modest type scale — enough hierarchy to tell h1 from h3 at a glance,
