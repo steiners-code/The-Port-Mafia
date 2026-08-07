@@ -1,3 +1,4 @@
+import { AGENT_REGISTRY } from "./helpers/subAgents";
 import { prisma } from "../../lib/db";
 
 export async function getChatId(userId: string) {
@@ -5,8 +6,26 @@ export async function getChatId(userId: string) {
         where: { userId },
         create: { userId },
         update: {},
-        select: { id: true }
+        select: {
+            id: true,
+            user: {
+                select: {
+                    firstName: true,
+                    lastName: true,
+                    connectedApps: {
+                        where: {
+                            app: { in: AGENT_REGISTRY.map((agent) => agent.platform) }
+                        },
+                        select: { app: true, status: true }
+                    }
+                }
+            }
+        }
     });
 
-    return chat.id;
+    const principalName = [chat.user.firstName, chat.user.lastName]
+        .filter(Boolean)
+        .join(' ');
+
+    return { chatId: chat.id, principalName, connections: chat.user.connectedApps };
 }

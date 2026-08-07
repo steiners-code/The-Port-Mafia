@@ -234,8 +234,6 @@ export async function refreshJWT(token: string, ipAddress: string | null, userAg
         const { success, payload, ...res } = await getUserPayload({ userId: session.userId });
         if (!success || !payload) return { code: 'ERROR', ...res, details: "Unable to fetch payload. Please re-authorize with Home." };
 
-        await updateUserProfile(payload)
-
         return {
             status: 200,
             code: 'SUCCESS',

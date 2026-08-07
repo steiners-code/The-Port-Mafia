@@ -15,6 +15,8 @@ model UserProfile {
   email     String
 
   connectedApps ConnectedApps[]
+  mainTasks     MainTask[]
+  mainJournal   MainJournal[]
   mainChat      MainChat?
 
   updatedAt DateTime @updatedAt
@@ -56,7 +58,7 @@ model ConnectedApps {
   id String @id @default(uuid())
 
   userId String
-  user   UserProfile @relation(fields: [userId], references: [userId])
+  user   UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   app    AppType
   status AppStatus
@@ -125,7 +127,7 @@ model MainChat {
   id String @id @default(cuid())
 
   userId String      @unique
-  user   UserProfile @relation(fields: [userId], references: [userId])
+  user   UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   messages MainChatMessage[]
 
@@ -138,7 +140,7 @@ model MainChat {
 model MainChatMessage {
   id     String   @id @default(cuid())
   chatId String
-  chat   MainChat @relation(fields: [chatId], references: [id])
+  chat   MainChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   triggerType MainTriggerType
 
@@ -146,13 +148,14 @@ model MainChatMessage {
 
   createdAt DateTime @default(now())
 
+  @@index([chatId, createdAt])
   @@schema("main")
 }
 
 model MainMessageContent {
   id            String          @id @default(cuid())
   chatMessageId String
-  chatMessage   MainChatMessage @relation(fields: [chatMessageId], references: [id])
+  chatMessage   MainChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
 
   sequence    Int
   contentType MainContentType
@@ -166,19 +169,21 @@ model MainMessageContent {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([chatMessageId, sequence, createdAt])
   @@schema("main")
 }
 
 model MainLog {
   id        String             @id @default(cuid())
   contentId String
-  content   MainMessageContent @relation(fields: [contentId], references: [id])
+  content   MainMessageContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
 
   level   MainLogLevel
   message String
 
   createdAt DateTime @default(now())
 
+  @@index([contentId, createdAt])
   @@schema("main")
 }
 
@@ -203,8 +208,9 @@ model MainFile {
 }
 
 model MainJournal {
-  id     String @id @default(cuid())
+  id     String      @id @default(cuid())
   userId String
+  user   UserProfile @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   date     DateTime
   contents MainJournalContent[]
@@ -222,7 +228,7 @@ model MainJournalContent {
   content String
 
   journalId   String
-  mainJournal MainJournal @relation(fields: [journalId], references: [id])
+  mainJournal MainJournal @relation(fields: [journalId], references: [id], onDelete: Cascade)
 
   tags MainJournalTag[]
 
@@ -284,7 +290,9 @@ enum MainTaskLevel {
 }
 
 model MainTask {
-  id String @id @default(cuid())
+  id     String      @id @default(cuid())
+  userId String
+  user   UserProfile @relation(fields: [userId], references: [userId])
 
   title   String
   content Json
@@ -310,7 +318,7 @@ model MainTaskComment {
   content String
 
   taskId String
-  task   MainTask @relation(fields: [taskId], references: [id])
+  task   MainTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

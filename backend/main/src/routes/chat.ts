@@ -1,16 +1,17 @@
 import { getOrCreateChat } from "../actions/chat/getOrCreateChat";
 import { sendChatMessage } from "../actions/chat/sendChatMessage";
-import Elysia, { t } from "elysia";
 import { UserMessageData } from "../lib/types";
+import Elysia, { t } from "elysia";
 
 export const chatRoutes = new Elysia({ prefix: '/chat' })
     .get('/message', async ({ headers, status }) => {
         const userId = headers["x-user-id"];
 
         const { success, ...res } = await getOrCreateChat(userId)
-        if (!success) return status(res.status, { message: res.message, details: res?.details })
+        if (!success || !res.data) return status(res.status, { message: res.message, details: res?.details })
+        console.log(JSON.stringify(res.data, null, 4))
 
-        status(200, res.data);
+        return status(200, res.data);
     }, {
         headers: t.Object({
             "x-user-id": t.String({ error: "Missing API-Gateway ID: userId" })
@@ -23,6 +24,7 @@ export const chatRoutes = new Elysia({ prefix: '/chat' })
 
         const { success, ...res } = await sendChatMessage(userId, contents)
 
+        return status(res.status, { message: res.message, details: res.details })
     }, {
         headers: t.Object({
             "x-user-id": t.String({ error: "Missing API-Gateway ID: userId" })
