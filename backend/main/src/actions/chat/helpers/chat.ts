@@ -1,8 +1,11 @@
 import { MainContentStatus, MainContentType, MainLogLevel, MainTriggerType } from "../../../generated/prisma";
+import { getAutomatedLog, getAutomatedMessage } from "./automatedMessages";
 import { JsonValue } from "@prisma/client/runtime/client";
 import { Annotation, MainLog } from "../../../lib/types";
 import { EventType } from "../../../lib/enums";
 import { prisma } from "../../../lib/db";
+
+// TODO: Implement SSE
 
 export async function createAIChatMessage(chatId: string) {
     const data = await prisma.mainChatMessage.create({
@@ -27,16 +30,18 @@ export async function updateAIChatMessage(messageId: string) {
 }
 
 export async function createMessageContent(messageId: string, type: MainContentType, index: number) {
+    const message = getAutomatedMessage({ event: "MESSAGE.STARTED", contentType: type })
+
     const data = await prisma.mainMessageContent.create({
         data: {
             contentType: type,
             sequence: index,
             chatMessageId: messageId,
-            message: "Thinking...", // TODO: Implement Automated THOUGHT.STARTED Message.
+            message,
             logs: {
                 create: {
                     level: MainLogLevel.INFO,
-                    message: `Started ${type} process.` // TODO: Implement Automated LOG.INFO Message.
+                    message: getAutomatedLog({ event: "LOG.INFO", contentType: type })
                 }
             }
         },
@@ -74,15 +79,18 @@ type MessageContentData = {
     output?: JsonValue | null,
 }
 
-export async function updateMessageContent(contentId: string, status: MainContentStatus, logs: MainLog[], output: MessageContentOutput) {
+export async function updateMessageContent(contentId: string, status: MainContentStatus, logs: MainLog[], output: MessageContentOutput, startedAt?: Date) {
+    let message: string;
     let data: MessageContentData;
 
     switch (output.type) {
         case "thought":
+            message = getAutomatedMessage({ event: "MESSAGE.COMPLETED", contentType: "THOUGHT", startedAt })
+
             data = await prisma.mainMessageContent.update({
                 where: { id: contentId },
                 data: {
-                    message: "Thought for BILLION years.", // TODO: Implement Automated THOUGHT.COMPLETE Message
+                    message,
                     status: status,
                     output: {
                         thoughtSignature: output.thoughtSignature,

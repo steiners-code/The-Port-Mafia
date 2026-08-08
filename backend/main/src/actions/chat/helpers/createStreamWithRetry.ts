@@ -54,7 +54,7 @@ export async function createStreamWithRetry(systemPrompt: string, chatHistory: S
             const isTransient = error?.status === 429 || error?.status >= 500;
             if (attempt === retries || !isTransient) throw error;
 
-            logs.push({ level: "ERROR", message: `[GenAI] Transient error (${error.status || error.message}). Retrying attempt ${attempt}/${retries} in ${delayMs}ms...` })
+            logs.push({ level: "ERROR", message: `[GenAI] Transient error (${error.status || error.message}). Retrying attempt ${attempt}/${retries} in ${delayMs}ms...`, createdAt: new Date() })
             await new Promise((res) => setTimeout(res, delayMs * attempt));
         }
     }

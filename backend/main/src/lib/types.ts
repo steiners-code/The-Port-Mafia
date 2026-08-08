@@ -13,6 +13,7 @@ export type Logs = {
 export type MainLog = {
     level: MainLogLevel,
     message: string,
+    createdAt: Date,
 }
 
 export type UserMessageData = {

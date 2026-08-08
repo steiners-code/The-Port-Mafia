@@ -1,6 +1,7 @@
 import { createAIChatMessage, createMessageContent, updateAIChatMessage, updateMessageContent } from "./helpers/chat";
 import { createStreamWithRetry, StreamInitError } from "./helpers/createStreamWithRetry";
 import { Annotation, MainLog, UserMessageData } from "../../lib/types";
+import { getAutomatedLog } from "./helpers/automatedMessages";
 import { getSystemPrompt } from "./helpers/getSystemPrompt";
 import { getChatHistory } from "./helpers/getChatHistory";
 import { MainContentType } from "../../generated/prisma";
@@ -22,6 +23,7 @@ type StepState = {
     thoughtSignature?: string;
     thoughtSummary: string;
     annotations: Annotation[];
+    startedAt: Date;
     text: string;
 };
 
@@ -65,6 +67,7 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                                 thoughtSummary: "",
                                 annotations: [],
                                 text: "",
+                                startedAt: new Date(),
                                 logs: []
                             };
                             break;
@@ -77,6 +80,7 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                                 thoughtSummary: "",
                                 annotations: [],
                                 text: "",
+                                startedAt: new Date(),
                                 logs: []
                             };
                             break;
@@ -116,7 +120,12 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                     console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                     if (!state) break;
 
-                    state.logs.push({ level: "SUCCESS", message: `${state.type} process completed after consuming MILLIONS in tokens.` }) // TODO: Implement Automated LOG.SUCCESS Message
+                    const contentType = state.type === "thought" ? "THOUGHT" : state.type === "model_output" ? "TEXT" : "TEXT"
+                    state.logs.push({
+                        level: "SUCCESS",
+                        message: getAutomatedLog({ event: "LOG.SUCCESS", contentType }),
+                        createdAt: new Date()
+                    })
 
                     switch (state.type) {
                         case "thought":
@@ -125,7 +134,7 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                                 thoughtSignature: state.thoughtSignature,
                                 thoughtSummary: state.thoughtSummary,
                                 annotations: state.annotations,
-                            })
+                            }, state.startedAt)
                             break;
                         case "model_output":
                             let cleanMessage: string | null = null;
@@ -155,7 +164,7 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                     console.log(`[error] errorState=${errorState} activeIndex=${activeIndex} errorMessage=${errorMessage}`)
 
                     if (errorState) {
-                        errorState.logs.push({ level: "ERROR", message: errorMessage })
+                        errorState.logs.push({ level: "ERROR", message: errorMessage, createdAt: new Date() })
                         await updateMessageContent(errorState.contentId, "FAILED", errorState.logs, {
                             type: errorState.type,
                             thoughtSignature: errorState.thoughtSignature,
@@ -166,7 +175,7 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                     } else if (messageId) {
                         const errContentId = await createMessageContent(messageId, MainContentType.TEXT, 0);
                         await updateMessageContent(errContentId, "FAILED", [
-                            { level: "ERROR", message: errorMessage }
+                            { level: "ERROR", message: errorMessage, createdAt: new Date() }
                         ], {
                             type: "model_output",
                             text: `[Error]: ${errorMessage}`
@@ -181,7 +190,7 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
         const errorMessage = error instanceof Error ? error.message : "Internal Server Error!";
         const logs: MainLog[] = error instanceof StreamInitError
             ? error.logs
-            : [{ level: "ERROR", message: errorMessage }];
+            : [{ level: "ERROR", message: errorMessage, createdAt: new Date() }];
 
         if (!messageId) messageId = await createAIChatMessage(chatId);
 
