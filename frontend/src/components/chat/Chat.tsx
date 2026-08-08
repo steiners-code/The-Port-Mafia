@@ -55,8 +55,6 @@ const Chat = () => {
         )
     }
 
-    console.log(chat)
-
     return (
         <div className="max-w-3xl px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
             {chat.messages.map(message => (

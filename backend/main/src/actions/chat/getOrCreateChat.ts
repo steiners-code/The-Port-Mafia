@@ -20,17 +20,6 @@ export async function getOrCreateChat(userId: string) {
                                 status: true,
                                 message: true,
                                 output: true,
-                                // logs: { // TODO: Remove LOGS and shift to separate log fetching by messageId
-                                //     select: {
-                                //         id: true,
-                                //         level: true,
-                                //         message: true,
-                                //         createdAt: true,
-                                //     },
-                                //     orderBy: {
-                                //         createdAt: 'asc'
-                                //     }
-                                // }
                             },
                             orderBy: [
                                 { sequence: 'asc' },
@@ -40,8 +29,9 @@ export async function getOrCreateChat(userId: string) {
                     },
                     orderBy: {
                         createdAt: 'asc'
-                    }
-                }
+                    },
+                    take: 50,
+                },
             }
         })
 

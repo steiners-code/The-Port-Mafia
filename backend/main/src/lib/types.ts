@@ -48,8 +48,8 @@ type ImageContent = {
     type: "image",
     data?: string,
     uri?: string,
-    mime_type?: string,
-    resolution?: string
+    mime_type?: "image/png" | "image/jpeg" | "image/webp" | "image/heic" | "image/heif" | "image/gif" | "image/bmp" | "image/tiff" | (string & {}),
+    resolution?: "low" | "medium" | "high" | "ultra_high" | (string & {}),
 }
 
 type AudioContent = {
@@ -65,7 +65,7 @@ type DocumentContent = {
     type: "document",
     data?: string,
     uri?: string,
-    mime_type?: string,
+    mime_type?: "application/pdf" | "text/csv" | (string & {}),
 }
 
 type VideoContent = {

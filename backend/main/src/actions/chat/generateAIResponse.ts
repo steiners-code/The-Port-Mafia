@@ -1,7 +1,8 @@
-import { createAIChatMessage, createMessageContent, createStreamWithRetry, StreamInitError, updateAIChatMessage, updateMessageContent } from "./helpers/chat";
+import { createAIChatMessage, createMessageContent, updateAIChatMessage, updateMessageContent } from "./helpers/chat";
+import { createStreamWithRetry, StreamInitError } from "./helpers/createStreamWithRetry";
 import { Annotation, MainLog, UserMessageData } from "../../lib/types";
-import { fetchMediaContent } from "./helpers/fetchMediaContent";
 import { getSystemPrompt } from "./helpers/getSystemPrompt";
+import { getChatHistory } from "./helpers/getChatHistory";
 import { MainContentType } from "../../generated/prisma";
 import { Connections } from "./helpers/subAgents";
 
@@ -36,50 +37,10 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
 
     try {
         const systemPrompt = await getSystemPrompt(userId, principalName, connections)
+        const chatHistory = await getChatHistory(userId, contents);
+        if (!chatHistory) throw new Error("Unable to retrieve chat history!")
 
-        let userText: string[] = [];
-        let userMedia: string[] = [];
-        for (const content of contents) {
-            switch (content.contentType) {
-                case MainContentType.TEXT:
-                    userText.push(content?.message || "(empty)")
-                    break;
-
-                case MainContentType.MEDIA:
-                    if (!content?.output) {
-                        userMedia.push("Couldn't fetch media content. Missing uri and metadata");
-                        break;
-                    }
-
-                    const {
-                        fileContent,
-                        fileName,
-                        fileDescription,
-                        fileExtension,
-                        fileCategory
-                    } = await fetchMediaContent(content.output);
-
-                    userMedia.push([
-                        `### ${fileName} – ${fileExtension}`,
-                        `> ${fileDescription || "(No Description)"}`,
-                        `#### Category: ${fileCategory}`,
-                        `### Content`,
-                        fileContent,
-                    ].join("\n"));
-
-                    break;
-            }
-        }
-
-        const userPrompt = [
-            "## User Query",
-            userText.join("\n"),
-            "---",
-            "## Attached Media",
-            userMedia.join("\n---\n"),
-        ].join('\n');
-
-        const stream = await createStreamWithRetry(systemPrompt, userPrompt);
+        const stream = await createStreamWithRetry(systemPrompt, chatHistory);
 
         for await (const event of stream) {
             console.log(`[stream event] type=${event.event_type} index=${(event as any).index ?? "-"}`);

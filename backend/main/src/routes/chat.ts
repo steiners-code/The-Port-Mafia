@@ -9,7 +9,6 @@ export const chatRoutes = new Elysia({ prefix: '/chat' })
 
         const { success, ...res } = await getOrCreateChat(userId)
         if (!success || !res.data) return status(res.status, { message: res.message, details: res?.details })
-        console.log(JSON.stringify(res.data, null, 4))
 
         return status(200, res.data);
     }, {
