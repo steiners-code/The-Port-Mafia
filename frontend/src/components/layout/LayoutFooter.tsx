@@ -5,13 +5,14 @@ import { getAgentByPathname } from "@/data/agents";
 import { usePathname } from "next/navigation";
 import { useChat } from "@/hooks/use-chat";
 import { Textarea } from "../ui/textarea";
-import { Button } from "@base-ui/react";
 import { ArrowUp } from "lucide-react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
 
 const LayoutFooter = () => {
     const pathname = usePathname()
-    const { sendMessage } = useChat()
+    const { sendMessage, isPending } = useChat()
     const [value, setValue] = useState<string>("")
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
@@ -25,9 +26,11 @@ const LayoutFooter = () => {
     }
 
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter" && !e.shiftKey && !isPending) {
             e.preventDefault()
             handleSend()
+            const el = e.target as HTMLTextAreaElement
+            el.style.height = "auto"
         }
     }
 
@@ -39,7 +42,7 @@ const LayoutFooter = () => {
     }
 
     return (
-        <div className="w-full px-4 sm:px-10 sticky bottom-0 mt-8">
+        <div className="w-full px-4 sm:px-10 sticky bottom-0 mt-32">
             <div className="max-w-3xl w-full rounded-t-2xl mx-auto pb-4 bg-background">
                 <div className={cn("relative w-full gap-2 rounded-2xl dark:bg-muted/80! px-4 py-2.5", agent?.colors.background)}>
                     <Textarea
@@ -47,13 +50,14 @@ const LayoutFooter = () => {
                         value={value}
                         onChange={handleInput}
                         onKeyDown={handleKeyDown}
-                        className="react-markdown w-full max-h-60 min-h-20 mb-10 thin-scrollbar resize-none bg-transparent! border-none focus-visible:ring-0! text-sm leading-6 placeholder:text-muted-foreground"
+                        rows={1}
+                        className="react-markdown w-full max-h-60 min-h-4 mb-8 thin-scrollbar resize-none bg-transparent! border-none focus-visible:ring-0! text-sm leading-6 placeholder:text-muted-foreground"
                         placeholder="Do you have anything of concern?"
                     />
 
                     <Button
                         onClick={handleSend}
-                        disabled={!value.trim()}
+                        disabled={!value.trim() || isPending}
                         aria-label="Send message"
                         className="absolute bottom-2.5 right-2.5 z-10 shrink-0 grid place-items-center h-8 w-8 rounded-full bg-foreground text-background disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
                     >

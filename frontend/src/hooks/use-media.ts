@@ -1,7 +1,10 @@
 "use client"
 
-import { Agent } from "@/data/agents";
+import { Agent, getAgentByPathname } from "@/data/agents";
+import { useSidebar } from "@/components/ui/sidebar";
 import { Annotation, JsonValue } from "@/lib/types";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { create } from "zustand";
 
 export type ContentType = "TEXT" | "MEDIA" | "THOUGHT" | "LOGS" | "FILE"
@@ -54,8 +57,9 @@ export type MediaData = Text | Thought | File | null
 type MediaStore = {
     data: MediaData
     open: boolean
-    previousSidebarOpen: boolean;
-    openMedia: (output: JsonValue, type: ContentType, agent?: Agent | null) => void
+    previousSidebarOpen: boolean
+    setPreviousSidebarOpen: (open: boolean) => void
+    setMedia: (output: JsonValue, type: ContentType, agent?: Agent | null) => void
     closeMedia: () => void
 }
 
@@ -72,6 +76,7 @@ function openMediaFn(output: JsonValue, type: ContentType, agent: Agent | null =
     switch (type) {
         case "THOUGHT":
             const { thoughtSummary, annotations } = output as Thought;
+
             metadata = {
                 name: "Thought Chain",
                 description: `${agent?.name || "AI"}'s big brain thinking...`,
@@ -84,15 +89,47 @@ function openMediaFn(output: JsonValue, type: ContentType, agent: Agent | null =
     return null;
 }
 
-export const useMedia = create<MediaStore>((set) => ({
+const useMediaStore = create<MediaStore>((set) => ({
     open: false,
     data: null,
     previousSidebarOpen: false,
-    openMedia: (output, type, agent) => {
-        const data = openMediaFn(output, type, agent);
-        set({ open: true, data });
-    },
+    setPreviousSidebarOpen: (open) => set({ previousSidebarOpen: open }),
+    setMedia: (output, type, agent) => set({ open: true, data: openMediaFn(output, type, agent) }),
     closeMedia: () => {
         set({ open: false, data: null })
     }
 }))
+
+export function useMedia() {
+    const pathname = usePathname();
+    const { open: sidebarOpen } = useSidebar();
+    const { open, data, setMedia, closeMedia, setPreviousSidebarOpen } = useMediaStore();
+
+    const agent = getAgentByPathname(pathname);
+
+    function openMedia(output: JsonValue, type: ContentType) {
+        if (sidebarOpen)
+            setPreviousSidebarOpen(sidebarOpen)
+
+        setMedia(output, type, agent);
+    }
+
+    return { open, data, openMedia, closeMedia, agent };
+}
+
+export function useMediaSync() {
+    const pathname = usePathname();
+    const { setOpen } = useSidebar();
+    const { open, previousSidebarOpen, closeMedia } = useMediaStore();
+    const prevOpenRef = useRef(open);
+
+    useEffect(() => {
+        closeMedia();
+    }, [pathname, closeMedia]);
+
+    useEffect(() => {
+        if (prevOpenRef.current === open) return;
+        setOpen(open ? false : previousSidebarOpen);
+        prevOpenRef.current = open;
+    }, [open, previousSidebarOpen, setOpen]);
+}

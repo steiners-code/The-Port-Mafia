@@ -1,6 +1,6 @@
 "use client";
 
-import { MediaData, useMedia } from "@/hooks/use-media";
+import { MediaData, useMedia, useMediaSync } from "@/hooks/use-media";
 import { WarningIcon } from "@phosphor-icons/react";
 import { getAgentByPathname } from "@/data/agents";
 import MediaThought from "./media/MediaThought";
@@ -30,27 +30,14 @@ const mediaRender = (data: MediaData) => {
 }
 
 const MediaDisplay = () => {
-    const { setOpen } = useSidebar();
-
-    const { open, closeMedia, data, previousSidebarOpen } = useMedia();
-    const prevOpenRef = useRef(open);
-    const pathname = usePathname();
-
-    useEffect(() => {
-        if (prevOpenRef.current === open) return;
-
-        setOpen(open ? false : previousSidebarOpen);
-        prevOpenRef.current = open;
-    }, [open, previousSidebarOpen, setOpen]);
-
-    useEffect(() => {
-        closeMedia()
-    }, [pathname, closeMedia])
-
-    const agent = getAgentByPathname(pathname);
+    useMediaSync();
+    const { open, data, agent } = useMedia();
 
     return (
-        <div className={cn("h-screen", open ? "max-w-1/2 w-full ml-1 border-l border-separate bg-accent!" : "max-w-0", agent?.colors.file)}>
+        <div className={cn("h-screen transition-[max-width] duration-300 ease-in-out overflow-hidden",
+            open ? "max-w-1/2 w-full ml-1 border-l border-separate bg-accent!" : "max-w-0",
+            agent?.colors.file
+        )}>
             {open && mediaRender(data)}
         </div>
     )
