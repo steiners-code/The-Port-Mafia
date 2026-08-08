@@ -1,5 +1,6 @@
 import { getOrCreateChat } from "../actions/chat/getOrCreateChat";
 import { sendChatMessage } from "../actions/chat/sendChatMessage";
+import { getMessageLogs } from "../actions/chat/getMessageLogs";
 import { UserMessageData } from "../lib/types";
 import Elysia, { t } from "elysia";
 
@@ -27,5 +28,17 @@ export const chatRoutes = new Elysia({ prefix: '/chat' })
     }, {
         headers: t.Object({
             "x-user-id": t.String({ error: "Missing API-Gateway ID: userId" })
+        })
+    })
+
+    .get('/logs', async ({ query, status }) => {
+        const { messageId } = query;
+        const { success, ...res } = await getMessageLogs(messageId);
+        if (!success || !res.data) return status(res.status, { message: res.message, details: res.details })
+
+        return status(200, res.data)
+    }, {
+        query: t.Object({
+            messageId: t.String({ error: "Missing Query Field: messageId is required" })
         })
     })
