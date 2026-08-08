@@ -18,7 +18,7 @@ export type ModelOutputStep = {
 export type ThoughtStep = {
     type: "thought",
     signature: string,
-    summary: Content[],
+    summary?: Content[],
 }
 
 export async function createSystemContent(content: SystemContent[]): Promise<ReturnContent[]> {
@@ -38,14 +38,13 @@ export async function createSystemContent(content: SystemContent[]): Promise<Ret
                 if (c.output === null || typeof c.output !== "object" || Array.isArray(c.output))
                     break;
 
-                console.log(JSON.stringify(c.output, null, 4))
                 systemContent.push({
                     type: "thought",
                     signature: String(c.output.thoughtSignature),
-                    summary: [{
+                    summary: c.output.thoughtSummary ? [{
                         type: "text",
                         text: String(c.output.thoughtSummary)
-                    }]
+                    }] : undefined,
                 });
                 break;
         }
