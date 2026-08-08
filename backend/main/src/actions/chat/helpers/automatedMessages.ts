@@ -13,19 +13,19 @@ function pick(pool: string[]): string {
 }
 
 const TEXT_STARTED = [
-    "Drafting a reply. Try not to hold your breath — it's unflattering.",
-    "Thinking. Loudly, if you must know.",
-    "One moment. I'm choosing my words — a luxury you don't extend yourself.",
-    "Composing something. It'll be worth the wait, unlike most things.",
-    "Give me a second. Genius has a pace, and it isn't yours.",
+    "Drafting a reply. Try not to hold your breath — it's unflattering",
+    "Thinking. Loudly, if you must know",
+    "One moment. I'm choosing my words — a luxury you don't extend yourself",
+    "Composing something. It'll be worth the wait, unlike most things",
+    "Give me a second. Genius has a pace, and it isn't yours",
 ];
 
 const TEXT_COMPLETED = [
-    "Done. Try to act surprised.",
-    "Said what needed saying. You're welcome, though I wasn't fishing for it.",
-    "There. Painless, mostly.",
-    "Delivered. I'd say it cost me nothing, but that's rarely true.",
-    "Finished. Somewhere, a version of me is already bored of this one.",
+    "Done. Try to act surprised",
+    "Said what needed saying. You're welcome, though I wasn't fishing for it",
+    "There. Painless, mostly",
+    "Delivered. I'd say it cost me nothing, but that's rarely true",
+    "Finished. Somewhere, a version of me is already bored of this one",
 ];
 
 function thoughtDuration(startedAt: Date): string {
@@ -38,10 +38,10 @@ function thoughtDuration(startedAt: Date): string {
 }
 
 const THOUGHT_STARTED = [
-    "Thinking. Don't wait up.",
-    "Working something out. It's more interesting in here than it looks from out there.",
-    "Give me a moment to actually consider this, rather than perform considering it.",
-    "Turning this over. Slowly, on purpose.",
+    "Thinking. Don't wait up",
+    "Working something out. It's more interesting in here than it looks from out there",
+    "Give me a moment to actually consider this, rather than perform considering it",
+    "Turning this over. Slowly, on purpose",
 ];
 
 function thoughtCompleted(startedAt: Date): string {
@@ -61,55 +61,55 @@ function thoughtCompleted(startedAt: Date): string {
  * non-empty to write rather than blocking on undecided categories.
  */
 const MEDIA_PLACEHOLDER: Record<AutomatedMessageEvent, string> = {
-    "MESSAGE.STARTED": "Looking at what you sent over.",
-    "MESSAGE.COMPLETED": "Looked it over. Filed away.",
+    "MESSAGE.STARTED": "Looking at what you sent over",
+    "MESSAGE.COMPLETED": "Looked it over. Filed away",
 };
 
 const TOOL_PLACEHOLDER: Record<AutomatedMessageEvent, string> = {
-    "MESSAGE.STARTED": "Reaching for a tool. Don't ask which — you'll find out if it matters.",
-    "MESSAGE.COMPLETED": "Tool's done its part.",
+    "MESSAGE.STARTED": "Reaching for a tool. Don't ask which — you'll find out if it matters",
+    "MESSAGE.COMPLETED": "Tool's done its part",
 };
 
 const TEXT_LOG_INFO = [
-    "Started composing. No drafts, no do-overs — I don't need them.",
-    "Beginning the reply. Try not to read over my shoulder.",
+    "Started composing. No drafts, no do-overs — I don't need them",
+    "Beginning the reply. Try not to read over my shoulder",
 ];
 
 const TEXT_LOG_SUCCESS = [
-    "Reply written cleanly. No notes, mostly because I didn't ask for any.",
-    "Text finished without incident. A rare, boring kind of victory.",
+    "Reply written cleanly. No notes, mostly because I didn't ask for any",
+    "Text finished without incident. A rare, boring kind of victory",
 ];
 
 const TEXT_LOG_ERROR = [
-    "Something in the reply pipeline gave out. Not my finest moment — I'll own it.",
-    "Failed partway through. Chalk it up to the model, not the plan.",
+    "Something in the reply pipeline gave out. Not my finest moment — I'll own it",
+    "Failed partway through. Chalk it up to the model, not the plan",
 ];
 
 const THOUGHT_LOG_INFO = [
-    "Started actually thinking, rather than performing it.",
-    "Begun turning this over properly.",
+    "Started actually thinking, rather than performing it",
+    "Begun turning this over properly",
 ];
 
 const THOUGHT_LOG_SUCCESS = [
-    "Landed somewhere I trust. That took longer than I'd admit out loud.",
-    "Thought resolved cleanly. I'll allow myself a little pride, quietly.",
+    "Landed somewhere I trust. That took longer than I'd admit out loud",
+    "Thought resolved cleanly. I'll allow myself a little pride, quietly",
 ];
 
 const THOUGHT_LOG_ERROR = [
-    "Lost the thread mid-thought. Embarrassing, but it happens even to me.",
-    "That line of thinking collapsed before it went anywhere useful.",
+    "Lost the thread mid-thought. Embarrassing, but it happens even to me",
+    "That line of thinking collapsed before it went anywhere useful",
 ];
 
 const MEDIA_LOG_PLACEHOLDER: Record<AutomatedLogEvent, string> = {
-    "LOG.INFO": "Started looking at what came in.",
-    "LOG.SUCCESS": "Finished going through it.",
-    "LOG.ERROR": "Couldn't make sense of what was sent over.",
+    "LOG.INFO": "Started looking at what came in",
+    "LOG.SUCCESS": "Finished going through it",
+    "LOG.ERROR": "Couldn't make sense of what was sent over",
 };
 
 const TOOL_LOG_PLACEHOLDER: Record<AutomatedLogEvent, string> = {
-    "LOG.INFO": "Reaching for a tool.",
-    "LOG.SUCCESS": "Tool call landed clean.",
-    "LOG.ERROR": "Tool call didn't cooperate.",
+    "LOG.INFO": "Reaching for a tool",
+    "LOG.SUCCESS": "Tool call landed clean",
+    "LOG.ERROR": "Tool call didn't cooperate",
 };
 
 type GetAutomatedMessageParams = {
