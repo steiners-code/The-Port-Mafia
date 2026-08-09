@@ -353,6 +353,22 @@
 
 }
 
+@keyframes pulse-highlight {
+
+  0%,
+  100% {
+    background-color: color-mix(in oklab, var(--accent) 0%, transparent);
+  }
+
+  50% {
+    background-color: color-mix(in oklab, var(--accent) 60%, transparent);
+  }
+}
+
+@utility animate-pulse-highlight {
+  animation: pulse-highlight 1.6s ease-in-out 2;
+}
+
 /* :root {
   --pm-void: #08080a;
   --pm-obsidian: #0d0d10;

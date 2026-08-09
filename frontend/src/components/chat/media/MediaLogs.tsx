@@ -2,6 +2,7 @@
 
 import { DotIcon, InfoIcon, XIcon, ArrowBendUpLeftIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon } from "@phosphor-icons/react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
+import { useHighlightStore } from "@/hooks/use-highlight-content";
 import { getMessageLogs } from "@/actions/chat/get-message-logs";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ const logIcon = (level: string) => {
 }
 
 const MediaLogs = ({ messageId }: { messageId: string }) => {
+    const { highlight, highlightedId } = useHighlightStore();
     const { closeMedia } = useMedia()
 
     const { data, isLoading } = useQuery({
@@ -46,6 +48,11 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
             return data;
         },
     })
+
+    const viewInChat = (contentId: string) => {
+        document.getElementById(contentId)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        highlight(contentId);
+    }
 
     if (isLoading) {
         return (
@@ -108,6 +115,7 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
                                 <Button
                                     variant="link"
                                     className="capitalize text-muted-foreground/60! hover:text-muted-foreground! text-xs cursor-pointer opacity-0 group-hover:opacity-100 transition-all"
+                                    onClick={() => viewInChat(content.id)}
                                 >
                                     <ArrowBendUpLeftIcon />
                                     <span>View in chat</span>

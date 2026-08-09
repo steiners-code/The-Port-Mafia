@@ -10,6 +10,7 @@ import { Button } from "../ui/button";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useHighlightStore } from "@/hooks/use-highlight-content";
 
 const alignment = {
     "SYSTEM": "items-start",
@@ -26,11 +27,11 @@ const flexDirection = {
 const styling = (trigger: string, messageColors?: string) => {
     switch (trigger) {
         case "SYSTEM":
-            return "pr-4 sm:pr-12 w-full rounded-tl-none text-[hsl(27,31%,25%)] dark:text-[hsl(27,31%,95%)]";
+            return "pr-2 sm:pr-10 w-full rounded-none text-[hsl(27,31%,25%)] dark:text-[hsl(27,31%,95%)]";
         case "CRON":
             return "";
         case "USER":
-            return `px-4 mb-2! sm:w-fit w-full sm:max-w-md lg:max-w-xl rounded-tr-none ${messageColors}`;
+            return `px-2 mb-2! sm:w-fit w-full sm:max-w-md lg:max-w-xl rounded-tr-none ${messageColors}`;
     }
 }
 
@@ -63,10 +64,30 @@ async function copyContent(content: (string | null)[]) {
 
 const Message = ({ data }: { data: ChatMessage }) => {
     const { openMedia, agent } = useMedia()
+    const { highlightedId } = useHighlightStore();
+
     return (
         <div className={cn("w-full flex flex-col group", alignment[data.triggerType])}>
-            <div className={cn("py-2 rounded-sm text-[1.025rem] space-y-2", styling(data.triggerType, agent?.colors.background))}>
-                {data.contents.map(content => renderMessage(content.contentType, content))}
+            <div
+                id={data.id}
+                className={cn(
+                    "py-2 rounded-sm text-[1.025rem] space-y-2",
+                    styling(data.triggerType, agent?.colors.message),
+
+                )}
+            >
+                {data.contents.map(content => (
+                    <div
+                        key={content.id}
+                        id={content.id}
+                        className={cn("w-full h-fit rounded-sm!",
+                            highlightedId === content.id && "animate-pulse-highlight",
+                            data.triggerType === "CRON" ? "pr-2" : "px-2"
+                        )}
+                    >
+                        {renderMessage(content.contentType, content)}
+                    </div>
+                ))}
             </div>
             <div className={cn("flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors",
                 flexDirection[data.triggerType]
