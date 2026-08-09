@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import LayoutSidebar from "@/components/layout/LayoutSidebar";
-import LayoutFooter from "@/components/layout/LayoutFooter";
-import LayoutHeader from "@/components/layout/LayoutHeader";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import MediaDisplay from "@/components/chat/media/MediaDisplay";
+import LayoutScrollContainer from "@/components/layout/LayoutScrollContainer";
+import LayoutHeader from "@/components/layout/LayoutHeader";
+import LayoutFooter from "@/components/layout/LayoutFooter";
 
 export const metadata: Metadata = {
     title: "The Port Mafia",
@@ -16,8 +17,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <div className="flex h-screen w-screen overflow-hidden">
                 <LayoutSidebar />
 
-                <div className="w-full flex items-center overflow-hidden">
-                    <div className="w-full h-screen flex-1 flex flex-col items-start overflow-auto no-scrollbar bg-background">
+                <div className="relative w-full flex items-center overflow-hidden">
+                    <LayoutScrollContainer>
                         <LayoutHeader />
 
                         <main className="w-full flex-1 px-4 sm:px-10 bg-inherit">
@@ -25,7 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         </main>
 
                         <LayoutFooter />
-                    </div>
+                    </LayoutScrollContainer>
 
                     <MediaDisplay />
                 </div>

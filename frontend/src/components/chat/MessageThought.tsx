@@ -12,7 +12,7 @@ const MessageThought = ({ message, output }: { output: JsonValue, message: strin
             className="max-w-[80%] p-0! flex items-center justify-start! gap-0.5! cursor-pointer transition-colors text-muted-foreground/60! hover:text-muted-foreground! group"
             onClick={() => openMedia(output, "THOUGHT")}
         >
-            <p className="w-fit text-left font-normal! text-sm line-clamp-1">{message}</p>
+            <p className="w-fit text-left font-normal! text-sm line-clamp-1 first-letter:uppercase">{message}</p>
             <ChevronRight size={12} className="size-3! group-hover:translate-x-2 transition-transform" />
         </div>
     )

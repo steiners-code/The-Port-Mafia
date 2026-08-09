@@ -54,6 +54,7 @@ export function useChat() {
                     message: content.message ?? null,
                     output: content.output ?? null,
                     logs: null,
+                    createdAt: new Date(),
                 })),
             };
 

@@ -1,6 +1,8 @@
 "use client"
 
+import { ScrollToBottomButton } from "./ScrollToBottomButton";
 import { STATUS, TRIGGER, TYPE } from "@/lib/enums";
+import { useAutoScroll } from "@/hooks/use-scroll";
 import { getAgentByPathname } from "@/data/agents";
 import Message from "@/components/chat/Message";
 import { usePathname } from "next/navigation";
@@ -10,6 +12,7 @@ import { Loader2 } from "lucide-react";
 const Chat = () => {
     const pathname = usePathname();
     const { chat, isLoadingChat, isChatError } = useChat();
+    const { isNearBottom, scrollToBottom } = useAutoScroll(chat?.messages.length);
 
     const agent = getAgentByPathname(pathname);
 
@@ -28,7 +31,7 @@ const Chat = () => {
 
     if (!chat && isLoadingChat) {
         return (
-            <div className="max-w-3xl px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
+            <div className="max-w-3xl px-4 h-full mx-auto flex flex-row items-center justify-center gap-2">
                 <Loader2 className="size-6 animate-spin text-muted-foreground" />
                 Loading chat history...
             </div>
@@ -49,6 +52,7 @@ const Chat = () => {
                         message: `No Chat History with ${agent?.name || "AI"} yet. Send a message to begin!`,
                         output: null,
                         logs: null,
+                        createdAt: new Date(),
                     }]
                 }} />
             </div>
@@ -56,11 +60,15 @@ const Chat = () => {
     }
 
     return (
-        <div className="max-w-3xl px-2 sm:px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
-            {chat.messages.map(message => (
-                <Message key={message.id} data={message} />
-            ))}
-        </div>
+        <>
+            <div className="max-w-3xl px-2 sm:px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
+                {chat.messages.map(message => (
+                    <Message key={message.id} data={message} />
+                ))}
+            </div>
+
+            <ScrollToBottomButton visible={!isNearBottom} onClick={() => scrollToBottom()} />
+        </>
     )
 }
 

@@ -23,10 +23,15 @@ const flexDirection = {
     "USER": "flex-row-reverse"
 }
 
-const styling = {
-    "SYSTEM": "pr-4 sm:pr-12 w-full rounded-tl-none text-[hsl(27,31%,25%)] dark:text-[hsl(27,31%,95%)]",
-    "CRON": "",
-    "USER": "px-4 mb-2! sm:w-fit w-full sm:max-w-md lg:max-w-xl rounded-tr-none text-[hsl(27,31%,30%)] dark:text-[hsl(27,31%,99%)] bg-[hsl(27,31%,50%)]/20 dark:bg-[hsl(27,31%,25%)]"
+const styling = (trigger: string, messageColors?: string) => {
+    switch (trigger) {
+        case "SYSTEM":
+            return "pr-4 sm:pr-12 w-full rounded-tl-none text-[hsl(27,31%,25%)] dark:text-[hsl(27,31%,95%)]";
+        case "CRON":
+            return "";
+        case "USER":
+            return `px-4 mb-2! sm:w-fit w-full sm:max-w-md lg:max-w-xl rounded-tr-none ${messageColors}`;
+    }
 }
 
 function renderMessage(type: TYPE, content: MessageContent) {
@@ -57,10 +62,10 @@ async function copyContent(content: (string | null)[]) {
 }
 
 const Message = ({ data }: { data: ChatMessage }) => {
-    const { openMedia } = useMedia()
+    const { openMedia, agent } = useMedia()
     return (
         <div className={cn("w-full flex flex-col group", alignment[data.triggerType])}>
-            <div className={cn("py-2 rounded-sm text-[1.025rem] space-y-2", styling[data.triggerType])}>
+            <div className={cn("py-2 rounded-sm text-[1.025rem] space-y-2", styling(data.triggerType, agent?.colors.background))}>
                 {data.contents.map(content => renderMessage(content.contentType, content))}
             </div>
             <div className={cn("flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors",

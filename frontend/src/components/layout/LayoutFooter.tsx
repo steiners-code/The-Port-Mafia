@@ -41,7 +41,7 @@ const LayoutFooter = () => {
     }
 
     return (
-        <div className="w-full px-4 sm:px-10 sticky bottom-0 mt-32">
+        <div className="w-full px-4 sm:px-10 sticky bottom-0 mt-32 z-10">
             <div className="max-w-3xl w-full rounded-t-2xl mx-auto pb-4 bg-background">
                 <div className={cn("relative w-full gap-2 rounded-2xl dark:bg-muted/80! px-4 py-2.5", agent?.colors.background)}>
                     <Textarea
