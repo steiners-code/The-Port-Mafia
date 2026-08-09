@@ -8,6 +8,7 @@ export async function getMessageLogs(messageId: string) {
                 id: true,
                 contentType: true,
                 status: true,
+                createdAt: true,
                 logs: {
                     select: {
                         id: true,

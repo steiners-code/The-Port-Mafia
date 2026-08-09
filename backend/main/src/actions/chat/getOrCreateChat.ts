@@ -13,6 +13,7 @@ export async function getOrCreateChat(userId: string) {
                         id: true,
                         createdAt: true,
                         triggerType: true,
+                        createdAt: true,
                         contents: {
                             select: {
                                 id: true,
