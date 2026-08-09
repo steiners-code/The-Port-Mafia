@@ -46,13 +46,20 @@ export type File = {
     metadata: FileMetadata,
 }
 
-export type FileMetadata = {
+type FileMetadata = {
     name: string,
     description?: string,
     extension: FileMediaExtensions
 }
 
-export type MediaData = Text | Thought | File | null
+// 
+
+type Logs = {
+    type: "LOGS"
+    messageId: string,
+}
+
+export type MediaData = Text | Thought | File | Logs | null
 
 type MediaStore = {
     data: MediaData
@@ -84,6 +91,10 @@ function openMediaFn(output: JsonValue, type: ContentType, agent: Agent | null =
             }
 
             return { type, thoughtSummary, annotations, metadata }
+
+        case "LOGS":
+            const { messageId } = output as Logs;
+            return { type, messageId }
     }
 
     return null;

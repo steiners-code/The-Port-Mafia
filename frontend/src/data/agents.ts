@@ -36,7 +36,7 @@ export const agents: Agent[] = [
     colors: {
       text: "text-[#3F332B] dark:text-[#B59B76]",
       background: "bg-[#B59B76]/20 dark:bg-[#3F332B]/20",
-      file: "bg-[#B59B76] dark:bg-[#3F332B] text-[#3F332B] dark:text-[#B59B76]",
+      file: "bg-[#B59B76] dark:bg-[#856539] text-[#856539] dark:text-[#B59B76]",
     },
   },
   {

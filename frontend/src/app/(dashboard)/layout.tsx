@@ -3,7 +3,7 @@ import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import LayoutFooter from "@/components/layout/LayoutFooter";
 import LayoutHeader from "@/components/layout/LayoutHeader";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import MediaDisplay from "@/components/chat/MediaDisplay";
+import MediaDisplay from "@/components/chat/media/MediaDisplay";
 
 export const metadata: Metadata = {
     title: "The Port Mafia",
@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <LayoutSidebar />
 
                 <div className="w-full flex items-center overflow-hidden">
-                    <div className="w-full h-screen flex-1 flex flex-col items-start overflow-auto thin-scrollbar bg-background">
+                    <div className="w-full h-screen flex-1 flex flex-col items-start overflow-auto no-scrollbar bg-background">
                         <LayoutHeader />
 
                         <main className="w-full flex-1 px-4 sm:px-10 bg-inherit">

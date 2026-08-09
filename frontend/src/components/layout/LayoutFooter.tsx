@@ -7,7 +7,6 @@ import { useChat } from "@/hooks/use-chat";
 import { Textarea } from "../ui/textarea";
 import { ArrowUp } from "lucide-react";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { cn } from "@/lib/utils";
 
 const LayoutFooter = () => {

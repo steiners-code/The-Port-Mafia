@@ -33,7 +33,7 @@ const MediaThought = ({ metadata, annotations, summary }: { metadata: ThoughtMet
                 </Button>
             </div>
 
-            <div className="h-[calc(100vh-56px)] overflow-auto thin-scrollbar text-foreground! p-10 space-y-5">
+            <div className="h-[calc(100vh-72px)] overflow-auto thin-scrollbar text-foreground! p-10 space-y-5">
                 <MarkdownContent content={summary} />
 
                 <Separator />

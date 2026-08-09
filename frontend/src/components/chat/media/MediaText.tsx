@@ -31,7 +31,7 @@ const MediaThought = ({ metadata, content }: { metadata: TextMetadata, content: 
                 </Button>
             </div>
 
-            <div className="h-[calc(100vh-56px)] overflow-auto thin-scrollbar text-foreground! p-10">
+            <div className="h-[calc(100vh-72px)] overflow-auto thin-scrollbar text-foreground! p-10">
                 <MarkdownContent content={content} />
             </div>
         </>

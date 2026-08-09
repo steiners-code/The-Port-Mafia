@@ -2,13 +2,10 @@
 
 import { MediaData, useMedia, useMediaSync } from "@/hooks/use-media";
 import { WarningIcon } from "@phosphor-icons/react";
-import { getAgentByPathname } from "@/data/agents";
-import MediaThought from "./media/MediaThought";
-import { usePathname } from "next/navigation";
-import { useSidebar } from "../ui/sidebar";
-import { useEffect, useRef } from "react";
-import MediaText from "./media/MediaText";
-import MediaFile from "./media/MediaFile";
+import MediaThought from "./MediaThought";
+import MediaLogs from "./MediaLogs";
+import MediaText from "./MediaText";
+import MediaFile from "./MediaFile";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +19,8 @@ const mediaRender = (data: MediaData) => {
             return <MediaText metadata={data.metadata} content={data.content} />
         case "THOUGHT":
             return <MediaThought metadata={data.metadata} annotations={data.annotations} summary={data.thoughtSummary} />
+        case "LOGS":
+            return <MediaLogs messageId={data.messageId} />
         case "FILE":
             return <MediaFile metadata={data.metadata} id={data.id} />
         default:
@@ -34,8 +33,8 @@ const MediaDisplay = () => {
     const { open, data, agent } = useMedia();
 
     return (
-        <div className={cn("h-screen transition-[max-width] duration-300 ease-in-out overflow-hidden",
-            open ? "max-w-1/2 w-full ml-1 border-l border-separate bg-accent!" : "max-w-0",
+        <div className={cn("h-screen transition-[max-width] duration-300 ease-in-out overflow-y-auto overflow-x-hidden thin-scrollbar",
+            open ? "max-w-1/2 p-2 w-full bg-background!" : "max-w-0", // ml-1 border-l border-separate
             agent?.colors.file
         )}>
             {open && mediaRender(data)}

@@ -31,6 +31,7 @@ export type MessageContent = {
     message: string | null,
     output: JsonValue,
     logs: ContentLog[] | null,
+    createdAt: Date,
 }
 
 export type ContentLog = {

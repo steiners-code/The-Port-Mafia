@@ -56,7 +56,7 @@ const Chat = () => {
     }
 
     return (
-        <div className="max-w-3xl px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
+        <div className="max-w-3xl px-2 sm:px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
             {chat.messages.map(message => (
                 <Message key={message.id} data={message} />
             ))}
