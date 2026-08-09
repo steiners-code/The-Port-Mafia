@@ -67,7 +67,7 @@ const Message = ({ data }: { data: ChatMessage }) => {
     const { highlightedId } = useHighlightStore();
 
     return (
-        <div className={cn("w-full flex flex-col group", alignment[data.triggerType])}>
+        <div className={cn("w-full flex flex-col group/message", alignment[data.triggerType])}>
             <div
                 id={data.id}
                 className={cn(
@@ -89,7 +89,7 @@ const Message = ({ data }: { data: ChatMessage }) => {
                     </div>
                 ))}
             </div>
-            <div className={cn("flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-colors",
+            <div className={cn("flex items-center gap-1 opacity-0 group-hover/message:opacity-100 transition-colors",
                 flexDirection[data.triggerType]
             )}>
                 <Button

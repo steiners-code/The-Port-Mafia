@@ -16,7 +16,7 @@ export function ScrollToBottomButton({ visible, onClick }: Props) {
             variant="secondary"
             onClick={onClick}
             className={cn(
-                "absolute bottom-36 left-1/2 -translate-x-1/2 rounded-full shadow-md transition-all duration-200 z-0 cursor-pointer",
+                "rounded-full shadow-md transition-all duration-200 cursor-pointer",
                 visible ? "opacity-100" : "opacity-0 pointer-events-none"
             )}
         >

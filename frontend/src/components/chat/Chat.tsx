@@ -12,7 +12,6 @@ import { Loader2 } from "lucide-react";
 const Chat = () => {
     const pathname = usePathname();
     const { chat, isLoadingChat, isChatError } = useChat();
-    const { isNearBottom, scrollToBottom } = useAutoScroll(chat?.messages.length);
 
     const agent = getAgentByPathname(pathname);
 
@@ -66,8 +65,6 @@ const Chat = () => {
                     <Message key={message.id} data={message} />
                 ))}
             </div>
-
-            <ScrollToBottomButton visible={!isNearBottom} onClick={() => scrollToBottom()} />
         </>
     )
 }
