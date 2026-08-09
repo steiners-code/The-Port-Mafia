@@ -46,10 +46,10 @@ const THOUGHT_STARTED = [
 
 function thoughtCompleted(startedAt: Date): string {
     const templates = [
-        `Thought for ${thoughtDuration(startedAt)}. Worth every second, allegedly.`,
-        `Spent ${thoughtDuration(startedAt)} on that. I've spent longer avoiding less.`,
-        `${thoughtDuration(startedAt)}, and I've landed somewhere I actually trust.`,
-        `Took ${thoughtDuration(startedAt)}. Don't read into the pause — it wasn't dread, just diligence.`,
+        `Thought for ${thoughtDuration(startedAt)}. Worth every second, allegedly`,
+        `Spent ${thoughtDuration(startedAt)} on that. I've spent longer avoiding less`,
+        `${thoughtDuration(startedAt)}, and I've landed somewhere I actually trust`,
+        `Took ${thoughtDuration(startedAt)}. Don't read into the pause — it wasn't dread, just diligence`,
     ];
     return pick(templates);
 }

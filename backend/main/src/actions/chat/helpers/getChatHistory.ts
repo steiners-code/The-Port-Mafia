@@ -43,10 +43,8 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
                 }
             }
         });
-        console.log(history)
 
         if (!history || !history.messages) {
-            console.log("@@NO HISTORY: ", JSON.stringify(historyContent, null, 0))
             return [userContent];
         }
 
@@ -70,8 +68,6 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
         }
 
         historyContent.push(userContent);
-
-        console.log("@@YES HISTORY: ", JSON.stringify(historyContent, null, 0))
 
         return historyContent;
     } catch (error) {

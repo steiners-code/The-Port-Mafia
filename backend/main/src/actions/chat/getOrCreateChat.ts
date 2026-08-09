@@ -13,7 +13,6 @@ export async function getOrCreateChat(userId: string) {
                         id: true,
                         createdAt: true,
                         triggerType: true,
-                        createdAt: true,
                         contents: {
                             select: {
                                 id: true,
@@ -29,18 +28,20 @@ export async function getOrCreateChat(userId: string) {
                         }
                     },
                     orderBy: {
-                        createdAt: 'asc'
+                        createdAt: 'desc'
                     },
-                    take: 50,
+                    take: 50
                 },
             }
         })
+
+        data.messages = data.messages.reverse();
 
         return {
             success: true,
             status: 200,
             message: "Chat history retrieved successfully.",
-            data
+            data,
         }
     } catch (error) {
         console.error(error);
