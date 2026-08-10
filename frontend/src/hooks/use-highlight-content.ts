@@ -7,7 +7,7 @@ type HighlightStore = {
     highlight: (id: string) => void;
 };
 
-const HIGHLIGHT_DURATION = 3000;
+const HIGHLIGHT_DURATION = 3200;
 
 export const useHighlightStore = create<HighlightStore>((set) => ({
     highlightedId: null,

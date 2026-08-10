@@ -20,19 +20,13 @@ const MediaThought = ({ metadata, annotations, summary }: { metadata: ThoughtMet
 
                 <Separator />
 
-                {annotations && annotations.length !== 0 ? (
-                    <div className="react-markdown">
-                        <pre>
-                            <code className="text-[1rem]!">
-                                {JSON.stringify(annotations, null, 4)}
-                            </code>
-                        </pre>
-                    </div>
-                ) : (
-                    <span>
-                        [VOID]: Your query wasn't worth annotating something.
-                    </span>
-                )}
+                <div className="react-markdown">
+                    <pre>
+                        <code className="text-[1rem]!">
+                            {JSON.stringify(annotations, null, 4)}
+                        </code>
+                    </pre>
+                </div>
             </div>
         </MediaWrapper>
     )

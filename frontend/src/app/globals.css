@@ -358,11 +358,11 @@
 
   0%,
   100% {
-    background-color: color-mix(in oklab, var(--accent) 0%, transparent);
+    background-color: color-mix(in oklab, var(--color-secondary-foreground) 0%, transparent);
   }
 
   50% {
-    background-color: color-mix(in oklab, var(--accent) 60%, transparent);
+    background-color: color-mix(in oklab, var(--color-secondary-foreground) 7%, transparent);
   }
 }
 
