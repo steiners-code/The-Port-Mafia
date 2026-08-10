@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { MainLog } from "../../../lib/types";
 import { Step } from "./getChatHistory";
+import { TOOL_SCHEMAS } from "../tools";
 
 const ai = new GoogleGenAI({
     apiKey: process.env.GOOGLE_API_KEY
@@ -48,6 +49,7 @@ export async function createStreamWithRetry(systemPrompt: string, chatHistory: S
                     }
                 },
                 // safety_settings: safetySettings,
+                tools: TOOL_SCHEMAS,
                 stream: true,
             });
         } catch (error: any) {

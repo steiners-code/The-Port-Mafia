@@ -1,4 +1,6 @@
 import { MainContentType } from "../../../generated/prisma";
+import { ToolName } from "../tools/registry";
+import { isToolName } from "../tools";
 
 type AutomatedMessageEvent = "MESSAGE.STARTED" | "MESSAGE.COMPLETED";
 type AutomatedLogEvent = "LOG.INFO" | "LOG.SUCCESS" | "LOG.ERROR";
@@ -117,23 +119,30 @@ type GetAutomatedMessageParams = {
     contentType: MainContentType;
     /** Required only for THOUGHT + MESSAGE.COMPLETED, to compute duration. */
     startedAt?: Date;
+    /** Required only for TOOL messages. */
+    toolName?: string;
+    isError?: boolean;
 };
 
-export function getAutomatedMessage({ event, contentType, startedAt }: GetAutomatedMessageParams): string {
-    switch (contentType) {
-        case MainContentType.TEXT:
-            return event === "MESSAGE.STARTED" ? pick(TEXT_STARTED) : pick(TEXT_COMPLETED);
+export function getAutomatedMessage({ event, contentType, startedAt, toolName, isError }: GetAutomatedMessageParams): string {
+    if (contentType === MainContentType.MEDIA) return MEDIA_PLACEHOLDER[event];
 
-        case MainContentType.THOUGHT:
-            if (event === "MESSAGE.STARTED") return pick(THOUGHT_STARTED);
-            return startedAt ? thoughtCompleted(startedAt) : pick(TEXT_COMPLETED);
+    if (contentType === MainContentType.TOOL) {
+        const pool = toolName && isToolName(toolName) ? TOOL_MESSAGES[toolName] : null;
 
-        case MainContentType.MEDIA:
-            return MEDIA_PLACEHOLDER[event];
+        if (event === "MESSAGE.STARTED")
+            return pool ? pick(pool.started) : pick(TOOL_FALLBACK.started);
 
-        case MainContentType.TOOL:
-            return TOOL_PLACEHOLDER[event];
+        if (!pool) return pick(TOOL_FALLBACK.completed);
+        return pick(isError ? pool.completedError : pool.completedSuccess);
     }
+
+    if (event === "MESSAGE.STARTED") {
+        return contentType === MainContentType.TEXT ? pick(TEXT_STARTED) : pick(THOUGHT_STARTED);
+    }
+
+    if (contentType === MainContentType.TEXT) return pick(TEXT_COMPLETED);
+    return startedAt ? thoughtCompleted(startedAt) : pick(TEXT_COMPLETED);
 }
 
 type GetAutomatedLogParams = {
@@ -160,3 +169,106 @@ export function getAutomatedLog({ event, contentType }: GetAutomatedLogParams): 
             return TOOL_LOG_PLACEHOLDER[event];
     }
 }
+
+type ToolMessagePool = {
+    started: string[];
+    completedSuccess: string[];
+    completedError: string[];
+};
+
+const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
+    read_user_file: {
+        started: [
+            "Pulling up what's on file about you.",
+            "Checking the dossier.",
+            "Reading USER.md. Try not to be too interesting.",
+        ],
+        completedSuccess: [
+            "Read it. Nothing surprising, for once.",
+            "Dossier checked.",
+            "Got what I needed from your file.",
+        ],
+        completedError: [
+            "Couldn't get into USER.md. Frustrating, but not fatal.",
+            "That file didn't want to open. Noted.",
+        ],
+    },
+
+    write_user_file: {
+        started: [
+            "Updating your file. Behave.",
+            "Writing this down before I forget — or before you do.",
+            "Amending the dossier.",
+        ],
+        completedSuccess: [
+            "Filed away. USER.md updated.",
+            "Written. Now it's official.",
+            "Dossier's current again.",
+        ],
+        completedError: [
+            "Couldn't write to USER.md. Whatever this was, it didn't stick.",
+            "The update didn't take. I'll own that one.",
+        ],
+    },
+
+    display_user_file: {
+        started: [
+            "Pulling your file up for you to see.",
+            "Opening the dossier.",
+        ],
+        completedSuccess: [
+            "There it is. Everything I've got on you.",
+            "Dossier's open.",
+        ],
+        completedError: [
+            "Couldn't get your file to open. Try again in a moment.",
+        ],
+    },
+
+    read_memory_file: {
+        started: [
+            "Checking what I've actually retained.",
+            "Digging through memory.",
+        ],
+        completedSuccess: [
+            "Found what I was looking for.",
+            "Memory checked out fine.",
+        ],
+        completedError: [
+            "Couldn't get a clean read on memory. Odd.",
+        ],
+    },
+
+    write_memory_file: {
+        started: [
+            "Committing this to memory. Properly, this time.",
+            "Writing it down so I don't have to be told twice.",
+        ],
+        completedSuccess: [
+            "Remembered. For real, this time.",
+            "Memory updated.",
+        ],
+        completedError: [
+            "That didn't make it into memory. I'll need to try again.",
+        ],
+    },
+
+    display_memory_file: {
+        started: [
+            "Pulling up what I've kept.",
+            "Opening memory for you to see.",
+        ],
+        completedSuccess: [
+            "Here's what I've held onto.",
+            "Memory's open.",
+        ],
+        completedError: [
+            "Couldn't get memory to open cleanly.",
+        ],
+    },
+};
+
+const TOOL_FALLBACK: Record<"started" | "completed", string[]> = {
+    started: ["Reaching for a tool. Don't ask which — you'll find out if it matters."],
+    completed: ["Tool's done its part."],
+};

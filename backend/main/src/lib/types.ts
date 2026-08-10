@@ -1,4 +1,4 @@
-import { MainContentType, MainLogLevel } from "../generated/prisma"
+import { MainContentType, MainFileType, MainLogLevel } from "../generated/prisma"
 import { LOGLEVEL } from "./enums"
 
 export type Logs = {
@@ -16,22 +16,67 @@ export type MainLog = {
     createdAt: Date,
 }
 
+type BaseMetadata = {
+    name: string;
+    description?: string;
+};
+
+type FileMetadata = BaseMetadata & {
+    extension: "MD",
+    category: "FILE"
+}
+
+type JournalMetadata = BaseMetadata & {
+    extension: "JOURNAL",
+    category: "JOURNAL"
+}
+
+type ArtifactMetadata = BaseMetadata & {
+    extension: "TXT" | "MD",
+    category: "ARTIFACT"
+}
+
+type PDFDocumentMetadata = BaseMetadata & {
+    extension: "PDF",
+    category: "PDF"
+}
+type TextDocumentMetadata = BaseMetadata & {
+    extension: "TXT" | "CSV",
+    category: "TEXT"
+}
+
+type DocumentMetadata = TextDocumentMetadata | PDFDocumentMetadata
+
+export type File = {
+    userId: string,
+    fileType: MainFileType,
+    metadata: FileMetadata
+}
+
+export type Journal = {
+    userId: string,
+    metadata: JournalMetadata
+}
+
+export type Artifact = {
+    userId: string,
+    metadata: ArtifactMetadata
+}
+
+export type Document = {
+    uri?: string,
+    data?: string,
+    metadata: DocumentMetadata
+}
+
+export type Output = File | Journal | Artifact | Document
+
 export type UserMessageData = {
     contents: {
         contentType: MainContentType,
         message?: string,
-        output?: {
-            uri: string,
-            metadata: Metadata
-        }
+        output?: Output,
     }[]
-}
-
-export type Metadata = {
-    fileName: string,
-    fileDescription?: string,
-    fileExtension: string,
-    fileCategory: string, // Decide a custom category for those files store in db i.e. USER, MEMORY, JOURNAL, EXPERIENCE
 }
 
 export type Annotation = {
@@ -40,12 +85,12 @@ export type Annotation = {
     type: "file_citation" | "place_citation" | "url_citation" | "word_info"
 }
 
-type TextContent = {
+export type TextContent = {
     type: "text",
     text: string,
 }
 
-type ImageContent = {
+export type ImageContent = {
     type: "image",
     data?: string,
     uri?: string,

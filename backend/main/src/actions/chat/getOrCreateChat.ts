@@ -22,8 +22,8 @@ export async function getOrCreateChat(userId: string) {
                                 output: true,
                             },
                             orderBy: [
-                                { sequence: 'asc' },
-                                { createdAt: 'asc' }
+                                { createdAt: 'asc' },
+                                { sequence: 'asc' }
                             ]
                         }
                     },

@@ -22,8 +22,8 @@ export async function getMessageLogs(messageId: string) {
                 },
             },
             orderBy: [
-                { sequence: 'asc' },
                 { createdAt: 'asc' },
+                { sequence: 'asc' },
             ]
         });
 
