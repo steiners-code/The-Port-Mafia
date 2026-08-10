@@ -7,10 +7,13 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { create } from "zustand";
 
-export type ContentType = "TEXT" | "MEDIA" | "THOUGHT" | "LOGS" | "FILE"
+export type ContentType = "TEXT" | "MEDIA" | "THOUGHT" | "LOGS" | "FILE" | "TOOL"
 export type FileMediaExtensions = "USER" | "MEMORY" | "EXPERIENCE" | "JOURNAL"
-
-export type Metadata = ThoughtMetadata | TextMetadata
+export type Metadata = ThoughtMetadata | TextMetadata | LogsMetadata | ToolMetadata
+type BaseMetadata = {
+    name: string,
+    description?: string,
+}
 
 // ---------- TEXT ---------- 
 export type Text = {
@@ -33,11 +36,7 @@ export type Thought = {
     metadata: ThoughtMetadata,
 }
 
-export type ThoughtMetadata = {
-    name: string,
-    description?: string,
-    extension: "THOUGHT"
-}
+export type ThoughtMetadata = BaseMetadata & { extension: "THOUGHT" }
 
 // ---------- FILE ---------- 
 export type File = {
@@ -46,20 +45,31 @@ export type File = {
     metadata: FileMetadata,
 }
 
-type FileMetadata = {
-    name: string,
-    description?: string,
-    extension: FileMediaExtensions
-}
+export type FileMetadata = BaseMetadata & { extension: FileMediaExtensions }
 
 // ---------- LOGS ---------- 
 
-type Logs = {
+export type Logs = {
     type: "LOGS"
     messageId: string,
 }
 
-export type MediaData = Text | Thought | File | Logs | null
+export type LogsMetadata = BaseMetadata & { extension: string }
+
+export type Tool = {
+    type: "TOOL",
+    message: string,
+    output: {
+        funcCallName: string, ں
+        funcCallResult: string,
+        funcArgsAccumulate: JsonValue,
+        funcCallIsError: boolean,
+    }
+}
+
+export type ToolMetadata = BaseMetadata & { extension: "TOOL" }
+
+export type MediaData = Text | Thought | File | Logs | Tool | null
 
 type MediaStore = {
     data: MediaData
@@ -90,11 +100,21 @@ function openMediaFn(output: JsonValue, type: ContentType, agent: Agent | null =
                 extension: "THOUGHT"
             }
 
-            return { type, thoughtSummary, annotations, metadata }
+            return { type, thoughtSummary, annotations, metadata: metadata as ThoughtMetadata }
 
         case "LOGS":
             const { messageId } = output as Logs;
             return { type, messageId }
+
+        case "TOOL":
+            const { message, output: cOutput } = output as Tool;
+            // const { funcArgsAccumulate, funcCallIsError, funcCallName, funcCallResult } = cOutput;
+
+            return {
+                type,
+                message,
+                output: cOutput
+            }
     }
 
     return null;
