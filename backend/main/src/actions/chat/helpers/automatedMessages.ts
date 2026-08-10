@@ -179,96 +179,96 @@ type ToolMessagePool = {
 const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
     read_user_file: {
         started: [
-            "Pulling up what's on file about you.",
-            "Checking the dossier.",
-            "Reading USER.md. Try not to be too interesting.",
+            "Pulling up what's on file about you",
+            "Checking the dossier",
+            "Reading USER.md. Try not to be too interesting",
         ],
         completedSuccess: [
-            "Read it. Nothing surprising, for once.",
-            "Dossier checked.",
-            "Got what I needed from your file.",
+            "Read it. Nothing surprising, for once",
+            "Dossier checked",
+            "Got what I needed from your file",
         ],
         completedError: [
-            "Couldn't get into USER.md. Frustrating, but not fatal.",
-            "That file didn't want to open. Noted.",
+            "Couldn't get into USER.md. Frustrating, but not fatal",
+            "That file didn't want to open. Noted",
         ],
     },
 
     write_user_file: {
         started: [
-            "Updating your file. Behave.",
-            "Writing this down before I forget — or before you do.",
-            "Amending the dossier.",
+            "Updating your file. Behave",
+            "Writing this down before I forget — or before you do",
+            "Amending the dossier",
         ],
         completedSuccess: [
-            "Filed away. USER.md updated.",
-            "Written. Now it's official.",
-            "Dossier's current again.",
+            "Filed away. USER.md updated",
+            "Written. Now it's official",
+            "Dossier's current again",
         ],
         completedError: [
-            "Couldn't write to USER.md. Whatever this was, it didn't stick.",
-            "The update didn't take. I'll own that one.",
+            "Couldn't write to USER.md. Whatever this was, it didn't stick",
+            "The update didn't take. I'll own that one",
         ],
     },
 
     display_user_file: {
         started: [
-            "Pulling your file up for you to see.",
-            "Opening the dossier.",
+            "Pulling your file up for you to see",
+            "Opening the dossier",
         ],
         completedSuccess: [
-            "There it is. Everything I've got on you.",
-            "Dossier's open.",
+            "There it is. Everything I've got on you",
+            "Dossier's open",
         ],
         completedError: [
-            "Couldn't get your file to open. Try again in a moment.",
+            "Couldn't get your file to open. Try again in a moment",
         ],
     },
 
     read_memory_file: {
         started: [
-            "Checking what I've actually retained.",
-            "Digging through memory.",
+            "Checking what I've actually retained",
+            "Digging through memory",
         ],
         completedSuccess: [
-            "Found what I was looking for.",
-            "Memory checked out fine.",
+            "Found what I was looking for",
+            "Memory checked out fine",
         ],
         completedError: [
-            "Couldn't get a clean read on memory. Odd.",
+            "Couldn't get a clean read on memory. Odd",
         ],
     },
 
     write_memory_file: {
         started: [
-            "Committing this to memory. Properly, this time.",
-            "Writing it down so I don't have to be told twice.",
+            "Committing this to memory. Properly, this time",
+            "Writing it down so I don't have to be told twice",
         ],
         completedSuccess: [
-            "Remembered. For real, this time.",
-            "Memory updated.",
+            "Remembered. For real, this time",
+            "Memory updated",
         ],
         completedError: [
-            "That didn't make it into memory. I'll need to try again.",
+            "That didn't make it into memory. I'll need to try again",
         ],
     },
 
     display_memory_file: {
         started: [
-            "Pulling up what I've kept.",
-            "Opening memory for you to see.",
+            "Pulling up what I've kept",
+            "Opening memory for you to see",
         ],
         completedSuccess: [
-            "Here's what I've held onto.",
-            "Memory's open.",
+            "Here's what I've held onto",
+            "Memory's open",
         ],
         completedError: [
-            "Couldn't get memory to open cleanly.",
+            "Couldn't get memory to open cleanly",
         ],
     },
 };
 
 const TOOL_FALLBACK: Record<"started" | "completed", string[]> = {
-    started: ["Reaching for a tool. Don't ask which — you'll find out if it matters."],
-    completed: ["Tool's done its part."],
+    started: ["Reaching for a tool. Don't ask which — you'll find out if it matters"],
+    completed: ["Tool's done its part"],
 };
