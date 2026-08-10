@@ -27,7 +27,7 @@ export async function createStreamWithRetry(systemPrompt: string, chatHistory: S
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             return await ai.interactions.create({
-                model: "gemini-3.5-flash-lite",
+                model: process.env.DAZAI_GEMINI_MODEL || "gemini-3.6-flash",
                 system_instruction: systemPrompt,
                 input: chatHistory,
                 generation_config: {

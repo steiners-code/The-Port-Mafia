@@ -20,7 +20,12 @@ export async function writeUserFile(args: { content: string }, { userId }: ToolC
         update: { content: args.content }
     })
 
-    return { success: true };
+    return {
+        success: true,
+        message: "USER.md has been updated and saved. This change is now permanent — there's no need to write again unless something new comes up that isn't reflected here.",
+        fileName: "USER.md",
+        contentLength: args.content.length,
+    };
 }
 
 export async function readUserFile(args: { content: string }, { userId }: ToolContext) {

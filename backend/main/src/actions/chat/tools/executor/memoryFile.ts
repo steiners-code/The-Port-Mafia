@@ -18,7 +18,12 @@ export async function writeMemoryFile(args: { content: string }, { userId }: Too
         },
         update: { content: args.content }
     })
-    return { success: true };
+    return {
+        success: true,
+        message: "MEMORY.md has been updated and saved. This is your short-term memory, current as of now — no need to write again unless something changes.",
+        fileName: "MEMORY.md",
+        contentLength: args.content.length,
+    };
 }
 
 export async function readMemoryFile(args: { content: string }, { userId }: ToolContext) {
