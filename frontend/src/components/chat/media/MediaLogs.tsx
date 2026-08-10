@@ -1,6 +1,6 @@
 "use client";
 
-import { DotIcon, InfoIcon, XIcon, ArrowBendUpLeftIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon } from "@phosphor-icons/react";
+import { InfoIcon, ArrowBendUpLeftIcon, CheckCircleIcon, WarningCircleIcon, XCircleIcon } from "@phosphor-icons/react";
 import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table";
 import { useHighlightStore } from "@/hooks/use-highlight-content";
 import { getMessageLogs } from "@/actions/chat/get-message-logs";
@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMedia } from "@/hooks/use-media";
+import MediaWrapper from "./MediaWrapper";
 import { Loader2 } from "lucide-react";
 import { formatDate } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -38,7 +39,7 @@ const logIcon = (level: string) => {
 
 const MediaLogs = ({ messageId }: { messageId: string }) => {
     const { highlight, highlightedId } = useHighlightStore();
-    const { closeMedia } = useMedia()
+    const { closeMedia, agent } = useMedia()
 
     const { data, isLoading } = useQuery({
         queryKey: [messageId, "logs"],
@@ -72,34 +73,16 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
     }
 
     return (
-        <div className="w-full h-full">
-            <div className="w-full flex items-center justify-between gap-3 px-4 py-3">
-                <div className="flex items-center">
-                    <h1 className="uppercase font-semibold text-2xl font-serif text-foreground">
-                        LOGS
-                    </h1>
-                    <DotIcon size={24} className="text-muted-foreground" />
-                    <span className="text-muted-foreground font-serif text-lg">
-                        {formatDate(data[0].createdAt, "EEEE, dd MMMM yyyy")}
-                    </span>
-                </div>
-
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="cursor-pointer text-muted-foreground hover:text-foreground"
-                    onClick={closeMedia}
-                >
-                    <XIcon />
-                </Button>
-            </div>
-
-            <div className="p-4 space-y-8 animate-in">
+        <MediaWrapper metadata={{
+            name: "LOGS",
+            extension: formatDate(data[0].createdAt, "EEEE, dd MMMM yyyy")
+        }}>
+            <div className="space-y-8 animate-in">
                 {data.map(content => (
                     <div key={content.id} className="group space-y-4">
                         <div className="flex item-center justify-between">
                             <h3 className="font-serif text-lg text-foreground font-medium!">
-                                {content.contentType}
+                                {content.contentType} - {formatDate(content.createdAt, "hh:mm:ss a")}
                             </h3>
 
                             <div className="flex flex-row-reverse items-center gap-1">
@@ -144,7 +127,7 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
                                             {log.message}
                                         </TableCell>
                                         <TableCell className="text-xs text-muted-foreground">
-                                            {formatDate(log.createdAt, "hh:mm:ss a")}
+                                            {formatDate(log.createdAt, "HH:mm:ss:SS")}
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -153,7 +136,7 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
                     </div>
                 ))}
             </div>
-        </div>
+        </MediaWrapper>
     )
 }
 

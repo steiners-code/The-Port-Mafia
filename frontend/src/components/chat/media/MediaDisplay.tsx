@@ -6,6 +6,7 @@ import MediaThought from "./MediaThought";
 import MediaLogs from "./MediaLogs";
 import MediaText from "./MediaText";
 import MediaFile from "./MediaFile";
+import MediaTool from "./MediaTool";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,8 @@ const mediaRender = (data: MediaData) => {
             return <MediaText metadata={data.metadata} content={data.content} />
         case "THOUGHT":
             return <MediaThought metadata={data.metadata} annotations={data.annotations} summary={data.thoughtSummary} />
+        case "TOOL":
+            return <MediaTool message={data.message} output={data.output} />
         case "LOGS":
             return <MediaLogs messageId={data.messageId} />
         case "FILE":
@@ -33,8 +36,8 @@ const MediaDisplay = () => {
     const { open, data, agent } = useMedia();
 
     return (
-        <div className={cn("h-screen transition-[max-width] duration-300 ease-in-out overflow-y-auto overflow-x-hidden thin-scrollbar",
-            open ? "max-w-1/2 p-2 w-full bg-background!" : "max-w-0", // ml-1 border-l border-separate
+        <div className={cn("h-screen transition-[max-width] duration-300 ease-in-out overflow-hidden thin-scrollbar",
+            open ? "max-w-1/2 w-full bg-background!" : "max-w-0", // ml-1 border-l border-separate
             agent?.colors.file
         )}>
             {open && mediaRender(data)}
