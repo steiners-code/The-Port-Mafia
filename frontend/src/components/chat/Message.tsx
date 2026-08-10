@@ -1,16 +1,17 @@
 "use client";
 
+import { useHighlightStore } from "@/hooks/use-highlight-content";
 import { ChatMessage, MessageContent } from "@/lib/types";
 import { formatDistanceToNowStrict } from "date-fns";
 import { MarkdownContent } from "./MarkdownContent";
 import { CopyIcon } from "@phosphor-icons/react";
 import MessageThought from "./MessageThought";
 import { useMedia } from "@/hooks/use-media";
+import MessageTool from "./MessageTool";
 import { Button } from "../ui/button";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useHighlightStore } from "@/hooks/use-highlight-content";
 
 const alignment = {
     "SYSTEM": "items-start",
@@ -42,6 +43,7 @@ function renderMessage(type: TYPE, content: MessageContent) {
         case TYPE.THOUGHT:
             return content.message && <MessageThought key={content.id} message={content.message} output={content.output} />
         case TYPE.TOOL:
+            return content.message && <MessageTool key={content.id} message={content.message} status={content.status} output={content.output} />
         case TYPE.MEDIA:
     }
 }

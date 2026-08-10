@@ -27,6 +27,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-toolIcon: #565656;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
