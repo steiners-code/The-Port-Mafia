@@ -41,32 +41,28 @@ type PDFDocumentMetadata = BaseMetadata & {
     category: "PDF"
 }
 type TextDocumentMetadata = BaseMetadata & {
-    extension: "TXT" | "CSV",
+    extension: "TXT" | "CSV" | "MD",
     category: "TEXT"
 }
 
 type DocumentMetadata = TextDocumentMetadata | PDFDocumentMetadata
 
-export type File = {
+export type File = FileMetadata & {
     userId: string,
     fileType: MainFileType,
-    metadata: FileMetadata
 }
 
-export type Journal = {
+export type Journal = JournalMetadata & {
     userId: string,
-    metadata: JournalMetadata
 }
 
-export type Artifact = {
+export type Artifact = ArtifactMetadata & {
     userId: string,
-    metadata: ArtifactMetadata
 }
 
-export type Document = {
+export type Document = DocumentMetadata & {
     uri?: string,
     data?: string,
-    metadata: DocumentMetadata
 }
 
 export type Output = File | Journal | Artifact | Document
