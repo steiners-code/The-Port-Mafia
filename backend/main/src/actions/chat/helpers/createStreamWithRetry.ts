@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
+import { awaitRateLimit } from "./rateLimiter";
 import { MainLog } from "../../../lib/types";
 import { Step } from "./getChatHistory";
 import { TOOL_SCHEMAS } from "../tools";
@@ -26,6 +27,8 @@ export async function createStreamWithRetry(systemPrompt: string, chatHistory: S
 
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
+            await awaitRateLimit()
+
             return await ai.interactions.create({
                 model: process.env.DAZAI_GEMINI_MODEL || "gemini-3.5-flash-lite",
                 system_instruction: systemPrompt,
