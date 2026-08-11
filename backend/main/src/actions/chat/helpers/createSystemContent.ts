@@ -1,6 +1,6 @@
 import { MainContentType } from "../../../generated/prisma"
 import { JsonValue } from "@prisma/client/runtime/client"
-import { Content } from "../../../lib/types"
+import { Step } from "../../../lib/types"
 
 type SystemContent = {
     contentType: MainContentType,
@@ -8,38 +8,8 @@ type SystemContent = {
     output: JsonValue
 }
 
-type ReturnContent = ModelOutputStep | ThoughtStep | FunctionCallStep | FunctionResultStep
-
-export type ModelOutputStep = {
-    type: "model_output",
-    content: Content[]
-}
-
-export type ThoughtStep = {
-    type: "thought",
-    signature: string,
-    summary?: Content[],
-}
-
-export type FunctionCallStep = {
-    type: "function_call",
-    id: string,
-    name: string,
-    arguments: {
-        [k: string]: any;
-    }
-}
-
-export type FunctionResultStep = {
-    type: "function_result",
-    call_id: string,
-    is_error?: boolean,
-    name?: string,
-    result: string,
-}
-
-export async function createSystemContent(content: SystemContent[]): Promise<ReturnContent[]> {
-    const systemContent: ReturnContent[] = []
+export async function createSystemContent(content: SystemContent[]): Promise<Step[]> {
+    const systemContent: Step[] = []
 
     for (const c of content) {
         switch (c.contentType) {

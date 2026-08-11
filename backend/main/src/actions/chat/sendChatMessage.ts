@@ -1,14 +1,13 @@
 import { MainContentStatus, MainTriggerType } from "../../generated/prisma";
+import { generateAIResponse } from "./generateAIResponse";
 import { UserMessageData } from "../../lib/types";
 import { getChatId } from "./getChatId";
 import { prisma } from "../../lib/db";
-import { generateAIResponse } from "./generateAIResponse";
 
 export async function sendChatMessage(userId: string, contents: UserMessageData["contents"]) {
     try {
         const { chatId, principalName, connections } = await getChatId(userId)
 
-        // TODO: Metadata Here, contentId and stuff may change in future
         await prisma.mainChatMessage.create({
             data: {
                 triggerType: MainTriggerType.USER,

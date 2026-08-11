@@ -21,51 +21,37 @@ type BaseMetadata = {
     description?: string;
 };
 
-type FileMetadata = BaseMetadata & {
+export type File = BaseMetadata & {
+    fileType: MainFileType,
     extension: "MD",
     category: "FILE"
 }
 
-type JournalMetadata = BaseMetadata & {
+export type Journal = BaseMetadata & {
     extension: "JOURNAL",
     category: "JOURNAL"
 }
 
-type ArtifactMetadata = BaseMetadata & {
+export type Artifact = BaseMetadata & {
     extension: "TXT" | "MD",
     category: "ARTIFACT"
 }
 
-type PDFDocumentMetadata = BaseMetadata & {
+type PDFDocument = BaseMetadata & {
+    uri?: string,
+    data?: string,
     extension: "PDF",
     category: "PDF"
 }
-type TextDocumentMetadata = BaseMetadata & {
+type TextDocument = BaseMetadata & {
+    uri?: string,
+    data?: string,
     extension: "TXT" | "CSV" | "MD",
     category: "TEXT"
 }
 
-type DocumentMetadata = TextDocumentMetadata | PDFDocumentMetadata
-
-export type File = FileMetadata & {
-    userId: string,
-    fileType: MainFileType,
-}
-
-export type Journal = JournalMetadata & {
-    userId: string,
-}
-
-export type Artifact = ArtifactMetadata & {
-    userId: string,
-}
-
-export type Document = DocumentMetadata & {
-    uri?: string,
-    data?: string,
-}
-
-export type Output = File | Journal | Artifact | Document
+export type Document = TextDocument
+export type Output = File | Document
 
 export type UserMessageData = {
     contents: {
@@ -118,6 +104,41 @@ type VideoContent = {
     resolution?: string
 }
 
-export type Content = TextContent;
-
+export type Content = TextContent | DocumentContent;
 export type StepMap = "thought" | "model_output";
+
+
+type ModelOutputStep = {
+    type: "model_output",
+    content: Content[]
+}
+
+type ThoughtStep = {
+    type: "thought",
+    signature: string,
+    summary?: Content[],
+}
+
+type FunctionCallStep = {
+    type: "function_call",
+    id: string,
+    name: string,
+    arguments: {
+        [k: string]: any;
+    }
+}
+
+type FunctionResultStep = {
+    type: "function_result",
+    call_id: string,
+    is_error?: boolean,
+    name?: string,
+    result: string,
+}
+
+type UserInputStep = {
+    type: "user_input",
+    content?: Content[]
+}
+
+export type Step = UserInputStep | ModelOutputStep | ThoughtStep | FunctionCallStep | FunctionResultStep

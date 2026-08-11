@@ -1,10 +1,8 @@
-import { createSystemContent, FunctionCallStep, FunctionResultStep, ModelOutputStep, ThoughtStep } from "./createSystemContent";
-import { createUserContent, UserInputStep } from "./createUserContent";
-import { UserMessageData } from "../../../lib/types";
+import { createSystemContent } from "./createSystemContent";
+import { Step, UserMessageData } from "../../../lib/types";
+import { createUserContent } from "./createUserContent";
 import { prisma } from "../../../lib/db";
 import { startOfDay } from "date-fns";
-
-export type Step = UserInputStep | ModelOutputStep | ThoughtStep | FunctionCallStep | FunctionResultStep
 
 export async function getChatHistory(userId: string, contents: UserMessageData["contents"]): Promise<Step[]> {
     const userContent = await createUserContent(contents);
