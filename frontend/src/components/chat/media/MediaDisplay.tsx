@@ -35,7 +35,8 @@ const MediaDisplay = () => {
 
     return (
         <div className={cn("h-screen transition-[max-width] duration-300 ease-in-out overflow-hidden thin-scrollbar",
-            open ? "max-w-1/2 w-full bg-background!" : "max-w-0", // ml-1 border-l border-separate
+            "max-w-screen w-full! z-100",
+            open ? "md:relative fixed top-0 right-0 md:max-w-1/2 w-full bg-background!" : "max-w-0", // ml-1 border-l border-separate
             agent?.colors.file
         )}>
             {open && mediaRender(data)}
