@@ -9,7 +9,7 @@ const LayoutHeader = () => {
     const { setOpen, open, setOpenMobile, openMobile, isMobile } = useSidebar();
 
     return (
-        <header className="w-full max-h-20 min-h-20 px-4 flex items-center justify-between sticky top-0 left-0 bg-linear-to-b from-background via-70% via-background/70 to-background/0">
+        <header className="w-full max-h-20 min-h-20 px-4 flex items-center justify-between sticky top-0 left-0 z-50 bg-linear-to-b from-background via-70% via-background/70 to-background/0">
             <Button
                 variant="ghost"
                 size="icon"
