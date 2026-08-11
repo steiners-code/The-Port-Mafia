@@ -10,7 +10,12 @@ export async function fetchMediaContent(data: Output): Promise<Content[]> {
             } else if (data.data)
                 content.push({
                     type: "text",
-                    text: data.data
+                    text: [
+                        `${data.name}.${data.extension.toLowerCase()}`,
+                        "---",
+                        "## Content",
+                        data.data
+                    ].join("\n")
                 })
             break;
     }
