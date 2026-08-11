@@ -3,7 +3,7 @@ import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
 
-const MAX_MEMORY_FILE_LENGTH = 3000;
+const MAX_MEMORY_FILE_LENGTH = 2200;
 
 export async function writeMemoryFile(args: { content: string }, { userId }: ToolContext) {
     if (args.content.length > MAX_MEMORY_FILE_LENGTH)

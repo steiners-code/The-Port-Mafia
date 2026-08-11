@@ -4,7 +4,7 @@ import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
 
-const MAX_USER_FILE_LENGTH = 4000;
+const MAX_USER_FILE_LENGTH = 2000;
 
 export async function writeUserFile(args: { content: string }, { userId }: ToolContext) {
     if (args.content.length > MAX_USER_FILE_LENGTH)
