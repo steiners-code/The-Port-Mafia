@@ -1,11 +1,11 @@
 "use client";
 
-import { MediaData, useMedia, useMediaSync } from "@/hooks/use-media";
+import { useMedia, useMediaSync } from "@/hooks/use-media";
 import { WarningIcon } from "@phosphor-icons/react";
+import { MediaData } from "@/lib/types/media";
 import MediaThought from "./MediaThought";
+import MediaMedia from "./MediaMedia";
 import MediaLogs from "./MediaLogs";
-import MediaText from "./MediaText";
-import MediaFile from "./MediaFile";
 import MediaTool from "./MediaTool";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
@@ -16,16 +16,14 @@ const mediaRender = (data: MediaData) => {
     }
 
     switch (data.type) {
-        case "TEXT":
-            return <MediaText metadata={data.metadata} content={data.content} />
         case "THOUGHT":
-            return <MediaThought metadata={data.metadata} annotations={data.annotations} summary={data.thoughtSummary} />
+            return <MediaThought agent={data.agent} annotations={data.annotations} summary={data.thoughtSummary} />
         case "TOOL":
             return <MediaTool message={data.message} output={data.output} />
         case "LOGS":
             return <MediaLogs messageId={data.messageId} />
-        case "FILE":
-            return <MediaFile metadata={data.metadata} id={data.id} />
+        case "MEDIA":
+            return <MediaMedia data={data} />
         default:
             return <UnsupportedMediaType type={"data?.type!"} extension="UNDEFINED" />
     }

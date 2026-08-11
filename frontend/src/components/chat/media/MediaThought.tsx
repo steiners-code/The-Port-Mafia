@@ -2,13 +2,17 @@
 
 import { Separator } from "@/components/ui/separator";
 import { MarkdownContent } from "../MarkdownContent";
-import { ThoughtMetadata } from "@/hooks/use-media";
 import MediaWrapper from "./MediaWrapper";
 import { Annotation } from "@/lib/types";
+import { Agent } from "@/data/agents";
 
-const MediaThought = ({ metadata, annotations, summary }: { metadata: ThoughtMetadata, annotations?: Annotation[], summary: string }) => {
+const MediaThought = ({ agent, annotations, summary }: { agent: Agent | null, annotations?: Annotation[], summary: string }) => {
     return (
-        <MediaWrapper metadata={metadata}>
+        <MediaWrapper metadata={{
+            name: agent?.name || "AI-chan",
+            extension: "THOUGHT",
+            description: agent?.quote
+        }}>
             <div className="space-y-6">
                 {summary ? (
                     <MarkdownContent content={summary} />

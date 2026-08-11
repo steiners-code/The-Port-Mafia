@@ -3,11 +3,12 @@
 import { useHighlightStore } from "@/hooks/use-highlight-content";
 import { ChatMessage, MessageContent } from "@/lib/types";
 import { formatDistanceToNowStrict } from "date-fns";
-import { MarkdownContent } from "./MarkdownContent";
 import { CopyIcon } from "@phosphor-icons/react";
 import MessageThought from "./MessageThought";
 import { useMedia } from "@/hooks/use-media";
+import MessageMedia from "./MessageMedia";
 import MessageTool from "./MessageTool";
+import MessageText from "./MessageText";
 import { Button } from "../ui/button";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
@@ -25,10 +26,10 @@ const flexDirection = {
     "USER": "flex-row-reverse"
 }
 
-const styling = (trigger: string, messageColors?: string) => {
+const styling = (trigger: string, messageColors?: string, textColors?: string) => {
     switch (trigger) {
         case "SYSTEM":
-            return "pr-2 sm:pr-10 w-full rounded-none text-[hsl(27,31%,25%)] dark:text-[hsl(27,31%,95%)]";
+            return `pr-2 sm:pr-10 w-full rounded-none ${textColors}`;
         case "CRON":
             return "";
         case "USER":
@@ -39,12 +40,13 @@ const styling = (trigger: string, messageColors?: string) => {
 function renderMessage(type: TYPE, content: MessageContent) {
     switch (type) {
         case TYPE.TEXT:
-            return content.message && <MarkdownContent key={content.id} content={content.message} />
+            return content.message && <MessageText key={content.id} content={content.message} />
         case TYPE.THOUGHT:
             return content.message && <MessageThought key={content.id} message={content.message} output={content.output} />
         case TYPE.TOOL:
             return content.message && <MessageTool key={content.id} message={content.message} status={content.status} output={content.output} />
         case TYPE.MEDIA:
+            return <MessageMedia key={content.id} id={content.id} output={content.output} />
     }
 }
 
@@ -74,7 +76,7 @@ const Message = ({ data }: { data: ChatMessage }) => {
                 id={data.id}
                 className={cn(
                     "py-2 rounded-sm text-[1.025rem] space-y-2",
-                    styling(data.triggerType, agent?.colors.message),
+                    styling(data.triggerType, agent?.colors.message, agent?.colors.text),
 
                 )}
             >
@@ -83,7 +85,7 @@ const Message = ({ data }: { data: ChatMessage }) => {
                         key={content.id}
                         id={content.id}
                         className={cn("w-full h-fit rounded-sm!",
-                            highlightedId === content.id && "animate-pulse-highlight",
+                            content.contentType !== "MEDIA" && highlightedId === content.id && "animate-pulse-highlight",
                             data.triggerType === "CRON" ? "pr-2" : "px-2"
                         )}
                     >

@@ -1,9 +1,10 @@
 "use client";
 
-import { Metadata, useMedia } from "@/hooks/use-media";
 import { XIcon, DotIcon } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Metadata } from "@/lib/types/media";
+import { useMedia } from "@/hooks/use-media";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +58,7 @@ const MediaWrapper = ({ children, metadata }: { children: ReactNode, metadata: M
                 </Button>
             </div>
 
-            <div className="h-fit p-8 pt-0">
+            <div className="h-max p-8 pt-0">
                 {children}
             </div>
         </div>

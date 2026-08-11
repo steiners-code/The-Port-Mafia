@@ -370,6 +370,50 @@
   animation: pulse-highlight 1.6s ease-in-out 2;
 }
 
+@property --border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes border-shine-sweep {
+  0% {
+    --border-angle: -45deg;
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    --border-angle: 315deg;
+    opacity: 0;
+  }
+}
+
+@utility animate-border-shine {
+  position: relative;
+  border: 1px solid var(--color-border);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(from var(--border-angle),
+        transparent 0%,
+        var(--color-foreground) 8%,
+        transparent 20%);
+    -webkit-mask: linear-gradient(var(--color-foreground) 0 0) content-box, linear-gradient(var(--color-foreground) 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: border-shine-sweep 2.4s ease-in-out 1 forwards;
+    pointer-events: none;
+  }
+}
+
 /* :root {
   --pm-void: #08080a;
   --pm-obsidian: #0d0d10;
