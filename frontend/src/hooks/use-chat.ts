@@ -1,14 +1,24 @@
 "use client";
 
+import { Chat, ChatMessage, MessageContent, UserSendPayload } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-
 import { sendChatMessage } from "@/actions/chat/send-chat-message";
 import { getChatMessages } from "@/actions/chat/get-chat-messages";
-import { Chat, ChatMessage, UserSendPayload } from "@/lib/types";
-import { STATUS, TRIGGER, TYPE } from "@/lib/enums";
+import { STATUS, TRIGGER } from "@/lib/enums";
+import { toast } from "sonner";
+import { create } from "zustand";
 
 const CHAT_QUERY_KEY = ["chat"] as const;
+
+type ContentStore = {
+    content: MessageContent[],
+    setContent: (content: MessageContent[]) => void;
+}
+
+export const useContentStore = create<ContentStore>(set => ({
+    content: [],
+    setContent: (content) => set({ content })
+}))
 
 type MutationContext = { previousChat?: Chat };
 
@@ -85,13 +95,16 @@ export function useChat() {
         },
     });
 
-    function sendMessage(text: string) {
-        const trimmed = text.trim();
-        if (!trimmed) return;
-
+    function sendMessage(content: MessageContent[]) {
         const payload: UserSendPayload = {
-            contents: [{ contentType: TYPE.TEXT, message: trimmed }],
+            contents: content.map(c => ({
+                contentType: c.contentType,
+                message: c.message,
+                output: c.output,
+            }))
         };
+
+        console.log(JSON.stringify(payload, null, 4));
 
         sendMutation.mutate(payload);
     }

@@ -4,7 +4,7 @@ export type JsonValue = string | number | boolean | { [k: string]: JsonValue } |
 
 export type UserContentInput = {
     contentType: TYPE;
-    message?: string;
+    message?: string | null;
     output?: JsonValue;
 };
 
