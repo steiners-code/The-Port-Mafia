@@ -11,7 +11,7 @@ const MessageUser = ({ contents, messageColors }: { contents: MessageContent[], 
     const mediaContent = contents.filter(c => c.contentType === TYPE.MEDIA)
 
     return (
-        <div className="flex flex-col items-center justify-end gap-2 px-2 mb-2! w-full sm:w-fit sm:max-w-md lg:max-w-xl">
+        <div className="flex flex-col items-end justify-end gap-2 px-2 mb-2! w-full sm:w-fit sm:max-w-md lg:max-w-xl">
             {mediaContent.length !== 0 && (
                 <div className="relative w-full h-fit overflow-hidden">
                     {mediaContent.length > 4 && <>

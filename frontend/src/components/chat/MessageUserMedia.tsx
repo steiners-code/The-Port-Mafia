@@ -1,7 +1,7 @@
 "use client";
 
 import { useHighlightStore } from "@/hooks/use-highlight-content";
-import { MediaMetadata } from "@/lib/types/media";
+import { MediaWithoutType, Text } from "@/lib/types/media";
 import { XIcon } from "@phosphor-icons/react";
 import { useMedia } from "@/hooks/use-media";
 import { JsonValue } from "@/lib/types";
@@ -21,7 +21,7 @@ const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose 
     const [opened, setOpened] = useState(false);
     const { highlightedId } = useHighlightStore();
     const { openMedia, closeMedia } = useMedia();
-    const data = output as MediaMetadata
+    const data = output as MediaWithoutType
 
     return (
         <div className="relative group/media-button">
@@ -52,8 +52,12 @@ const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose 
                     openMedia(data, "MEDIA");
                 }}
             >
-                <div className="flex flex-col items-start gap-2 text-sm line-clamp-2 wrap-anywhere">
-                    <span className="lowercase">{data.name}</span>
+                <p className="flex-1 h-full text-[0.35rem]! text-muted-foreground! whitespace-normal line-clamp-7">
+                    {(data as Text).data}
+                </p>
+
+                <div className="flex flex-col items-start gap-0.5 text-sm">
+                    <span className="lowercase line-clamp-1 wrap-anywhere">{data.name}</span>
                     <span className="uppercase text-xs text-muted-foreground">{data.category}/{data.extension}</span>
                 </div>
             </div>
