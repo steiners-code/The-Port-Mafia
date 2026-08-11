@@ -8,7 +8,7 @@ import { useMedia } from "@/hooks/use-media";
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-const MediaWrapper = ({ children, metadata }: { children: ReactNode, metadata: Metadata }) => {
+const MediaWrapper = ({ children, metadata, data }: { children: ReactNode, metadata: Metadata, data?: string }) => {
     const { closeMedia } = useMedia();
     const sentinelRef = useRef<HTMLDivElement>(null);
     const [isStuck, setIsStuck] = useState(false);
@@ -33,9 +33,9 @@ const MediaWrapper = ({ children, metadata }: { children: ReactNode, metadata: M
                 "bg-background!",
                 isStuck ? "shadow-none" : "shadow-none"
             )}>
-                <div className="flex flex-col items-start">
-                    <div className="flex items-center">
-                        <h1 className="uppercase font-semibold text-2xl font-serif text-foreground">
+                <div className="max-w-3/4 w-full flex flex-col items-start">
+                    <div className="w-full flex-1 flex items-center">
+                        <h1 className="uppercase font-semibold text-2xl font-serif text-foreground truncate">
                             {metadata.name}
                         </h1>
                         <DotIcon size={24} className="text-muted-foreground" />
@@ -48,14 +48,27 @@ const MediaWrapper = ({ children, metadata }: { children: ReactNode, metadata: M
                     </p>
                 </div>
 
-                <Button
-                    variant="ghost"
-                    size="icon"
-                    className="cursor-pointer text-muted-foreground hover:text-foreground"
-                    onClick={closeMedia}
-                >
-                    <XIcon />
-                </Button>
+                <div className="flex items-center gap-4">
+                    {data && (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="cursor-pointer rounded-sm!"
+                            onClick={async () => await navigator.clipboard.writeText(data)}
+                        >
+                            Copy
+                        </Button>
+                    )}
+
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="cursor-pointer text-muted-foreground hover:text-foreground"
+                        onClick={closeMedia}
+                    >
+                        <XIcon />
+                    </Button>
+                </div>
             </div>
 
             <div className="h-max p-8 pt-0">
