@@ -1,9 +1,9 @@
 import { getFileContent } from "@/actions/chat/get-file-content";
+import { MarkdownContent } from "../MarkdownContent";
 import { useQuery } from "@tanstack/react-query";
 import { File } from "@/lib/types/media";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { MarkdownContent } from "../MarkdownContent";
 
 const MediaFile = ({ fileType }: { userId: string, fileType: File["fileType"] }) => {
     const { data, isLoading } = useQuery({

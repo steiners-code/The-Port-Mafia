@@ -1,16 +1,14 @@
 "use client";
 
-import { useHighlightStore } from "@/hooks/use-highlight-content";
 import { ChatMessage, MessageContent } from "@/lib/types";
 import { formatDistanceToNowStrict } from "date-fns";
 import { CopyIcon } from "@phosphor-icons/react";
-import MessageThought from "./MessageThought";
 import { useMedia } from "@/hooks/use-media";
-import MessageMedia from "./MessageMedia";
-import MessageTool from "./MessageTool";
-import MessageText from "./MessageText";
+import MessageSystem from "./MessageSystem";
+import MessageUser from "./MessageUser";
+import { TRIGGER } from "@/lib/enums";
 import { Button } from "../ui/button";
-import { TYPE } from "@/lib/enums";
+import { Agent } from "@/data/agents";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -37,16 +35,13 @@ const styling = (trigger: string, messageColors?: string, textColors?: string) =
     }
 }
 
-function renderMessage(type: TYPE, content: MessageContent) {
+function renderMessage(type: TRIGGER, contents: MessageContent[], agent?: Agent) {
     switch (type) {
-        case TYPE.TEXT:
-            return content.message && <MessageText key={content.id} content={content.message} />
-        case TYPE.THOUGHT:
-            return content.message && <MessageThought key={content.id} message={content.message} output={content.output} />
-        case TYPE.TOOL:
-            return content.message && <MessageTool key={content.id} message={content.message} status={content.status} output={content.output} />
-        case TYPE.MEDIA:
-            return <MessageMedia key={content.id} id={content.id} output={content.output} />
+        case TRIGGER.SYSTEM:
+            return <MessageSystem contents={contents} textColors={agent?.colors.text} />
+        case TRIGGER.USER:
+            return <MessageUser contents={contents} messageColors={agent?.colors.message} />
+        case TRIGGER.CRON:
     }
 }
 
@@ -68,31 +63,10 @@ async function copyContent(content: (string | null)[]) {
 
 const Message = ({ data }: { data: ChatMessage }) => {
     const { openMedia, agent } = useMedia()
-    const { highlightedId } = useHighlightStore();
 
     return (
         <div className={cn("w-full flex flex-col group/message", alignment[data.triggerType])}>
-            <div
-                id={data.id}
-                className={cn(
-                    "py-2 rounded-sm text-[1.025rem] space-y-2",
-                    styling(data.triggerType, agent?.colors.message, agent?.colors.text),
-
-                )}
-            >
-                {data.contents.map(content => (
-                    <div
-                        key={content.id}
-                        id={content.id}
-                        className={cn("w-full h-fit rounded-sm!",
-                            content.contentType !== "MEDIA" && highlightedId === content.id && "animate-pulse-highlight",
-                            data.triggerType === "CRON" ? "pr-2" : "px-2"
-                        )}
-                    >
-                        {renderMessage(content.contentType, content)}
-                    </div>
-                ))}
-            </div>
+            {renderMessage(data.triggerType, data.contents, agent)}
             <div className={cn("flex items-center gap-1 opacity-0 group-hover/message:opacity-100 transition-colors",
                 flexDirection[data.triggerType]
             )}>

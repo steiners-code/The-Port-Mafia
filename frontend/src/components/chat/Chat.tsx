@@ -1,8 +1,6 @@
 "use client"
 
-import { ScrollToBottomButton } from "./ScrollToBottomButton";
 import { STATUS, TRIGGER, TYPE } from "@/lib/enums";
-import { useAutoScroll } from "@/hooks/use-scroll";
 import { getAgentByPathname } from "@/data/agents";
 import Message from "@/components/chat/Message";
 import { usePathname } from "next/navigation";
@@ -60,7 +58,7 @@ const Chat = () => {
 
     return (
         <>
-            <div className="max-w-3xl px-2 sm:px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
+            <div className="max-w-3xl px-0 sm:px-2 h-full mx-auto flex flex-col items-center justify-end space-y-6">
                 {chat.messages.map(message => (
                     <Message key={message.id} data={message} />
                 ))}

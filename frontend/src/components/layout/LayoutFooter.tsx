@@ -125,12 +125,12 @@ const LayoutFooter = () => {
                 <ScrollToBottomButton visible={!isNearBottom} onClick={() => scrollToBottom()} />
 
                 <div className="max-w-3xl w-full rounded-t-2xl mx-auto pb-4 bg-background overflow-clip">
-                    <div className={cn("w-full rounded-2xl dark:bg-muted/80! pt-2",
+                    <div className={cn("w-full rounded-2xl dark:bg-muted/80!",
                         content.length !== 0 ? "transition-[height]" : "",
                         agent?.colors.background
                     )}>
                         {content.length !== 0 && (
-                            <div className="w-full overflow-y-auto overflow-x-visible no-scrollbar h-fit px-4 pt-2.5 pb-3 flex flex-row items-center gap-3 flex-nowrap">
+                            <div className="w-full overflow-y-auto overflow-x-visible no-scrollbar h-fit px-4 pt-4.5 pb-3 flex flex-row items-center gap-3 flex-nowrap">
                                 {content.map(c => (
                                     <MessageUserMedia
                                         key={c.id}
