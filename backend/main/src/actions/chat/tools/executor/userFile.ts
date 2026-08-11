@@ -1,4 +1,4 @@
-import { MainContentType, MainFileType } from "../../../../generated/prisma";
+import { MainContentStatus, MainContentType, MainFileType } from "../../../../generated/prisma";
 import { EventType } from "../../../../lib/enums";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
@@ -48,16 +48,15 @@ export async function displayUserFile(args: {}, { userId, messageId }: ToolConte
         data: {
             chatMessageId: messageId,
             contentType: MainContentType.MEDIA,
+            status: MainContentStatus.COMPLETED,
             sequence: 10,
             output: {
                 userId,
                 fileType: MainFileType.USER,
-                metadata: {
-                    name: "What Dazai Knows",
-                    description: "Everything the organization has bothered to remember about you.",
-                    extension: "MD",
-                    category: "FILE",
-                },
+                name: "What Dazai Knows",
+                description: "Everything the organization has bothered to remember about you.",
+                extension: "MD",
+                category: "FILE",
             },
         },
         select: {

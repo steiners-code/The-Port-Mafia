@@ -1,4 +1,4 @@
-import { MainContentType, MainFileType } from "../../../../generated/prisma";
+import { MainContentStatus, MainContentType, MainFileType } from "../../../../generated/prisma";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
@@ -46,16 +46,15 @@ export async function displayMemoryFile(args: {}, { userId, messageId, principal
         data: {
             chatMessageId: messageId,
             contentType: MainContentType.MEDIA,
+            status: MainContentStatus.COMPLETED,
             sequence: 10,
             output: {
                 userId,
                 fileType: MainFileType.MEMORY,
-                metadata: {
-                    name: `Case File: ${principalName}`,
-                    description: "Kept quietly. Updated when it matters.",
-                    extension: "MD",
-                    category: "FILE",
-                },
+                name: `Case File: ${principalName}`,
+                description: "Kept quietly. Updated when it matters.",
+                extension: "MD",
+                category: "FILE",
             },
         },
         select: {
