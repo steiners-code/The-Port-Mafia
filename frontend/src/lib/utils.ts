@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { Agent } from "@/data/agents";
 
 const HOME_URL = process.env.NEXT_PUBLIC_HOME_URL!;
 const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL!;
@@ -17,6 +18,10 @@ export function getUrl(path: string, type: "server" | "frontend" = "server") {
     case "frontend":
       return new URL(path, FRONTEND_URL).toString();
   }
+}
+
+export function getChatUrl(path: string, agentRoute: Agent["route"]) {
+  return new URL("/api/v1" + agentRoute + "/chat" + path, SERVER_URL).toString();
 }
 
 export function getRedirectUrl(searchParams: URLSearchParams): string {

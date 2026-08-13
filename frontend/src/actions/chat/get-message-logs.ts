@@ -1,12 +1,15 @@
 "use server";
 
 import { MessageContent } from "@/lib/types";
-import { getUrl } from "@/lib/utils";
+import { getChatUrl } from "@/lib/utils";
+import { Agent } from "@/data/agents";
 import { api } from "@/lib/api";
 
-export async function getMessageLogs(messageId: string) {
+export async function getMessageLogs(messageId: string, agentRoute: Agent["route"]) {
     try {
-        const res = await api.get<MessageContent[] | null>(getUrl(`/main/chat/logs?messageId=${messageId}`))
+        const res = await api.get<MessageContent[] | null>(getChatUrl('logs', agentRoute), {
+            params: { messageId }
+        });
 
         return {
             success: true,

@@ -4,9 +4,11 @@ import { Chat, ChatMessage, MessageContent, UserSendPayload } from "@/lib/types"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sendChatMessage } from "@/actions/chat/send-chat-message";
 import { getChatMessages } from "@/actions/chat/get-chat-messages";
+import { getAgentByPathname } from "@/data/agents";
 import { STATUS, TRIGGER } from "@/lib/enums";
-import { toast } from "sonner";
+import { usePathname } from "next/navigation";
 import { create } from "zustand";
+import { toast } from "sonner";
 
 const CHAT_QUERY_KEY = ["chat"] as const;
 
@@ -29,12 +31,15 @@ type MutationContext = { previousChat?: Chat };
  * assumption breaks if /send ever becomes fire-and-forget.
  */
 export function useChat() {
+    const pathname = usePathname();
     const queryClient = useQueryClient();
+
+    const agent = getAgentByPathname(pathname);
 
     const chatQuery = useQuery({
         queryKey: CHAT_QUERY_KEY,
         queryFn: async () => {
-            const res = await getChatMessages();
+            const res = await getChatMessages(agent?.route || "/main");
             if (!res.success) {
                 toast.error(res.message, { id: 'get-chat-message' });
                 return;
@@ -45,7 +50,7 @@ export function useChat() {
     });
 
     const sendMutation = useMutation({
-        mutationFn: (payload: UserSendPayload) => sendChatMessage(payload),
+        mutationFn: (payload: UserSendPayload) => sendChatMessage(payload, agent?.route || "/main"),
 
         onMutate: async (payload) => {
             await queryClient.cancelQueries({ queryKey: CHAT_QUERY_KEY });
@@ -115,5 +120,6 @@ export function useChat() {
         isChatError: chatQuery.isError,
         sendMessage,
         isPending: sendMutation.isPending,
+        agent,
     };
 }

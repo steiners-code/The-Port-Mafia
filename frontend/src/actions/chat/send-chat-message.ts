@@ -1,7 +1,8 @@
 "use server";
 
 import { UserSendPayload } from "@/lib/types";
-import { getUrl } from "@/lib/utils";
+import { getChatUrl } from "@/lib/utils";
+import { Agent } from "@/data/agents";
 import { api } from "@/lib/api";
 
 type SendChatMessageResult =
@@ -18,12 +19,12 @@ function isValidPayload(payload: UserSendPayload): boolean {
     if (payload.contents.length === 0) return false;
 
     return payload.contents.every((content) => {
-        if (content.type === "TEXT") return Boolean(content.message?.trim());
+        if (content.contentType === "TEXT") return Boolean(content.message?.trim());
         return true;
     });
 }
 
-export async function sendChatMessage(payload: UserSendPayload): Promise<SendChatMessageResult> {
+export async function sendChatMessage(payload: UserSendPayload, agentRoute: Agent["route"]): Promise<SendChatMessageResult> {
     if (!isValidPayload(payload)) {
         return {
             success: false,
@@ -32,7 +33,7 @@ export async function sendChatMessage(payload: UserSendPayload): Promise<SendCha
     }
 
     try {
-        await api.post(getUrl("/main/chat/send"), payload);
+        await api.post(getChatUrl("/send", agentRoute), payload);
 
         return {
             success: true,

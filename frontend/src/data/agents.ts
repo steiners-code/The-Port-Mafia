@@ -38,7 +38,7 @@ export const agents: Agent[] = [
       text: "text-[#3F332B] dark:text-[#B59B76]",
       background: "bg-[#B59B76]/20 dark:bg-[#3F332B]/20",
       file: "bg-[#B59B76] dark:bg-[#856539] text-[#856539] dark:text-[#B59B76]",
-      message: "text-[hsl(27,31%,30%)] dark:text-[hsl(27,31%,99%)] bg-[hsl(27,31%,50%)]/20! dark:bg-[hsl(27,31%,25%)]!",
+      message: "text-[hsl(27,31%,30%)] dark:text-[hsl(27,31%,99%)] bg-[hsl(27,31%,50%)]/20 dark:bg-[hsl(27,31%,25%)]!",
     },
   },
   {

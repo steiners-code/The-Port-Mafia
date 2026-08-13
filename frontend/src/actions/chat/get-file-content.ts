@@ -1,16 +1,17 @@
 "use server";
 
 import { File } from "@/lib/types/media";
-import { getUrl } from "@/lib/utils";
+import { getChatUrl } from "@/lib/utils";
+import { Agent } from "@/data/agents";
 import { api } from "@/lib/api";
 
 type GetFileContentResult =
     | { success: true; message: string; data: string }
     | { success: false; message: string; data?: undefined };
 
-export async function getFileContent(fileType: File["fileType"]): Promise<GetFileContentResult> {
+export async function getFileContent(fileType: File["fileType"], agentRoute: Agent["route"]): Promise<GetFileContentResult> {
     try {
-        const response = await api.get<string>(getUrl("/main/chat/file"), {
+        const response = await api.get<string>(getChatUrl("/file", agentRoute), {
             params: { fileType },
         });
 

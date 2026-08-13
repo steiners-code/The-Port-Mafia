@@ -1,6 +1,7 @@
 "use server";
 
-import { getUrl } from "@/lib/utils";
+import { getChatUrl } from "@/lib/utils";
+import { Agent } from "@/data/agents";
 import { Chat } from "@/lib/types";
 import { api } from "@/lib/api";
 
@@ -8,9 +9,9 @@ type GetChatMessagesResult =
     | { success: true; message: string; data: Chat }
     | { success: false; message: string; details?: string; data?: undefined };
 
-export async function getChatMessages(): Promise<GetChatMessagesResult> {
+export async function getChatMessages(agentRoute: Agent["route"]): Promise<GetChatMessagesResult> {
     try {
-        const response = await api.get<Chat>(getUrl("/main/chat/message"));
+        const response = await api.get<Chat>(getChatUrl("/message", agentRoute));
 
         return {
             success: true,
