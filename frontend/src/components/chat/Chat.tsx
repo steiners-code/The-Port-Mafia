@@ -15,13 +15,9 @@ const Chat = () => {
 
     if (isChatError) {
         return (
-            <div className="max-w-3xl px-4 h-full mx-auto flex flex-col items-center justify-end space-y-6">
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col items-start gap-2">
-                        <h1 className="text-lg text-destructive font-semibold font-cinzel">Error</h1>
-                        <p className="text-muted-foreground font-normal">Something went wrong! Could'not load chat history</p>
-                    </div>
-                </div>
+            <div className="w-full h-full flex items-center justify-center gap-4">
+                <h1 className="text-lg text-destructive font-semibold font-cinzel">Error</h1>
+                <p className="text-muted-foreground font-normal">Something went wrong! Could'not load chat history</p>
             </div>
         )
     }

@@ -65,7 +65,7 @@ const Message = ({ data }: { data: ChatMessage }) => {
     const { openMedia, agent } = useMedia()
 
     return (
-        <div className={cn("w-full flex flex-col group/message", alignment[data.triggerType])}>
+        <div className={cn("w-full flex flex-col group/message last:mb-32", alignment[data.triggerType])}>
             {renderMessage(data.triggerType, data.contents, agent)}
             <div className={cn("flex items-center gap-1 opacity-0 group-hover/message:opacity-100 transition-colors",
                 flexDirection[data.triggerType]

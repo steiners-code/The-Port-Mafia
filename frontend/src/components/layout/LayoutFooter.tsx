@@ -121,7 +121,7 @@ const LayoutFooter = () => {
 
     return (
         <>
-            <div className="w-full flex flex-col items-center px-4 sm:px-10 gap-8 sticky bottom-0 mt-32 z-50">
+            <div className="w-full flex flex-col items-center px-4 sm:px-10 gap-8 sticky bottom-0 z-50">
                 <ScrollToBottomButton visible={!isNearBottom} onClick={() => scrollToBottom()} />
 
                 <div className="max-w-3xl w-full rounded-t-2xl mx-auto pb-4 bg-background overflow-clip">
