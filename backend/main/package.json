@@ -10,6 +10,8 @@
   "dependencies": {
     "@elysia/jwt": "^1.4.2",
     "@google/genai": "^2.15.0",
+    "@imagekit/javascript": "^5.4.1",
+    "@imagekit/nodejs": "^7.10.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/geoip-lite": "^1.4.4",
