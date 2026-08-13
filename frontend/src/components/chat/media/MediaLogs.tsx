@@ -39,12 +39,12 @@ const logIcon = (level: string) => {
 
 const MediaLogs = ({ messageId }: { messageId: string }) => {
     const { highlight, highlightedId } = useHighlightStore();
-    const { closeMedia, agent } = useMedia()
+    const { agent } = useMedia()
 
     const { data, isLoading } = useQuery({
         queryKey: [messageId, "logs"],
         queryFn: async () => {
-            const { success, data, message } = await getMessageLogs(messageId)
+            const { success, data, message } = await getMessageLogs(messageId, agent?.route || "/main")
             if (!success) toast.error(message);
             return data;
         },

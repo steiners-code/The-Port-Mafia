@@ -3,8 +3,9 @@
 import { ReplySelectionButton } from "../ReplySelectionButton";
 import MediaWrapper from "./MediaWrapper";
 import { Media } from "@/lib/types/media";
-import MediaFile from "./MediaFile";
+import MediaImage from "./MediaImage";
 import MediaText from "./MediaText";
+import MediaFile from "./MediaFile";
 import { useRef } from "react";
 
 const fileRender = (data: Media) => {
@@ -13,6 +14,8 @@ const fileRender = (data: Media) => {
             return <MediaText content={data.data} />
         case "FILE":
             return <MediaFile userId={data.userId} fileType={data.fileType} />
+        case "IMAGE":
+            return <MediaImage url={data.uri} />
     }
 }
 

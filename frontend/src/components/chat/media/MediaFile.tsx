@@ -1,15 +1,18 @@
 import { getFileContent } from "@/actions/chat/get-file-content";
 import { MarkdownContent } from "../MarkdownContent";
 import { useQuery } from "@tanstack/react-query";
+import { useMedia } from "@/hooks/use-media";
 import { File } from "@/lib/types/media";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const MediaFile = ({ fileType }: { userId: string, fileType: File["fileType"] }) => {
+    const { agent } = useMedia();
+
     const { data, isLoading } = useQuery({
         queryKey: ["file-content", fileType],
         queryFn: async () => {
-            const res = await getFileContent(fileType);
+            const res = await getFileContent(fileType, agent?.route || "/main");
             if (!res.success) toast.error(res.message);
             return res.data;
         },

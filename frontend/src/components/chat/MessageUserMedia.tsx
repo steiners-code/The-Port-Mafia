@@ -1,10 +1,13 @@
 "use client";
 
 import { useHighlightStore } from "@/hooks/use-highlight-content";
-import { MediaWithoutType, Text } from "@/lib/types/media";
+import MessageUserMediaImage from "./MessageUserMediaImage";
+import MessageUserMediaText from "./MessageUserMediaText";
+import { MediaWithoutType } from "@/lib/types/media";
 import { XIcon } from "@phosphor-icons/react";
 import { useMedia } from "@/hooks/use-media";
 import { JsonValue } from "@/lib/types";
+import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -15,9 +18,19 @@ type UserMediaProps = {
     messageColors?: string,
     showClose?: boolean,
     removeContent?: (id: string) => void
+    isUploading?: boolean,
 }
 
-const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose = false }: UserMediaProps) => {
+const renderUserMedia = (data: MediaWithoutType, messageColors?: string) => {
+    switch (data.category) {
+        case "TEXT":
+            return <MessageUserMediaText data={data} />
+        case "IMAGE":
+            return <MessageUserMediaImage data={data} messageColors={messageColors} />
+    }
+}
+
+const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose = false, isUploading = false }: UserMediaProps) => {
     const [opened, setOpened] = useState(false);
     const { highlightedId } = useHighlightStore();
     const { openMedia, closeMedia } = useMedia();
@@ -29,7 +42,7 @@ const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose 
                 <Button
                     variant="secondary"
                     size="icon-xs"
-                    className="absolute -top-2.5 -left-2.5 z-10 cursor-pointer rounded-full! group-hover/media-button:visible invisible transition-all"
+                    className="absolute -top-2.5 -left-2.5 z-40 cursor-pointer rounded-full! group-hover/media-button:visible invisible transition-all"
                     onClick={(e) => {
                         e.preventDefault()
                         opened && closeMedia()
@@ -42,8 +55,7 @@ const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose 
 
             <div
                 id={id}
-                className={cn("w-30 aspect-square p-2 rounded-sm cursor-pointer",
-                    "flex flex-col items-start gap-2 justify-between border",
+                className={cn("w-30 aspect-square cursor-pointer border! overflow-hidden rounded-sm",
                     highlightedId === id ? "animate-border-shine" : "border-border",
                     messageColors
                 )}
@@ -52,16 +64,13 @@ const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose 
                     openMedia(data, "MEDIA");
                 }}
             >
-                <p className="flex-1 h-full text-[0.35rem]! text-muted-foreground! whitespace-normal line-clamp-7">
-                    {(data as Text).data}
-                </p>
-
-                <div className="flex flex-col items-start gap-0.5 text-sm">
-                    <span className="lowercase line-clamp-1 wrap-anywhere">{data.name}</span>
-                    <span className="uppercase text-xs text-muted-foreground">{data.category}/{data.extension}</span>
-                </div>
+                {isUploading ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <Loader2 size={24} className="text-muted-foreground animate-spin" />
+                    </div>
+                ) : renderUserMedia(data, messageColors)}
             </div>
-        </div>
+        </div >
     )
 }
 
