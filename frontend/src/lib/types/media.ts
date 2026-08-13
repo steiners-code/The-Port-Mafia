@@ -62,8 +62,18 @@ export type TextMetadata = BaseMetadata & {
     extension: "TXT" | "MD" | "UNK"
 }
 
+// ---------- IMAGE ---------- 
+export type Image = ImageMetadata & {
+    uri: string,
+}
+
+export type ImageMetadata = BaseMetadata & {
+    category: "IMAGE",
+    extension: "PNG" | "JPEG" | "WEBP" | "HEIC" | "HEIF" | "GIF" | "BMP" | "TIFF" | (string & {}),
+}
+
 // ---------- MEDIA ---------- 
-export type MediaWithoutType = File | Text
+export type MediaWithoutType = File | Text | Image
 export type Media = MediaWithoutType & { type: "MEDIA" }
 export type MediaMetadata = FileMetadata | TextMetadata
 
