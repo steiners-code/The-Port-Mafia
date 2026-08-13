@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 
 type GetChatMessagesResult =
     | { success: true; message: string; data: Chat }
-    | { success: false; message: string; details?: string; data?: undefined };
+    | { success: false; message: string, data?: undefined };
 
 export async function getChatMessages(agentRoute: Agent["route"]): Promise<GetChatMessagesResult> {
     try {

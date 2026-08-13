@@ -10,8 +10,6 @@ import { usePathname } from "next/navigation";
 import { create } from "zustand";
 import { toast } from "sonner";
 
-const CHAT_QUERY_KEY = ["chat"] as const;
-
 type ContentStore = {
     content: MessageContent[],
     setContent: (content: MessageContent[]) => void;
@@ -35,15 +33,14 @@ export function useChat() {
     const queryClient = useQueryClient();
 
     const agent = getAgentByPathname(pathname);
+    const CHAT_QUERY_KEY = ["chat", agent?.id || "agent-id"] as const;
 
     const chatQuery = useQuery({
         queryKey: CHAT_QUERY_KEY,
         queryFn: async () => {
             const res = await getChatMessages(agent?.route || "/main");
-            if (!res.success) {
-                toast.error(res.message, { id: 'get-chat-message' });
-                return;
-            };
+            if (!res.success)
+                toast.error(res.message, { id: 'get-chat-message' })
             return res.data;
         },
         refetchOnWindowFocus: true,
