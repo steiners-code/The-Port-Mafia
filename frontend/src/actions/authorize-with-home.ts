@@ -47,7 +47,7 @@ export async function authorizeConnection(pid: string, state: string, redirectTo
 
         return { success: true, message: data.message, redirectUrl: target };
     } catch (error) {
-        console.log(error)
+        console.error(error)
         return { success: false, message: "Something went wrong!", details: error instanceof Error ? error.message : "Unexpected Error" }
     }
 }

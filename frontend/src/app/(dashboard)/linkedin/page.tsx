@@ -1,8 +1,8 @@
+import Chat from "@/components/chat/Chat"
+
 const LinkedInPage = () => {
     return (
-        <div>
-            Maha's castle
-        </div>
+        <Chat />
     )
 }
 

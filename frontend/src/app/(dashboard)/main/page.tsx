@@ -1,9 +1,7 @@
+import Chat from "@/components/chat/Chat"
+
 const MainAgentPage = () => {
-    return (
-        <div>
-            Dazai's den
-        </div>
-    )
+    return <Chat />
 }
 
 export default MainAgentPage

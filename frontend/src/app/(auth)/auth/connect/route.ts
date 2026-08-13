@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
         return new NextResponse("Missing PID or STATE parameter", { status: 400 });
     }
 
-    const { success, message, redirectUrl } = await authorizeConnection(pid, state, redirectTo);
+    const { success, message, redirectUrl, details } = await authorizeConnection(pid, state, redirectTo);
 
     if (!success || !redirectUrl) {
         return new NextResponse(`Authentication Failed: ${message}`, { status: 400 });
