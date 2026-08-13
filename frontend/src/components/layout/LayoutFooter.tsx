@@ -2,14 +2,15 @@
 
 import { useState, useRef, ChangeEvent, KeyboardEvent, ClipboardEvent, useEffect } from "react";
 import { ScrollToBottomButton } from "../chat/ScrollToBottomButton";
+import { ArrowUpIcon, PlusIcon } from "@phosphor-icons/react";
 import { useChat, useContentStore } from "@/hooks/use-chat";
+import { useFileUpload } from "@/hooks/use-file-upload";
 import MessageUserMedia from "../chat/MessageUserMedia";
 import { useAutoScroll } from "@/hooks/use-scroll";
 import { getAgentByPathname } from "@/data/agents";
 import { usePathname } from "next/navigation";
 import { STATUS, TYPE } from "@/lib/enums";
 import { Textarea } from "../ui/textarea";
-import { ArrowUp } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ const LayoutFooter = () => {
     const { chat, sendMessage, isPending } = useChat()
     const { content, setContent } = useContentStore();
     const { isNearBottom, scrollToBottom } = useAutoScroll(chat?.messages.length);
+    const { uploadFiles, triggerFileUpload, isUploading } = useFileUpload();
     const [value, setValue] = useState<string>("")
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
     const indexRef = useRef(0);
@@ -35,17 +37,18 @@ const LayoutFooter = () => {
 
     const handleSend = () => {
         const trimmed = value.trim()
-        if (!trimmed && content.length === 0) return
-
-        sendMessage([...content, {
-            id: 'random-ass' + new Date(),
-            contentType: TYPE.TEXT,
-            message: trimmed,
-            output: null,
-            logs: null,
-            createdAt: new Date(),
-            status: STATUS.COMPLETED
-        }])
+        if (trimmed)
+            sendMessage([...content, {
+                id: 'random-ass' + new Date(),
+                contentType: TYPE.TEXT,
+                message: trimmed,
+                output: null,
+                logs: null,
+                createdAt: new Date(),
+                status: STATUS.COMPLETED
+            }])
+        else if (content.length !== 0)
+            sendMessage(content)
 
         setContent([])
         setValue("")
@@ -60,7 +63,6 @@ const LayoutFooter = () => {
         if (!items) return;
 
         for (const item of Array.from(items)) {
-            indexRef.current++
             if (item.kind === "file") {
                 e.preventDefault();
 
@@ -70,24 +72,24 @@ const LayoutFooter = () => {
                 })
 
                 const file = item.getAsFile();
-                if (file) {
-                    alert("TODO: Implement file upload and then save it to content.")
-                }
+                if (file)
+                    uploadFiles([file]);
+                break;
             }
 
             if (item.kind === "string" && item.type === "text/plain") {
                 if (content.length === 10) return
-                e.preventDefault();
-
                 const text = await getAsStringAsync(item);
                 if (text.length > 4000) {
+                    e.preventDefault(); // TODO: Here I wanna change the logic a little bit and have the text-area behave naturally. While on text length greater than 4000, it should prevent the default behavior and create the media content of type text
+                    indexRef.current++
                     setContent([...content, {
                         id: crypto.randomUUID(),
                         contentType: TYPE.MEDIA,
                         status: STATUS.COMPLETED,
                         createdAt: new Date(),
                         output: {
-                            name: `pasted_text_${indexRef.current}`,
+                            name: `Pasted content ${indexRef.current}`,
                             description: "This is the text pasted by the user.",
                             extension: "TXT",
                             category: "TEXT",
@@ -96,8 +98,6 @@ const LayoutFooter = () => {
                         message: null,
                         logs: null
                     }])
-                } else {
-                    setValue(value + text)
                 }
             }
         }
@@ -109,7 +109,7 @@ const LayoutFooter = () => {
     }
 
     const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter" && !e.shiftKey && !isPending) {
+        if (e.key === "Enter" && !e.shiftKey && !isPending && !isUploading) {
             e.preventDefault()
             handleSend()
         }
@@ -139,6 +139,7 @@ const LayoutFooter = () => {
                                         showClose={true}
                                         removeContent={removeContent}
                                         messageColors={agent?.colors.message}
+                                        isUploading={c.status === STATUS.PENDING}
                                     />
                                 ))}
                             </div>
@@ -158,11 +159,21 @@ const LayoutFooter = () => {
 
                             <Button
                                 onClick={handleSend}
-                                disabled={(!value.trim() && content?.length === 0) || isPending}
+                                disabled={(!value.trim() && content?.length === 0) || isPending || isUploading}
                                 aria-label="Send message"
                                 className="absolute bottom-2.5 right-2.5 z-10 shrink-0 grid place-items-center h-8 w-8 rounded-full bg-foreground text-background disabled:opacity-30 disabled:cursor-not-allowed transition-opacity"
                             >
-                                <ArrowUp className="h-4 w-4" />
+                                <ArrowUpIcon className="h-4 w-4" />
+                            </Button>
+
+                            <Button
+                                variant="ghost"
+                                aria-label="Upload media"
+                                disabled={content?.length === 10}
+                                onClick={triggerFileUpload}
+                                className="absolute bottom-2.5 left-2.5 z-10 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                                <PlusIcon className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
