@@ -43,6 +43,13 @@ type PDFDocument = BaseMetadata & {
     extension: "PDF",
     category: "PDF"
 }
+
+type ImageDocument = BaseMetadata & {
+    uri: string,
+    category: "IMAGE",
+    extension: "PNG" | "JPEG" | "WEBP" | "HEIC" | "HEIF" | "GIF" | "BMP" | "TIFF" | (string & {})
+}
+
 type TextDocument = BaseMetadata & {
     uri?: string,
     data?: string,
@@ -50,7 +57,7 @@ type TextDocument = BaseMetadata & {
     category: "TEXT"
 }
 
-export type Document = TextDocument
+export type Document = TextDocument | ImageDocument
 export type Output = File | Document
 
 export type UserMessageData = {
@@ -104,7 +111,7 @@ type VideoContent = {
     resolution?: string
 }
 
-export type Content = TextContent | DocumentContent;
+export type Content = TextContent | DocumentContent | ImageContent;
 export type StepMap = "thought" | "model_output";
 
 

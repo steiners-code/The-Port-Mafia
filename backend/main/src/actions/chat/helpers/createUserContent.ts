@@ -1,11 +1,12 @@
 import { MainContentType } from "../../../generated/prisma";
-import { JsonValue } from "@prisma/client/runtime/client"
-import { Content, Step } from "../../../lib/types";
+import { Content, Output, Step } from "../../../lib/types";
+import { JsonValue } from "@prisma/client/runtime/client";
+import { fetchMediaContent } from "./fetchMediaContent";
 
 type UserContent = {
     contentType: MainContentType,
     message?: string | null,
-    output?: JsonValue
+    output?: Output | JsonValue
 }
 
 export async function createUserContent(content: UserContent[]): Promise<Step> {
@@ -20,7 +21,9 @@ export async function createUserContent(content: UserContent[]): Promise<Step> {
                 });
                 break;
             case "MEDIA":
-
+                if (typeof c.output !== "object" || Array.isArray(c.output) || c.output === null) break;
+                const content = await fetchMediaContent(c.output as Output)
+                userContent.push(...content)
         }
     }
 
