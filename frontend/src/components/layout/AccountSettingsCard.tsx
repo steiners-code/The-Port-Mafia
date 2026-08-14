@@ -65,7 +65,7 @@ export function AccountSettingsDialog({ open, setOpen }: { open: boolean, setOpe
                                         </Avatar>
                                         <div className="flex flex-1 flex-col">
                                             <span className="text-sm font-medium">{agent.name}</span>
-                                            <span className="text-xs text-muted-foreground">{agent.codename}</span>
+                                            <span className="text-xs text-muted-foreground">{agent.quote}</span>
                                         </div>
                                         <Badge variant="outline">{agent.platform}</Badge>
                                     </div>
