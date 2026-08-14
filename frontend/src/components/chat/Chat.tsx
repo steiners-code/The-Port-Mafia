@@ -1,17 +1,53 @@
 "use client"
 
+import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
+import { useScrollContainerStore } from "@/hooks/use-scroll";
 import { STATUS, TRIGGER, TYPE } from "@/lib/enums";
 import { getAgentByPathname } from "@/data/agents";
+import { useChat } from "@/context/ChatContext";
 import Message from "@/components/chat/Message";
 import { usePathname } from "next/navigation";
-import { useChat } from "@/hooks/use-chat";
 import { Loader2 } from "lucide-react";
+
+/**
+ * Messages from the oldest currently-loaded message at which the next
+ * older page starts fetching — gives enough scroll buffer that the
+ * fetch resolves before the user actually reaches the top.
+ */
+const SENTINEL_OFFSET = 5;
 
 const Chat = () => {
     const pathname = usePathname();
-    const { chat, isLoadingChat, isChatError } = useChat();
+    const { chat, messages, isLoadingChat, isChatError, fetchOlderMessages, hasOlderMessages, isFetchingOlder } = useChat();
+    const container = useScrollContainerStore((s) => s.container);
+
+    const sentinelNodeRef = useRef<HTMLDivElement | null>(null);
+    const prevScrollHeightRef = useRef<number | null>(null);
 
     const agent = getAgentByPathname(pathname);
+
+    useEffect(() => {
+        if (!container || !sentinelNodeRef.current || !hasOlderMessages) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry?.isIntersecting && hasOlderMessages && !isFetchingOlder) {
+                    prevScrollHeightRef.current = container.scrollHeight;
+                    fetchOlderMessages();
+                }
+            },
+            { root: container, threshold: 0 }
+        );
+
+        observer.observe(sentinelNodeRef.current);
+        return () => observer.disconnect();
+    }, [container, hasOlderMessages, isFetchingOlder, fetchOlderMessages, messages.length]);
+
+    /**
+     * Fires after older messages are prepended and painted. Offsets
+     * scrollTop by exactly how much taller the content became, so the
+     * message the user was looking at stays visually in place.
+     */
 
     if (isChatError) {
         return (
@@ -31,35 +67,44 @@ const Chat = () => {
         )
     }
 
-    if (!chat || chat?.messages.length === 0) {
+    if (!chat || !messages || messages.length === 0) {
         return (
-            <div>
-                <Message data={{
-                    id: "no-chat-history-exist-or-loaded",
-                    triggerType: TRIGGER.CRON,
-                    createdAt: new Date(),
-                    contents: [{
-                        id: "no-chat-history-text-message",
-                        contentType: TYPE.TEXT,
-                        status: STATUS.COMPLETED,
-                        message: `No Chat History with ${agent?.name || "AI"} yet. Send a message to begin!`,
-                        output: null,
-                        logs: null,
+            <div className="max-w-3xl px-0 sm:px-2 h-full mx-auto flex flex-col items-center justify-start space-y-6">
+                <Message
+                    actionsDisabled={true}
+                    data={{
+                        id: "no-chat-history-exist-or-loaded",
+                        triggerType: TRIGGER.CRON,
                         createdAt: new Date(),
-                    }]
-                }} />
+                        contents: [{
+                            id: "no-chat-history-text-message",
+                            contentType: TYPE.TEXT,
+                            status: STATUS.COMPLETED,
+                            message: `No Chat History with ${agent?.name || "AI"} yet. Send a message to begin!`,
+                            output: null,
+                            logs: null,
+                            createdAt: new Date(),
+                        }]
+                    }} />
             </div>
         )
     }
 
     return (
-        <>
-            <div className="max-w-3xl px-0 sm:px-2 h-full mx-auto flex flex-col items-center justify-end space-y-6">
-                {chat.messages.map(message => (
-                    <Message key={message.id} data={message} />
-                ))}
-            </div>
-        </>
+        <div className="max-w-3xl px-0 sm:px-2 h-full mx-auto flex flex-col items-center justify-end space-y-6">
+            {isFetchingOlder && (
+                <div className="flex items-center justify-center py-2 text-muted-foreground">
+                    <Loader2 size={18} className="animate-spin" />
+                </div>
+            )}
+
+            {messages.map((message, i) => (
+                <Fragment key={message.id}>
+                    {i === SENTINEL_OFFSET && <div ref={sentinelNodeRef} className="h-px w-full" />}
+                    <Message data={message} />
+                </Fragment>
+            ))}
+        </div>
     )
 }
 

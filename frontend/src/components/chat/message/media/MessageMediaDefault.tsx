@@ -1,21 +1,13 @@
-"use client"
-
 import { useHighlightStore } from "@/hooks/use-highlight-content";
+import { File, Image, Text } from "@/lib/types/media";
 import { DotIcon } from "@phosphor-icons/react";
 import { useMedia } from "@/hooks/use-media";
-import { File } from "@/lib/types/media";
-import { JsonValue } from "@/lib/types"
-import { Button } from "../ui/button";
+import { Button } from "../../../ui/button";
 import { cn } from "@/lib/utils";
 
-const MessageMedia = ({ output, id }: { output: JsonValue, id: string }) => {
-    const { openMedia } = useMedia();
+const MessageMediaDefault = ({ output, id }: { output: File | Image | Text, id: string }) => {
     const { highlightedId } = useHighlightStore();
-
-    if (typeof output !== "object" || Array.isArray(output))
-        return;
-
-    const data = output as File;
+    const { openMedia } = useMedia();
 
     return (
         <div
@@ -27,20 +19,20 @@ const MessageMedia = ({ output, id }: { output: JsonValue, id: string }) => {
             <div className="w-2/3 flex flex-col items-start gap-2">
                 <div className="flex flex-col">
                     <h1 className="text-foreground font-serif text-lg">
-                        {data.name}
+                        {output.name}
                     </h1>
                     <h1 className="text-muted-foreground text-xs line-clamp-1">
-                        {data.description}
+                        {output.description}
                     </h1>
                 </div>
 
                 <div className="flex items-center text-sm">
                     <span>
-                        {data.category}
+                        {output.category}
                     </span>
                     <DotIcon size={24} />
                     <span>
-                        {data.extension}
+                        {output.extension}
                     </span>
                 </div>
             </div>
@@ -55,4 +47,4 @@ const MessageMedia = ({ output, id }: { output: JsonValue, id: string }) => {
     )
 }
 
-export default MessageMedia
+export default MessageMediaDefault

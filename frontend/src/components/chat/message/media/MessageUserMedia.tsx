@@ -6,9 +6,9 @@ import MessageUserMediaText from "./MessageUserMediaText";
 import { MediaWithoutType } from "@/lib/types/media";
 import { XIcon } from "@phosphor-icons/react";
 import { useMedia } from "@/hooks/use-media";
+import { Button } from "../../../ui/button";
 import { JsonValue } from "@/lib/types";
 import { Loader2 } from "lucide-react";
-import { Button } from "../ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 

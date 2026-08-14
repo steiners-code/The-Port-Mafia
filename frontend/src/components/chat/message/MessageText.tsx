@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef } from "react"
-import { MarkdownContent } from "./MarkdownContent"
-import { ReplySelectionButton } from "./ReplySelectionButton"
+import { ReplySelectionButton } from "../ReplySelectionButton";
+import { MarkdownContent } from "../MarkdownContent";
+import { useRef } from "react";
 
 const MessageText = ({ content }: { content: string }) => {
     const chatContainerRef = useRef<HTMLDivElement>(null);

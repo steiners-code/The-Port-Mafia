@@ -1,7 +1,7 @@
 import { useHighlightStore } from "@/hooks/use-highlight-content";
-import MessageUserMedia from "./MessageUserMedia";
+import MessageUserMedia from "./message/media/MessageUserMedia";
+import MessageText from "./message/MessageText";
 import { MessageContent } from "@/lib/types";
-import MessageText from "./MessageText";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 
