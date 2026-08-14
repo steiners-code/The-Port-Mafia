@@ -1,7 +1,7 @@
 "use client";
 
+import { InfiniteData, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Chat, ChatMessage, MessageContent, UserSendPayload } from "@/lib/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { sendChatMessage } from "@/actions/chat/send-chat-message";
 import { getChatMessages } from "@/actions/chat/get-chat-messages";
 import { getAgentByPathname } from "@/data/agents";
@@ -15,12 +15,14 @@ type ContentStore = {
     setContent: (content: MessageContent[]) => void;
 }
 
+type Cursor = { createdAt: Date; id: string } | undefined;
+
 export const useContentStore = create<ContentStore>(set => ({
     content: [],
     setContent: (content) => set({ content })
 }))
 
-type MutationContext = { previousChat?: Chat };
+type MutationContext = { previousChat?: InfiniteData<Chat> };
 
 /**
  * No SSE yet — /main/chat/send blocks until generateAIResponse finishes,
@@ -35,16 +37,30 @@ export function useChat() {
     const agent = getAgentByPathname(pathname);
     const CHAT_QUERY_KEY = ["chat", agent?.id || "agent-id"] as const;
 
-    const chatQuery = useQuery({
+    const chatQuery = useInfiniteQuery({
         queryKey: CHAT_QUERY_KEY,
-        queryFn: async () => {
-            const res = await getChatMessages(agent?.route || "/main");
+        queryFn: async ({ pageParam }: { pageParam: Cursor }) => {
+            const res = await getChatMessages(agent?.route || "/main", pageParam);
             if (!res.success)
-                toast.error(res.message, { id: 'get-chat-message' })
+                toast.error(res.message, { id: 'get-chat-message' });
             return res.data;
+        },
+        initialPageParam: undefined as Cursor,
+        getNextPageParam: () => undefined,
+        getPreviousPageParam: (firstPage) => {
+            if (!firstPage?.hasMore || !firstPage.messages.length) return undefined;
+            const oldest = firstPage.messages[0];
+            return { createdAt: oldest.createdAt, id: oldest.id };
         },
         refetchOnWindowFocus: true,
     });
+
+    /**
+      * pages are ordered oldest-batch-first after fetchPreviousPage prepends,
+      * so a flatMap in array order already yields oldest --> newest overall.
+      * The newest (initially-fetched) page is always the LAST element.
+      */
+    const messages = chatQuery.data?.pages.flatMap(page => page?.messages ?? []) ?? [];
 
     const sendMutation = useMutation({
         mutationFn: (payload: UserSendPayload) => sendChatMessage(payload, agent?.route || "/main"),
@@ -52,7 +68,7 @@ export function useChat() {
         onMutate: async (payload) => {
             await queryClient.cancelQueries({ queryKey: CHAT_QUERY_KEY });
 
-            const previousChat = queryClient.getQueryData<Chat>(CHAT_QUERY_KEY);
+            const previousChat = queryClient.getQueryData<InfiniteData<Chat>>(CHAT_QUERY_KEY);
             const optimisticId = `optimistic-${Date.now()}`;
 
             const optimisticMessage: ChatMessage = {
@@ -70,9 +86,15 @@ export function useChat() {
                 })),
             };
 
-            queryClient.setQueryData<Chat>(CHAT_QUERY_KEY, (old) =>
-                old ? { id: old.id, messages: [...old.messages, optimisticMessage] } : old
-            );
+            queryClient.setQueryData<InfiniteData<Chat>>(CHAT_QUERY_KEY, (old) => {
+                if (!old || !old.pages.length) return old;
+                const pages = [...old.pages];
+                const lastIndex = pages.length - 1;
+                const lastPage = pages[lastIndex];
+                if (!lastPage) return old;
+                pages[lastIndex] = { ...lastPage, messages: [...lastPage.messages, optimisticMessage] };
+                return { ...old, pages };
+            });
 
             return { previousChat } satisfies MutationContext;
         },
@@ -113,8 +135,12 @@ export function useChat() {
 
     return {
         chat: chatQuery.data,
+        messages,
         isLoadingChat: chatQuery.isLoading,
         isChatError: chatQuery.isError,
+        fetchOlderMessages: chatQuery.fetchPreviousPage,
+        isFetchingOlder: chatQuery.isFetchingPreviousPage,
+        hasOlderMessages: chatQuery.hasPreviousPage,
         sendMessage,
         isPending: sendMutation.isPending,
         agent,

@@ -4,7 +4,7 @@ import { CheckCircleIcon, XCircleIcon } from "@phosphor-icons/react";
 import { ChevronRight, Loader2 } from "lucide-react";
 import { useMedia } from "@/hooks/use-media";
 import { JsonValue } from "@/lib/types";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { STATUS } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 

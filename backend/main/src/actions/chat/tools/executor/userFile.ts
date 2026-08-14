@@ -1,4 +1,5 @@
-import { MainContentStatus, MainContentType, MainFileType } from "../../../../generated/prisma";
+import { MainContentStatus, MainContentType, MainFileType, MainLogLevel } from "../../../../generated/prisma";
+import { getAutomatedLog } from "../../helpers/automatedMessages";
 import { EventType } from "../../../../lib/enums";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
@@ -58,6 +59,12 @@ export async function displayUserFile(args: {}, { userId, messageId }: ToolConte
                 extension: "MD",
                 category: "FILE",
             },
+            logs: {
+                create: {
+                    level: MainLogLevel.INFO,
+                    message: getAutomatedLog({ event: "LOG.SUCCESS", contentType: MainContentType.MEDIA })
+                }
+            }
         },
         select: {
             id: true,

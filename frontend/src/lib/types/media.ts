@@ -72,8 +72,18 @@ export type ImageMetadata = BaseMetadata & {
     extension: "PNG" | "JPEG" | "WEBP" | "HEIC" | "HEIF" | "GIF" | "BMP" | "TIFF" | (string & {}),
 }
 
+// ---------- ACTION ---------- 
+export type Action = { category: "ACTION" } & ComponentAction
+
+// ---------- COMPONENT ---------- 
+export type ComponentAction = {
+    type: "COMPONENT",
+    name: "LinkedinConnectButton",
+    message?: string
+}
+
 // ---------- MEDIA ---------- 
-export type MediaWithoutType = File | Text | Image
+export type MediaWithoutType = File | Text | Image | Action
 export type Media = MediaWithoutType & { type: "MEDIA" }
 export type MediaMetadata = FileMetadata | TextMetadata
 

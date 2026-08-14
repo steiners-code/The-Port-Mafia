@@ -123,7 +123,7 @@ type ModelOutputStep = {
 type ThoughtStep = {
     type: "thought",
     signature: string,
-    summary?: Content[],
+    summary?: (TextContent | ImageContent)[],
 }
 
 type FunctionCallStep = {

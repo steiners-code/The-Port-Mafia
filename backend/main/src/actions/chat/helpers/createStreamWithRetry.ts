@@ -1,11 +1,10 @@
+import { MainLog, Step } from "../../../lib/types";
 import { GoogleGenAI, Type } from "@google/genai";
 import { awaitRateLimit } from "./rateLimiter";
-import { MainLog } from "../../../lib/types";
-import { Step } from "./getChatHistory";
 import { TOOL_SCHEMAS } from "../tools";
 
 const ai = new GoogleGenAI({
-    apiKey: process.env.GOOGLE_API_KEY
+    apiKey: process.env.MAIN_GEMINI_API_KEY
 });
 
 // const openai = new OpenAI({
@@ -30,7 +29,7 @@ export async function createStreamWithRetry(systemPrompt: string, chatHistory: S
             await awaitRateLimit()
 
             return await ai.interactions.create({
-                model: process.env.DAZAI_GEMINI_MODEL || "gemini-3.5-flash-lite",
+                model: process.env.MAIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
                 system_instruction: systemPrompt,
                 input: chatHistory,
                 generation_config: {

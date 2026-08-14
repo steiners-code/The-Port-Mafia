@@ -1,9 +1,9 @@
 import { useHighlightStore } from "@/hooks/use-highlight-content";
-import MessageThought from "./MessageThought";
+import MessageThought from "./message/MessageThought";
+import MessageMedia from "./message/MessageMedia";
+import MessageTool from "./message/MessageTool";
+import MessageText from "./message/MessageText";
 import { MessageContent } from "@/lib/types";
-import MessageMedia from "./MessageMedia";
-import MessageText from "./MessageText";
-import MessageTool from "./MessageTool";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
 

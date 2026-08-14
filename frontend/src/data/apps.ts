@@ -23,7 +23,7 @@ const connectedApps: connectedApp[] = [
         icon: HouseIcon,
         enable: true,
         colors: {
-            bg: "bg-[#0C67C4]/5 hover:bg-[#0C67C4]/10!",
+            bg: "bg-[#0C67C4]/5 hover:bg-[#0C67C4]/10",
             text: "group-hover:text-[#0C67C4] group-hover:text-foreground!",
             logo: "group-hover:fill-[#0C67C4] fill-[#0C67C4] group-hover:text-foreground!",
             button: "hover:bg-[#0C67C4]/80! rounded-sm!"
@@ -35,7 +35,7 @@ const connectedApps: connectedApp[] = [
         icon: LinkedinLogoIcon,
         enable: true,
         colors: {
-            bg: "bg-[#0C67C4]/5 hover:bg-[#0C67C4]/10!",
+            bg: "bg-[#0C67C4]/5 hover:bg-[#0C67C4]/10",
             text: "group-hover:text-[#0C67C4] group-hover:text-foreground!",
             logo: "group-hover:fill-[#0C67C4] fill-[#0C67C4] group-hover:text-foreground!",
             button: "hover:bg-[#0C67C4]/80! rounded-sm!"

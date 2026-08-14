@@ -7,7 +7,7 @@ import { api } from "@/lib/api";
 
 export async function getMessageLogs(messageId: string, agentRoute: Agent["route"]) {
     try {
-        const res = await api.get<MessageContent[] | null>(getChatUrl('logs', agentRoute), {
+        const res = await api.get<MessageContent[] | null>(getChatUrl('/logs', agentRoute), {
             params: { messageId }
         });
 

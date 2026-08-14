@@ -1,4 +1,4 @@
-const MAX_RPM = Number(process.env.GEMINI_MAX_RPM) || 5;
+const MAX_RPM = Number(process.env.MAIN_GEMINI_MAX_RPM) || 5;
 const WINDOW_MS = 60_000;
 
 /** Module-level — persists across every call, which is the whole point. */
