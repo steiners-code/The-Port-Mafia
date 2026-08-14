@@ -227,7 +227,7 @@ enum LinkedinLogLevel {
 
 model LinkedinChat {
   id     String @id @default(cuid())
-  userId String
+  userId String @unique
 
   messages LinkedinChatMessage[]
 
@@ -240,7 +240,7 @@ model LinkedinChat {
 model LinkedinChatMessage {
   id     String       @id @default(cuid())
   chatId String
-  chat   LinkedinChat @relation(fields: [chatId], references: [id])
+  chat   LinkedinChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   triggerType LinkedinTriggerType
 
@@ -254,7 +254,7 @@ model LinkedinChatMessage {
 model LinkedinMessageContent {
   id            String              @id @default(cuid())
   chatMessageId String
-  chatMessage   LinkedinChatMessage @relation(fields: [chatMessageId], references: [id])
+  chatMessage   LinkedinChatMessage @relation(fields: [chatMessageId], references: [id], onDelete: Cascade)
 
   sequence    Int
   contentType LinkedinContentType
@@ -274,7 +274,7 @@ model LinkedinMessageContent {
 model LinkedinLog {
   id        String                 @id @default(cuid())
   contentId String
-  content   LinkedinMessageContent @relation(fields: [contentId], references: [id])
+  content   LinkedinMessageContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
 
   level   LinkedinLogLevel
   message String
@@ -305,9 +305,8 @@ model LinkedinFile {
 }
 
 model LinkedinMemory {
-  id     String  @id @default(cuid())
+  id     String @id @default(cuid())
   userId String
-  chatId String? // the conversation this memory originated from, if any
 
   slug    String
   title   String
