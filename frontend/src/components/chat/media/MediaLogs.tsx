@@ -38,7 +38,7 @@ const logIcon = (level: string) => {
 }
 
 const MediaLogs = ({ messageId }: { messageId: string }) => {
-    const { highlight, highlightedId } = useHighlightStore();
+    const { highlight } = useHighlightStore();
     const { agent } = useMedia()
 
     const { data, isLoading } = useQuery({
@@ -66,9 +66,14 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
 
     if (!data) {
         return (
-            <div className="w-full h-full flex items-center justify-center gap-1 text-muted-foreground">
-                No Logs to Display
-            </div>
+            <MediaWrapper metadata={{
+                name: "LOGS",
+                extension: formatDate(new Date(), "EEEE, dd MMMM yyyy")
+            }}>
+                <div className="w-full h-full flex items-center justify-center gap-1 text-muted-foreground">
+                    No Logs to Display
+                </div>
+            </MediaWrapper>
         )
     }
 
