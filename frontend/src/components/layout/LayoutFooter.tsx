@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useRef, ChangeEvent, KeyboardEvent, ClipboardEvent, useEffect } from "react";
+import MessageUserMedia from "../chat/message/media/MessageUserMedia";
 import { ScrollToBottomButton } from "../chat/ScrollToBottomButton";
 import { ArrowUpIcon, PlusIcon } from "@phosphor-icons/react";
-import { useChat, useContentStore } from "@/hooks/use-chat";
 import { useFileUpload } from "@/hooks/use-file-upload";
-import MessageUserMedia from "../chat/MessageUserMedia";
+import { useContentStore } from "@/hooks/use-chat";
 import { useAutoScroll } from "@/hooks/use-scroll";
 import { getAgentByPathname } from "@/data/agents";
+import { useChat } from "@/context/ChatContext";
 import { usePathname } from "next/navigation";
 import { STATUS, TYPE } from "@/lib/enums";
 import { Textarea } from "../ui/textarea";
@@ -17,9 +18,10 @@ import { toast } from "sonner";
 
 const LayoutFooter = () => {
     const pathname = usePathname()
-    const { chat, sendMessage, isPending } = useChat()
+    const { messages, sendMessage, isPending } = useChat()
     const { content, setContent } = useContentStore();
-    const { isNearBottom, scrollToBottom } = useAutoScroll(chat?.messages.length);
+    const lastMessageId = messages[messages.length - 1]?.id;
+    const { isNearBottom, scrollToBottom } = useAutoScroll(lastMessageId);
     const { uploadFiles, triggerFileUpload, isUploading } = useFileUpload();
     const [value, setValue] = useState<string>("")
     const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -79,9 +81,10 @@ const LayoutFooter = () => {
 
             if (item.kind === "string" && item.type === "text/plain") {
                 if (content.length === 10) return
+                e.preventDefault();
+
                 const text = await getAsStringAsync(item);
                 if (text.length > 4000) {
-                    e.preventDefault(); // TODO: Here I wanna change the logic a little bit and have the text-area behave naturally. While on text length greater than 4000, it should prevent the default behavior and create the media content of type text
                     indexRef.current++
                     setContent([...content, {
                         id: crypto.randomUUID(),
@@ -98,6 +101,15 @@ const LayoutFooter = () => {
                         message: null,
                         logs: null
                     }])
+                } else {
+                    const el = textareaRef.current;
+                    if (!el) return;
+
+                    const start = el.selectionStart ?? value.length;
+                    const end = el.selectionEnd ?? value.length;
+                    const nextValue = value.slice(0, start) + text + value.slice(end);
+
+                    setValue(nextValue);
                 }
             }
         }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { ChatProvider } from "@/context/ChatContext";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import MediaDisplay from "@/components/chat/media/MediaDisplay";
 import LayoutScrollContainer from "@/components/layout/LayoutScrollContainer";
@@ -19,13 +20,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                 <div className="relative w-full flex items-center overflow-hidden">
                     <LayoutScrollContainer>
-                        <LayoutHeader />
+                        <ChatProvider>
+                            <LayoutHeader />
 
-                        <main className="w-full flex-1 px-4 sm:px-10 bg-inherit">
-                            {children}
-                        </main>
+                            <main className="w-full flex-1 px-4 sm:px-10 bg-inherit">
+                                {children}
+                            </main>
 
-                        <LayoutFooter />
+                            <LayoutFooter />
+                        </ChatProvider>
                     </LayoutScrollContainer>
 
                     <MediaDisplay />
