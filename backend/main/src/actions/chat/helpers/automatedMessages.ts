@@ -67,39 +67,46 @@ const MEDIA_PLACEHOLDER: Record<AutomatedMessageEvent, string> = {
     "MESSAGE.COMPLETED": "Looked it over. Filed away",
 };
 
-const TOOL_PLACEHOLDER: Record<AutomatedMessageEvent, string> = {
-    "MESSAGE.STARTED": "Reaching for a tool. Don't ask which — you'll find out if it matters",
-    "MESSAGE.COMPLETED": "Tool's done its part",
-};
-
 const TEXT_LOG_INFO = [
     "Started composing. No drafts, no do-overs — I don't need them",
     "Beginning the reply. Try not to read over my shoulder",
+    "Putting words in order now. Give me a second, not a lecture",
+    "Reply's underway. I already know how it ends, more or less",
 ];
 
 const TEXT_LOG_SUCCESS = [
     "Reply written cleanly. No notes, mostly because I didn't ask for any",
     "Text finished without incident. A rare, boring kind of victory",
+    "Done. Wasn't hard, though I'll let you assume otherwise",
+    "Sent it off clean. Try to contain your excitement",
 ];
 
 const TEXT_LOG_ERROR = [
     "Something in the reply pipeline gave out. Not my finest moment — I'll own it",
     "Failed partway through. Chalk it up to the model, not the plan",
+    "Didn't land. I'll fix it before it becomes a story worth telling",
+    "That one fell apart before it reached you. Give me another go",
 ];
 
 const THOUGHT_LOG_INFO = [
     "Started actually thinking, rather than performing it",
     "Begun turning this over properly",
+    "Working through it quietly. This part isn't for an audience",
+    "Sorting through the noise before I decide what matters",
 ];
 
 const THOUGHT_LOG_SUCCESS = [
     "Landed somewhere I trust. That took longer than I'd admit out loud",
     "Thought resolved cleanly. I'll allow myself a little pride, quietly",
+    "Got there. Wasn't pretty on the way, but the ending's fine",
+    "Settled on something worth keeping. Rare enough to mention",
 ];
 
 const THOUGHT_LOG_ERROR = [
     "Lost the thread mid-thought. Embarrassing, but it happens even to me",
     "That line of thinking collapsed before it went anywhere useful",
+    "Went nowhere, honestly. I'll pretend that was intentional",
+    "Thought didn't hold together. Back to the start, quietly",
 ];
 
 const MEDIA_LOG_PLACEHOLDER: Record<AutomatedLogEvent, string> = {
@@ -191,6 +198,7 @@ const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
         completedError: [
             "Couldn't get into USER.md. Frustrating, but not fatal",
             "That file didn't want to open. Noted",
+            "USER.md's being difficult. I'll deal with it",
         ],
     },
 
@@ -208,6 +216,7 @@ const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
         completedError: [
             "Couldn't write to USER.md. Whatever this was, it didn't stick",
             "The update didn't take. I'll own that one",
+            "Tried to file it, failed. Give me another pass",
         ],
     },
 
@@ -215,13 +224,17 @@ const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
         started: [
             "Pulling your file up for you to see",
             "Opening the dossier",
+            "Bringing USER.md up. Nothing to hide here",
         ],
         completedSuccess: [
             "There it is. Everything I've got on you",
             "Dossier's open",
+            "Up on screen. Have a look",
         ],
         completedError: [
             "Couldn't get your file to open. Try again in a moment",
+            "USER.md won't display right now. Give it a second",
+            "That didn't render. Not my best showing",
         ],
     },
 
@@ -229,13 +242,17 @@ const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
         started: [
             "Checking what I've actually retained",
             "Digging through memory",
+            "Seeing what's actually in there",
         ],
         completedSuccess: [
             "Found what I was looking for",
             "Memory checked out fine",
+            "Read through clean",
         ],
         completedError: [
             "Couldn't get a clean read on memory. Odd",
+            "Memory didn't cooperate this time",
+            "That read failed. I'll try it again",
         ],
     },
 
@@ -243,13 +260,17 @@ const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
         started: [
             "Committing this to memory. Properly, this time",
             "Writing it down so I don't have to be told twice",
+            "Setting this down for later",
         ],
         completedSuccess: [
             "Remembered. For real, this time",
             "Memory updated",
+            "Locked in. Won't need repeating",
         ],
         completedError: [
             "That didn't make it into memory. I'll need to try again",
+            "Write failed. Consider it temporarily forgotten",
+            "Didn't stick. I'll come back to it",
         ],
     },
 
@@ -257,13 +278,17 @@ const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
         started: [
             "Pulling up what I've kept",
             "Opening memory for you to see",
+            "Bringing it up. Nothing dramatic in here",
         ],
         completedSuccess: [
             "Here's what I've held onto",
             "Memory's open",
+            "Up on screen, as promised",
         ],
         completedError: [
             "Couldn't get memory to open cleanly",
+            "That didn't display right. Give me a moment",
+            "Failed to render. I'll sort it out",
         ],
     },
 };
