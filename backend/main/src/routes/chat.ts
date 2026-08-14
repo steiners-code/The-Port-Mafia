@@ -6,16 +6,23 @@ import { UserMessageData } from "../lib/types";
 import Elysia, { t } from "elysia";
 
 export const chatRoutes = new Elysia({ prefix: '/chat' })
-    .get('/message', async ({ headers, status }) => {
+    .get('/message', async ({ query, headers, status }) => {
         const userId = headers["x-user-id"];
+        const createdAt = query["createdAt"]
+        const id = query["id"]
+        const cursor = id && createdAt ? { createdAt, id } : undefined
 
-        const { success, ...res } = await getOrCreateChat(userId)
+        const { success, ...res } = await getOrCreateChat(userId, cursor)
         if (!success || !res.data) return status(res.status, { message: res.message, details: res?.details })
 
         return status(200, res.data);
     }, {
         headers: t.Object({
             "x-user-id": t.String({ error: "Missing API-Gateway ID: userId" })
+        }),
+        query: t.Object({
+            createdAt: t.Optional(t.Date()),
+            id: t.Optional(t.String())
         })
     })
 
