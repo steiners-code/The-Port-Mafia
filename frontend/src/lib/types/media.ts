@@ -77,15 +77,16 @@ export type Action = { category: "ACTION" } & ComponentAction
 
 // ---------- COMPONENT ---------- 
 export type ComponentAction = {
-    type: "COMPONENT",
+    actionType: "COMPONENT",
     name: "LinkedinConnectButton",
     message?: string
 }
 
 // ---------- MEDIA ---------- 
-export type MediaWithoutType = File | Text | Image | Action
+export type MediaWithoutType = File | Text | Image
+export type MediaWithAction = MediaWithoutType | Action
 export type Media = MediaWithoutType & { type: "MEDIA" }
-export type MediaMetadata = FileMetadata | TextMetadata
+export type MediaMetadata = FileMetadata | TextMetadata | ImageMetadata
 
 export type Metadata = ThoughtMetadata | LogsMetadata | ToolMetadata | MediaMetadata
 export type MediaData = Thought | Media | Logs | Tool | null

@@ -1,7 +1,7 @@
 "use client";
 
-import { Tool } from "../../../hooks/use-media";
 import MediaWrapper from "./MediaWrapper";
+import { Tool } from "@/lib/types/media";
 import { JsonValue } from "@/lib/types";
 
 const getHeader = (error: boolean, message: string) => {
