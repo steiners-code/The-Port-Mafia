@@ -30,6 +30,7 @@ jobs:
           NEXT_PUBLIC_FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
           NEXT_PUBLIC_DEFAULT_REDIRECT_URL="${{ secrets.FRONTEND_URL }}"
           NEXT_PUBLIC_LINKEDIN_CLIENT_ID="${{ secrets.LINKEDIN_CLIENT_ID }}"
+          NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY="${{ secrets.IMAGEKIT_PUBLIC_KEY }}"
           NODE_ENV="production"
           EOF
 
@@ -50,6 +51,9 @@ jobs:
           LINKEDIN_CLIENT_SECRET="${{ secrets.LINKEDIN_CLIENT_SECRET }}"
           ENCRYPTION_KEY="${{ secrets.ENCRYPTION_KEY }}"
           CRON_API_SECRET="${{ secrets.CRON_API_SECRET }}"
+          LINKEDIN_GEMINI_API_KEY=${{ secrets.LINKEDIN_GEMINI_API_KEY }}
+          LINKEDIN_GEMINI_MODEL=${{ secrets.LINKEDIN_GEMINI_MODEL }}
+          LINKEDIN_GEMINI_MAX_RPM=${{ secrets.LINKEDIN_GEMINI_MAX_RPM }}
           NODE_ENV="development"
           EOF
 
@@ -59,9 +63,14 @@ jobs:
           cat <<EOF > backend/main/.env
           JWT_PRIVATE_KEY="${{ secrets.JWT_PRIVATE_KEY }}"
           DATABASE_URL="${{ secrets.MAIN_DATABASE_URL }}"
-          FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
           HOME_SERVER_URL="${{ secrets.HOME_SERVER_URL }}"
+          FRONTEND_URL="${{ secrets.FRONTEND_URL }}"
           CRON_API_SECRET="${{ secrets.CRON_API_SECRET }}"
+          IMAGEKIT_PRIVATE_KEY="${{ secrets.IMAGEKIT_PRIVATE_KEY }}"
+          IMAGEKIT_PUBLIC_KEY="${{ secrets.IMAGEKIT_PUBLIC_KEY }}"
+          MAIN_GEMINI_API_KEY="${{ secrets.MAIN_GEMINI_API_KEY }}"
+          MAIN_GEMINI_MODEL="${{ secrets.MAIN_GEMINI_MODEL }}"
+          MAIN_GEMINI_MAX_RPM="${{ secrets.MAIN_GEMINI_MAX_RPM }}"
           NODE_ENV="development"
           EOF
 
