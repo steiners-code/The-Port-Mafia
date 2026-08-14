@@ -1,4 +1,5 @@
-import { MainContentStatus, MainContentType, MainFileType } from "../../../../generated/prisma";
+import { MainContentStatus, MainContentType, MainFileType, MainLogLevel } from "../../../../generated/prisma";
+import { getAutomatedLog } from "../../helpers/automatedMessages";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
@@ -56,6 +57,12 @@ export async function displayMemoryFile(args: {}, { userId, messageId, principal
                 extension: "MD",
                 category: "FILE",
             },
+            logs: {
+                create: {
+                    level: MainLogLevel.INFO,
+                    message: getAutomatedLog({ event: "LOG.SUCCESS", contentType: MainContentType.MEDIA })
+                }
+            }
         },
         select: {
             id: true,
