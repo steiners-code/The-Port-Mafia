@@ -44,7 +44,7 @@ export async function getMessageLogs(messageId: string) {
         return {
             status: 500,
             success: true,
-            message: "Successfully grabbed Dazai's log book.",
+            message: "Failed to grab Dazai's log book.",
             details: error instanceof Error ? error.message : "Internal Server Error!",
         }
     }
