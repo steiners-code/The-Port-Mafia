@@ -1,12 +1,11 @@
 import { MainContentStatus } from "../../../generated/prisma";
+import { executeFunctionCall } from "./executeFunctionCall";
 import { getAutomatedMessage } from "./automatedMessages";
 import { JsonValue } from "@prisma/client/runtime/client";
 import { Annotation, MainLog } from "../../../lib/types";
-import { executeTool, isToolName } from "../tools";
+import { sendEvent } from "../../../lib/send-event";
 import { ToolContext } from "../tools/definitions";
-import { EventType } from "../../../lib/enums";
 import { prisma } from "../../../lib/db";
-import { executeFunctionCall } from "./executeFunctionCall";
 
 type ThoughtContentOutput = {
     type: "thought",
@@ -35,8 +34,8 @@ type MessageContentOutput = ThoughtContentOutput | TextContentOutput | ToolConte
 type MessageContentData = {
     id: string,
     status: MainContentStatus,
-    message?: string | null,
-    output?: JsonValue | null,
+    message: string | null,
+    output: JsonValue | null,
 }
 
 interface UpdateMessageProps {
@@ -106,6 +105,7 @@ export async function updateMessageContent({
                 select: {
                     id: true,
                     message: true,
+                    output: true,
                     status: true,
                 },
             })
@@ -121,7 +121,7 @@ export async function updateMessageContent({
             data = await prisma.mainMessageContent.update({
                 where: { id: contentId },
                 data: {
-                    status,
+                    status: funcCallIsError ? MainContentStatus.FAILED : MainContentStatus.COMPLETED,
                     message: getAutomatedMessage({
                         event: "MESSAGE.COMPLETED",
                         contentType: "TOOL",
@@ -152,5 +152,8 @@ export async function updateMessageContent({
             break;
     }
 
-    // await sendEvent({ event_type: EventType.CONTENTCOMPLETED, message: { ...data } })
+    await sendEvent({
+        event_type: "content.completed",
+        content: { ...data }
+    })
 }

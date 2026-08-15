@@ -1,8 +1,16 @@
-import { MainContentStatus, MainTriggerType } from "../../generated/prisma";
-import { generateAIResponse } from "./generateAIResponse";
+import { MainContentStatus, MainMessageStatus, MainTriggerType } from "../../generated/prisma";
+import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
 import { getChatId } from "./getChatId";
 import { prisma } from "../../lib/db";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
+
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
+
+const chatQueue = new Queue("chat-osamu-dazai", { connection });
 
 export async function sendChatMessage(userId: string, contents: UserMessageData["contents"]) {
     try {
@@ -11,6 +19,7 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
         await prisma.mainChatMessage.create({
             data: {
                 triggerType: MainTriggerType.USER,
+                status: MainMessageStatus.SUCCESS,
                 chatId,
                 contents: {
                     create: contents.map((content, sequence) => ({
@@ -24,7 +33,22 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
             }
         });
 
-        await generateAIResponse({ chatId, userId, principalName, connections, contents })
+        const messageId = await createAIChatMessage(chatId)
+
+        await chatQueue.add(
+            "generate",
+            {
+                messageId,
+                chatId,
+                userId,
+                principalName,
+                connections,
+                contents,
+            },
+            {
+                jobId: messageId,
+            }
+        );
 
         return {
             success: true,
