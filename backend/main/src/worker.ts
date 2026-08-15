@@ -4,7 +4,7 @@ import { MainMessageStatus } from "./generated/prisma";
 import { Worker, type Job } from "bullmq";
 import Redis from "ioredis";
 
-const QUEUE_NAME = "chat-osamu-dazai"; // Error('Queue name cannot contain :');
+const QUEUE_NAME = "chat-osamu-dazai";
 const RPM = Number(process.env.MAIN_GEMINI_MAX_RPM ?? 60);
 
 const connection = new Redis(process.env.REDIS_URL!, {

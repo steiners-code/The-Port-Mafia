@@ -39,6 +39,8 @@ export async function generateAIResponse({ messageId, userId, principalName, con
     let activeIndex: number | null = null;
 
     try {
+        await updateAIChatMessage(messageId, LinkedinMessageStatus.PENDING);
+
         do {
             const stepStates: Record<number, StepState> = {}
 
@@ -54,7 +56,6 @@ export async function generateAIResponse({ messageId, userId, principalName, con
 
                 switch (event.event_type) {
                     case "interaction.created":
-                        await updateAIChatMessage(messageId, MainMessageStatus.PENDING);
                         break;
 
                     case "step.start":
