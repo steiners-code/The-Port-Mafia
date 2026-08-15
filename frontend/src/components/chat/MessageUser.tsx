@@ -40,7 +40,7 @@ const MessageUser = ({ contents, messageColors }: { contents: MessageContent[], 
                                 highlightedId === content.id && "animate-pulse-highlight",
                             )}
                         >
-                            <MessageText content={content.message!} />
+                            <MessageText content={content.message!} status={content.status} />
                         </div>
                     ))}
                 </div>
