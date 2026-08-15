@@ -102,7 +102,6 @@ export function useChat() {
     });
 
     function handleEvent(event: SSEEvent) {
-        console.log(event)
         switch (event.event_type) {
             case "message.created": {
                 const message: ChatMessage = {
@@ -112,6 +111,7 @@ export function useChat() {
                     status: event.message.status,
                     contents: [],
                 };
+
                 queryClient.setQueryData<InfiniteData<Chat>>(CHAT_QUERY_KEY, (old) =>
                     appendMessageToCache(old, message)
                 );
@@ -218,7 +218,7 @@ export function useChat() {
                 }
                 toast.error("Message not sent", { description: res.message });
                 return;
-            }
+            };
         },
 
         onError: (_error, _payload, context) => {
@@ -250,7 +250,7 @@ export function useChat() {
         isFetchingOlder: chatQuery.isFetchingPreviousPage,
         hasOlderMessages: chatQuery.hasPreviousPage,
         sendMessage,
-        isPending: sendMutation.isPending,
+        isPending: sendMutation.isPending || messages[messages.length - 1]?.status === MESSAGESTATUS.PENDING || messages[messages.length - 1]?.status === MESSAGESTATUS.QUEUED,
         agent,
     };
 }

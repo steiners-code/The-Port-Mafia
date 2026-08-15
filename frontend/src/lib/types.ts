@@ -61,7 +61,7 @@ type MessageCreatedEvent = {
         id: string,
         triggerType: TRIGGER,
         createdAt: Date,
-        status: typeof MESSAGESTATUS.QUEUED
+        status: typeof MESSAGESTATUS.QUEUED | typeof MESSAGESTATUS.SUCCESS
     }
 }
 
