@@ -39,3 +39,10 @@ export enum STATUS {
     COMPLETED = "COMPLETED",
     FAILED = "FAILED"
 }
+
+export enum MESSAGESTATUS {
+    QUEUED = "QUEUED",
+    PENDING = "PENDING",
+    SUCCESS = "SUCCESS",
+    FAILED = "FAILED"
+}
