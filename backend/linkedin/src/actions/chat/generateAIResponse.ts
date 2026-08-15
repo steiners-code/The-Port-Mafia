@@ -1,15 +1,15 @@
-import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel } from "../../generated/prisma";
+import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus } from "../../generated/prisma";
 import { createStreamWithRetry, StreamInitError } from "./helpers/createStreamWithRetry";
-import { createAIChatMessage, updateAIChatMessage } from "./helpers/chatMessage";
 import { Annotation, LinkedinLog, UserMessageData } from "../../lib/types";
 import { updateMessageContent } from "./helpers/updateMessageContent";
 import { createMessageContent } from "./helpers/createMessageContent";
 import { getAutomatedLog } from "./helpers/automatedMessages";
+import { updateAIChatMessage } from "./helpers/chatMessage";
 import { getSystemPrompt } from "./helpers/getSystemPrompt";
 import { getChatHistory } from "./helpers/getChatHistory";
 
 type GenerateAIResponseData = {
-    chatId: string,
+    messageId: string,
     userId: string,
     principalName: string,
     linkedinConnected: boolean,
@@ -33,12 +33,13 @@ type StepState = {
     funcArgsAccumulate: string,
 };
 
-export async function generateAIResponse({ chatId, userId, principalName, linkedinConnected, contents }: GenerateAIResponseData) {
+export async function generateAIResponse({ messageId, userId, principalName, linkedinConnected, contents }: GenerateAIResponseData) {
     let reRun: boolean = false;
-    let messageId: string = "";
     let activeIndex: number | null = null;
 
     try {
+        await updateAIChatMessage(messageId, LinkedinMessageStatus.PENDING);
+
         do {
             const stepStates: Record<number, StepState> = {}
 
@@ -54,8 +55,6 @@ export async function generateAIResponse({ chatId, userId, principalName, linked
 
                 switch (event.event_type) {
                     case "interaction.created":
-                        if (!messageId)
-                            messageId = await createAIChatMessage(chatId);
                         break;
 
                     case "step.start":
@@ -185,7 +184,7 @@ export async function generateAIResponse({ chatId, userId, principalName, linked
                         };
 
                         console.log(`[interactions.completed] messageId=${messageId}`);
-                        await updateAIChatMessage(messageId);
+                        await updateAIChatMessage(messageId, LinkedinMessageStatus.SUCCESS);
                         break;
 
                     case "error":
@@ -198,7 +197,7 @@ export async function generateAIResponse({ chatId, userId, principalName, linked
                             await updateMessageContent({
                                 context: { userId, messageId, principalName },
                                 contentId: errorState.contentId,
-                                status: LinkedinContentStatus.COMPLETED,
+                                status: LinkedinContentStatus.FAILED,
                                 logs: errorState.logs,
                                 output: {
                                     type: errorState.type,
@@ -225,21 +224,21 @@ export async function generateAIResponse({ chatId, userId, principalName, linked
                                 }
                             });
                         }
+
+                        await updateAIChatMessage(messageId, LinkedinMessageStatus.FAILED);
                         break;
                 }
             }
         } while (reRun);
     } catch (error) {
         console.error("[generateAIResponse] fatal error:", error);
+        const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0, false);
 
         const errorMessage = error instanceof Error ? error.message : "Internal Server Error!";
         const logs: LinkedinLog[] = error instanceof StreamInitError
             ? error.logs
             : [{ level: LinkedinLogLevel.ERROR, message: errorMessage, createdAt: new Date() }];
 
-        if (!messageId) messageId = await createAIChatMessage(chatId);
-
-        const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
         await updateMessageContent({
             context: { userId, messageId, principalName },
             contentId: errContentId,
@@ -250,5 +249,7 @@ export async function generateAIResponse({ chatId, userId, principalName, linked
                 text: `[System Failure]: ${errorMessage}`
             }
         });
+
+        await updateAIChatMessage(messageId, LinkedinMessageStatus.FAILED);
     }
 }
