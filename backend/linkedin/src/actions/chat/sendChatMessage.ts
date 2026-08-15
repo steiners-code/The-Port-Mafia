@@ -1,9 +1,17 @@
 import { LinkedinContentStatus, LinkedinLogLevel, LinkedinTriggerType } from "../../generated/prisma";
 import { getAutomatedLog } from "./helpers/automatedMessages";
-import { generateAIResponse } from "./generateAIResponse";
+import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
 import { getChatId } from "./getChatId";
 import { prisma } from "../../lib/db";
+import Redis from "ioredis";
+import { Queue } from "bullmq";
+
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
+
+const chatQueue = new Queue("chat-maha-balor", { connection });
 
 export async function sendChatMessage(userId: string, contents: UserMessageData["contents"]) {
     try {
@@ -31,7 +39,18 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
             }
         });
 
-        await generateAIResponse({ chatId, userId, principalName, linkedinConnected, contents })
+        const messageId = await createAIChatMessage(chatId)
+
+        await chatQueue.add("generate", {
+            messageId,
+            chatId,
+            userId,
+            principalName,
+            linkedinConnected,
+            contents,
+        }, {
+            jobId: messageId,
+        });
 
         return {
             success: true,

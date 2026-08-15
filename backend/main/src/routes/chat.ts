@@ -2,6 +2,7 @@ import { getOrCreateChat } from "../actions/chat/getOrCreateChat";
 import { sendChatMessage } from "../actions/chat/sendChatMessage";
 import { getMessageLogs } from "../actions/chat/getMessageLogs";
 import { getFileContent } from "../actions/file/getFileContent";
+import { sseHandler } from "../actions/chat/sseHandler";
 import { UserMessageData } from "../lib/types";
 import Elysia, { t } from "elysia";
 
@@ -66,3 +67,5 @@ export const chatRoutes = new Elysia({ prefix: '/chat' })
             "fileType": t.Enum({ USER: "USER", MEMORY: "MEMORY" })
         })
     })
+
+    .get("/sse", () => sseHandler());

@@ -1,14 +1,13 @@
-import { MainTriggerType } from "../../../generated/prisma";
-import { EventType } from "../../../lib/enums";
+import { MainMessageStatus, MainTriggerType } from "../../../generated/prisma";
+import { sendEvent } from "../../../lib/send-event";
 import { prisma } from "../../../lib/db";
-
-// TODO: Implement SSE
 
 export async function createAIChatMessage(chatId: string) {
     const data = await prisma.mainChatMessage.create({
         data: {
             chatId,
             triggerType: MainTriggerType.SYSTEM,
+            status: MainMessageStatus.QUEUED
         },
         select: {
             id: true,
@@ -17,11 +16,35 @@ export async function createAIChatMessage(chatId: string) {
         }
     })
 
-    // await sendEvent({ event_type: EventType.MESSAGECREATED, message: { ...data } })
+    await sendEvent({
+        event_type: "message.created",
+        message: { ...data, status: MainMessageStatus.QUEUED }
+    })
 
     return data.id
 }
 
-export async function updateAIChatMessage(messageId: string) {
-    // await sendEvent({ event_type: EventType.MESSAGECOMPLETED, message: { id: messageId } })
+export async function updateAIChatMessage(messageId: string, status: MainMessageStatus) {
+    const data = await prisma.mainChatMessage.update({
+        where: { id: messageId },
+        data: { status },
+        select: { id: true, status: true }
+    });
+
+    switch (data.status) {
+        case "PENDING":
+            await sendEvent({
+                event_type: "message.delta",
+                message: { id: data.id, status: data.status }
+            });
+            break;
+
+        case "SUCCESS":
+        case "FAILED":
+            await sendEvent({
+                event_type: "message.completed",
+                message: { id: data.id, status: data.status }
+            })
+            break;
+    }
 }

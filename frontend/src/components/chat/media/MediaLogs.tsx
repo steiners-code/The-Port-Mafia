@@ -80,7 +80,7 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
     return (
         <MediaWrapper metadata={{
             name: "LOGS",
-            extension: formatDate(data[0].createdAt, "EEEE, dd MMMM yyyy")
+            extension: formatDate(data[0]?.createdAt || new Date(), "EEEE, dd MMMM yyyy")
         }}>
             <div className="space-y-8 animate-in">
                 {data.map(content => (

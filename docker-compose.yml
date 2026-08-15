@@ -26,6 +26,22 @@ services:
     depends_on:
       - frontend
 
+  main-worker:
+    build: ./backend/main
+    container_name: mafia-main-worker
+    restart: always
+    command: bun run worker
+    env_file:
+      - ./backend/main/.env
+    volumes:
+      - ./backend/main:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - mafia-network
+      - global-database-network
+    depends_on:
+      - redis
+
   linkedin-service:
     build: ./backend/linkedin
     container_name: mafia-linkedin
@@ -35,6 +51,31 @@ services:
     networks:
       - mafia-network
       - global-database-network
+
+  linkedin-worker:
+    build: ./backend/linkedin
+    container_name: mafia-linkedin-worker
+    restart: always
+    command: bun run worker
+    env_file:
+      - ./backend/linkedin/.env
+    volumes:
+      - ./backend/linkedin:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - mafia-network
+      - global-database-network
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: mafia-redis
+    restart: always
+    volumes:
+      - mafia-redis-data:/data
+    networks:
+      - mafia-network
 
   frontend:
     build: ./frontend

@@ -3,9 +3,18 @@
 import { useMedia } from "@/hooks/use-media";
 import { ChevronRight } from "lucide-react"
 import { JsonValue } from "@/lib/types";
+import { STATUS } from "@/lib/enums";
 
-const MessageThought = ({ message, output }: { output: JsonValue, message: string }) => {
+const MessageThought = ({ message, output, status }: { status: STATUS, output: JsonValue, message: string }) => {
     const { openMedia } = useMedia();
+
+    if (status === STATUS.PENDING) {
+        return (
+            <div className="max-w-[80%] p-0! flex items-center justify-start! gap-0.5! text-shine">
+                <p className="w-fit text-left font-normal! text-sm line-clamp-1 first-letter:uppercase">{message}</p>
+            </div >
+        )
+    }
 
     return (
         <div

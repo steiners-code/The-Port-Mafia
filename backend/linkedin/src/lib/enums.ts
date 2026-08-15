@@ -19,11 +19,3 @@ export enum APPSTATUS {
     CONNECTED = "CONNECTED",
     DISCONNECTED = "DISCONNECTED"
 }
-
-export enum EventType {
-    MESSAGECREATED = "message.created",
-    MESSAGECOMPLETED = "message.completed",
-    CONTENTCREATED = "content.created",
-    CONTENTDELTA = "content.delta",
-    CONTENTCOMPLETED = "content.completed",
-}

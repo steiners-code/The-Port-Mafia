@@ -1,16 +1,16 @@
-import { MainContentStatus, MainContentType, MainLogLevel } from "../../generated/prisma";
+import { MainContentStatus, MainContentType, MainLogLevel, MainMessageStatus } from "../../generated/prisma";
 import { createStreamWithRetry, StreamInitError } from "./helpers/createStreamWithRetry";
-import { createAIChatMessage, updateAIChatMessage } from "./helpers/chatMessage";
 import { Annotation, MainLog, UserMessageData } from "../../lib/types";
 import { updateMessageContent } from "./helpers/updateMessageContent";
 import { createMessageContent } from "./helpers/createMessageContent";
 import { getAutomatedLog } from "./helpers/automatedMessages";
+import { updateAIChatMessage } from "./helpers/chatMessage";
 import { getSystemPrompt } from "./helpers/getSystemPrompt";
 import { getChatHistory } from "./helpers/getChatHistory";
 import { Connections } from "./helpers/subAgents";
 
 type GenerateAIResponseData = {
-    chatId: string,
+    messageId: string,
     userId: string,
     principalName: string,
     connections: Connections,
@@ -34,12 +34,13 @@ type StepState = {
     funcArgsAccumulate: string,
 };
 
-export async function generateAIResponse({ chatId, userId, principalName, connections, contents }: GenerateAIResponseData) {
+export async function generateAIResponse({ messageId, userId, principalName, connections, contents }: GenerateAIResponseData) {
     let reRun: boolean = false;
-    let messageId: string = "";
     let activeIndex: number | null = null;
 
     try {
+        await updateAIChatMessage(messageId, LinkedinMessageStatus.PENDING);
+
         do {
             const stepStates: Record<number, StepState> = {}
 
@@ -55,8 +56,6 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
 
                 switch (event.event_type) {
                     case "interaction.created":
-                        if (!messageId)
-                            messageId = await createAIChatMessage(chatId);
                         break;
 
                     case "step.start":
@@ -185,21 +184,19 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                             break;
                         };
 
-                        console.log(`[interactions.completed] messageId=${messageId}`);
-                        await updateAIChatMessage(messageId);
+                        await updateAIChatMessage(messageId, MainMessageStatus.SUCCESS);
                         break;
 
                     case "error":
                         const errorState = activeIndex !== null ? stepStates[activeIndex] : null
                         const errorMessage = event.error?.message || "An unexpected stream error occurred.";
-                        console.log(`[error] errorState=${errorState} activeIndex=${activeIndex} errorMessage=${errorMessage}`)
 
                         if (errorState) {
                             errorState.logs.push({ level: MainLogLevel.ERROR, message: errorMessage, createdAt: new Date() })
                             await updateMessageContent({
                                 context: { userId, messageId, principalName },
                                 contentId: errorState.contentId,
-                                status: MainContentStatus.COMPLETED,
+                                status: MainContentStatus.FAILED,
                                 logs: errorState.logs,
                                 output: {
                                     type: errorState.type,
@@ -226,21 +223,21 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                                 }
                             });
                         }
+
+                        await updateAIChatMessage(messageId, MainMessageStatus.FAILED);
                         break;
                 }
             }
         } while (reRun);
     } catch (error) {
         console.error("[generateAIResponse] fatal error:", error);
+        const errContentId = await createMessageContent(messageId, MainContentType.TEXT, 0, false);
 
         const errorMessage = error instanceof Error ? error.message : "Internal Server Error!";
         const logs: MainLog[] = error instanceof StreamInitError
             ? error.logs
             : [{ level: MainLogLevel.ERROR, message: errorMessage, createdAt: new Date() }];
 
-        if (!messageId) messageId = await createAIChatMessage(chatId);
-
-        const errContentId = await createMessageContent(messageId, MainContentType.TEXT, 0);
         await updateMessageContent({
             context: { userId, messageId, principalName },
             contentId: errContentId,
@@ -251,5 +248,7 @@ export async function generateAIResponse({ chatId, userId, principalName, connec
                 text: `[System Failure]: ${errorMessage}`
             }
         });
+
+        await updateAIChatMessage(messageId, MainMessageStatus.FAILED);
     }
 }

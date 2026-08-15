@@ -1,5 +1,6 @@
 import { MainContentStatus, MainContentType, MainFileType, MainLogLevel } from "../../../../generated/prisma";
 import { getAutomatedLog } from "../../helpers/automatedMessages";
+import { sendEvent } from "../../../../lib/send-event";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
@@ -43,7 +44,7 @@ export async function readMemoryFile(args: { content: string }, { userId }: Tool
 }
 
 export async function displayMemoryFile(args: {}, { userId, messageId, principalName }: ToolContext) {
-    await prisma.mainMessageContent.create({
+    const data = await prisma.mainMessageContent.create({
         data: {
             chatMessageId: messageId,
             contentType: MainContentType.MEDIA,
@@ -70,12 +71,11 @@ export async function displayMemoryFile(args: {}, { userId, messageId, principal
             sequence: true,
             message: true,
             output: true,
-            status: true,
             createdAt: true,
         },
     });
 
-    // await sendEvent({ event_type: EventType.CONTENTCREATED, message: { ...data } })
+    await sendEvent({ event_type: "content.created", content: { ...data, messageId, status: MainContentStatus.COMPLETED } })
 
     return {
         success: true,

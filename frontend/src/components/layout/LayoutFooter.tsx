@@ -39,6 +39,11 @@ const LayoutFooter = () => {
 
     const handleSend = () => {
         const trimmed = value.trim()
+        if (isPending) {
+            toast.error("Cannot send message, another message in queue!")
+            return;
+        }
+
         if (trimmed)
             sendMessage([...content, {
                 id: 'random-ass' + new Date(),

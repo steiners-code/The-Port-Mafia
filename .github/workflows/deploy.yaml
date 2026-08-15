@@ -54,6 +54,7 @@ jobs:
           LINKEDIN_GEMINI_API_KEY=${{ secrets.LINKEDIN_GEMINI_API_KEY }}
           LINKEDIN_GEMINI_MODEL=${{ secrets.LINKEDIN_GEMINI_MODEL }}
           LINKEDIN_GEMINI_MAX_RPM=${{ secrets.LINKEDIN_GEMINI_MAX_RPM }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
           NODE_ENV="development"
           EOF
 
@@ -71,6 +72,7 @@ jobs:
           MAIN_GEMINI_API_KEY="${{ secrets.MAIN_GEMINI_API_KEY }}"
           MAIN_GEMINI_MODEL="${{ secrets.MAIN_GEMINI_MODEL }}"
           MAIN_GEMINI_MAX_RPM="${{ secrets.MAIN_GEMINI_MAX_RPM }}"
+          REDIS_URL=${{ secrets.REDIS_URL }}
           NODE_ENV="development"
           EOF
 

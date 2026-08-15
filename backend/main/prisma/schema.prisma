@@ -98,6 +98,15 @@ enum MainTriggerType {
   @@schema("main")
 }
 
+enum MainMessageStatus {
+  QUEUED
+  PENDING
+  SUCCESS
+  FAILED
+
+  @@schema("main")
+}
+
 enum MainContentType {
   TEXT
   TOOL
@@ -143,6 +152,7 @@ model MainChatMessage {
   chat   MainChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   triggerType MainTriggerType
+  status      MainMessageStatus @default(QUEUED)
 
   contents MainMessageContent[]
 
