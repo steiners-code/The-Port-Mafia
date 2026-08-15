@@ -52,7 +52,7 @@ export function useChat() {
             const oldest = firstPage.messages[0];
             return { createdAt: oldest.createdAt, id: oldest.id };
         },
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false,
     });
 
     /**
@@ -127,8 +127,6 @@ export function useChat() {
                 output: c.output,
             }))
         };
-
-        console.log(JSON.stringify(payload, null, 4));
 
         sendMutation.mutate(payload);
     }

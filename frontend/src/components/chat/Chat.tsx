@@ -14,7 +14,7 @@ import { Loader2 } from "lucide-react";
  * older page starts fetching — gives enough scroll buffer that the
  * fetch resolves before the user actually reaches the top.
  */
-const SENTINEL_OFFSET = 5;
+const SENTINEL_OFFSET = 10;
 
 const Chat = () => {
     const pathname = usePathname();
@@ -23,15 +23,19 @@ const Chat = () => {
 
     const sentinelNodeRef = useRef<HTMLDivElement | null>(null);
     const prevScrollHeightRef = useRef<number | null>(null);
+    const isFetchingOlderRef = useRef(isFetchingOlder);
+    const hasOlderMessagesRef = useRef(hasOlderMessages);
+    isFetchingOlderRef.current = isFetchingOlder;
+    hasOlderMessagesRef.current = hasOlderMessages;
 
     const agent = getAgentByPathname(pathname);
 
     useEffect(() => {
-        if (!container || !sentinelNodeRef.current || !hasOlderMessages) return;
+        if (!container || !sentinelNodeRef.current) return;
 
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry?.isIntersecting && hasOlderMessages && !isFetchingOlder) {
+                if (entry?.isIntersecting && hasOlderMessagesRef.current && !isFetchingOlderRef.current) {
                     prevScrollHeightRef.current = container.scrollHeight;
                     fetchOlderMessages();
                 }
@@ -41,13 +45,7 @@ const Chat = () => {
 
         observer.observe(sentinelNodeRef.current);
         return () => observer.disconnect();
-    }, [container, hasOlderMessages, isFetchingOlder, fetchOlderMessages, messages.length]);
-
-    /**
-     * Fires after older messages are prepended and painted. Offsets
-     * scrollTop by exactly how much taller the content became, so the
-     * message the user was looking at stays visually in place.
-     */
+    }, [container, fetchOlderMessages, messages]);
 
     if (isChatError) {
         return (

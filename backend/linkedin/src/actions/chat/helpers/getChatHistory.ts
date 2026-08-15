@@ -65,8 +65,6 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
             }
         }
 
-        historyContent.push(userContent);
-
         return historyContent;
     } catch (error) {
         console.error(error);
