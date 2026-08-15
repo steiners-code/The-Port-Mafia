@@ -1,8 +1,8 @@
 "use client"
 
-import { Fragment, useEffect, useLayoutEffect, useRef } from "react";
+import { MESSAGESTATUS, STATUS, TRIGGER, TYPE } from "@/lib/enums";
 import { useScrollContainerStore } from "@/hooks/use-scroll";
-import { STATUS, TRIGGER, TYPE } from "@/lib/enums";
+import { Fragment, useEffect, useRef } from "react";
 import { getAgentByPathname } from "@/data/agents";
 import { useChat } from "@/context/ChatContext";
 import Message from "@/components/chat/Message";
@@ -73,6 +73,7 @@ const Chat = () => {
                     data={{
                         id: "no-chat-history-exist-or-loaded",
                         triggerType: TRIGGER.CRON,
+                        status: MESSAGESTATUS.SUCCESS,
                         createdAt: new Date(),
                         contents: [{
                             id: "no-chat-history-text-message",
