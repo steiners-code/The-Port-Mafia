@@ -1,4 +1,5 @@
-import { MainContentStatus, MainMessageStatus, MainTriggerType } from "../../generated/prisma";
+import { MainContentStatus, MainLogLevel, MainMessageStatus, MainTriggerType } from "../../generated/prisma";
+import { getAutomatedLog } from "./helpers/automatedMessages";
 import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
 import { getChatId } from "./getChatId";
@@ -28,6 +29,12 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
                         output: content.output,
                         status: MainContentStatus.COMPLETED,
                         sequence,
+                        logs: {
+                            create: {
+                                level: MainLogLevel.INFO,
+                                message: getAutomatedLog({ event: "LOG.INFO", contentType: content.contentType })
+                            }
+                        }
                     })),
                 },
             }
