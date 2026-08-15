@@ -200,6 +200,15 @@ enum LinkedinTriggerType {
   @@schema("linkedin")
 }
 
+enum LinkedinMessageStatus {
+  QUEUED
+  PENDING
+  SUCCESS
+  FAILED
+
+  @@schema("linkedin")
+}
+
 enum LinkedinContentType {
   TEXT
   TOOL
@@ -243,6 +252,7 @@ model LinkedinChatMessage {
   chat   LinkedinChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
   triggerType LinkedinTriggerType
+  status      LinkedinMessageStatus @default(QUEUED)
 
   contents LinkedinMessageContent[]
 
