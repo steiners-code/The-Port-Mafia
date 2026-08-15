@@ -11,7 +11,6 @@ function channelKey(agentId: string) {
 }
 
 export async function sendEvent(data: Event) {
-    console.log("EVENT_SENT: ", JSON.stringify(data, null, 0))
     await publisher.publish(channelKey(AGENT_ID), JSON.stringify(data))
 }
 
