@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 
-const AGENT_ID = "osamu-dazai";
+const AGENT_ID = "maha-balor";
 
 function channelKey(agentId: string) {
     return `sse:${agentId}`;
