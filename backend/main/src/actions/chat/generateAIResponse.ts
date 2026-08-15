@@ -50,6 +50,8 @@ export async function generateAIResponse({ messageId, userId, principalName, con
             const stream = await createStreamWithRetry(systemPrompt, chatHistory);
 
             for await (const event of stream) {
+                console.log(`[stream event] type=${event.event_type} index=${(event as any).index ?? "-"}`);
+
                 switch (event.event_type) {
                     case "interaction.created":
                         await updateAIChatMessage(messageId, MainMessageStatus.PENDING);
@@ -59,6 +61,7 @@ export async function generateAIResponse({ messageId, userId, principalName, con
                         const index = event.index;
                         activeIndex = index;
                         let contentId = "";
+                        console.log(`[step.start] index=${index} step.type=${event.step.type}`);
 
                         switch (event.step.type) {
                             case "thought":
@@ -112,6 +115,8 @@ export async function generateAIResponse({ messageId, userId, principalName, con
                         break;
 
                     case "step.delta":
+                        console.log(`[step.delta] index=${event.index} step.delta.type=${event.delta.type}`);
+
                         const activeStep = stepStates[event.index]
                         if (!activeStep) break;
 
@@ -143,6 +148,7 @@ export async function generateAIResponse({ messageId, userId, principalName, con
 
                     case "step.stop":
                         const state = stepStates[event.index]
+                        console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;
 
                         const contentType = state.type === "thought" ? "THOUGHT" : state.type === "model_output" ? "TEXT" : state.type === "function_call" ? "TOOL" : "MEDIA"
@@ -224,13 +230,13 @@ export async function generateAIResponse({ messageId, userId, principalName, con
         } while (reRun);
     } catch (error) {
         console.error("[generateAIResponse] fatal error:", error);
+        const errContentId = await createMessageContent(messageId, MainContentType.TEXT, 0, false);
 
         const errorMessage = error instanceof Error ? error.message : "Internal Server Error!";
         const logs: MainLog[] = error instanceof StreamInitError
             ? error.logs
             : [{ level: MainLogLevel.ERROR, message: errorMessage, createdAt: new Date() }];
 
-        const errContentId = await createMessageContent(messageId, MainContentType.TEXT, 0);
         await updateMessageContent({
             context: { userId, messageId, principalName },
             contentId: errContentId,

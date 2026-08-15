@@ -17,7 +17,7 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
     try {
         const { chatId, principalName, connections } = await getChatId(userId)
 
-        await prisma.mainChatMessage.create({
+        const data = await prisma.mainChatMessage.create({
             data: {
                 triggerType: MainTriggerType.USER,
                 status: MainMessageStatus.SUCCESS,
@@ -42,20 +42,16 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
 
         const messageId = await createAIChatMessage(chatId)
 
-        await chatQueue.add(
-            "generate",
-            {
-                messageId,
-                chatId,
-                userId,
-                principalName,
-                connections,
-                contents,
-            },
-            {
-                jobId: messageId,
-            }
-        );
+        await chatQueue.add("generate", {
+            messageId,
+            chatId,
+            userId,
+            principalName,
+            connections,
+            contents,
+        }, {
+            jobId: messageId,
+        });
 
         return {
             success: true,

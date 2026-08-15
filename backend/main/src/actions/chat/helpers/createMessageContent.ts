@@ -3,7 +3,7 @@ import { getAutomatedLog, getAutomatedMessage } from "./automatedMessages";
 import { sendEvent } from "../../../lib/send-event";
 import { prisma } from "../../../lib/db";
 
-export async function createMessageContent(messageId: string, type: MainContentType, index: number, toolName?: string) {
+export async function createMessageContent(messageId: string, type: MainContentType, index: number, initialLog: boolean = true, toolName?: string) {
     const message = getAutomatedMessage({ event: "MESSAGE.STARTED", contentType: type, toolName })
 
     const data = await prisma.mainMessageContent.create({
@@ -13,12 +13,14 @@ export async function createMessageContent(messageId: string, type: MainContentT
             chatMessageId: messageId,
             status: MainContentStatus.PENDING,
             message,
-            logs: {
-                create: {
-                    level: MainLogLevel.INFO,
-                    message: getAutomatedLog({ event: "LOG.INFO", contentType: type })
+            ...(initialLog && {
+                logs: {
+                    create: {
+                        level: MainLogLevel.INFO,
+                        message: getAutomatedLog({ event: "LOG.INFO", contentType: type })
+                    }
                 }
-            },
+            })
         },
         select: {
             id: true,
