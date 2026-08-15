@@ -135,3 +135,6 @@ networks:
 
   global-database-network:
     external: true
+
+volumes:
+  mafia-redis-data:
