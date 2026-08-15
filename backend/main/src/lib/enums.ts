@@ -18,11 +18,3 @@ export enum LOGLEVEL {
     INFO = "INFO",
     WARN = "WARN"
 }
-
-export enum EventType {
-    MESSAGECREATED = "message.created",
-    MESSAGECOMPLETED = "message.completed",
-    CONTENTCREATED = "content.created",
-    CONTENTDELTA = "content.delta",
-    CONTENTCOMPLETED = "content.completed",
-}
