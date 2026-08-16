@@ -151,6 +151,7 @@ model MainChatMessage {
   chatId String
   chat   MainChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
+  agent       SubAgent?
   triggerType MainTriggerType
   status      MainMessageStatus @default(QUEUED)
 
@@ -283,6 +284,7 @@ enum SubAgent {
 
 enum MainTaskStatus {
   PENDING
+  INREVIEW
   INPROGRESS
   COMPLETED
   CANCELLED
@@ -307,9 +309,9 @@ model MainTask {
   title   String
   content Json
 
-  level    MainTaskLevel  @default(MEDIUM)
-  status   MainTaskStatus @default(PENDING)
-  progress Int            @default(0)
+  type   String
+  level  MainTaskLevel  @default(MEDIUM)
+  status MainTaskStatus @default(PENDING)
 
   comments MainTaskComment[]
 
