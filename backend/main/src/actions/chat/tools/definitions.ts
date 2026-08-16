@@ -1,5 +1,7 @@
 import { readMemoryFile, writeMemoryFile, displayMemoryFile } from "./executor/memoryFile";
 import { displayUserFile, readUserFile, writeUserFile } from "./executor/userFile";
+import { updateTask } from "./executor/updateTask";
+import { getTasks } from "./executor/tasks";
 import { ToolName } from "./registry";
 
 export type ToolContext = {
@@ -8,11 +10,17 @@ export type ToolContext = {
     principalName: string,
 };
 
+type ToolPropertySchema =
+    | { type: "string"; description?: string; enum?: string[] }
+    | { type: "number" | "integer" | "boolean"; description?: string }
+    | { type: "array"; description?: string; items: ToolPropertySchema }
+    | { type: "object"; description?: string; properties?: Record<string, ToolPropertySchema>; required?: string[] };
+
 type ToolDefinition<Args = any, Result = any> = {
     description: string;
     parameters: {
         type: "object";
-        properties: Record<string, { type: string; description?: string }>;
+        properties: Record<string, ToolPropertySchema>;
         required: string[];
     };
     execute: (args: Args, context: ToolContext) => Promise<Result>;
@@ -72,4 +80,47 @@ export const TOOLS: ToolMap = {
         parameters: { type: "object", properties: {}, required: [] },
         execute: displayMemoryFile
     },
-};
+
+    get_tasks: {
+        description: "Returns open tasks raised by subordinate agents — PENDING or INPROGRESS only, never completed, discarded, or cancelled ones. Use this to review what's outstanding, answer what you can, or check status before delegating further.",
+        parameters: {
+            type: "object",
+            properties: {
+                status: {
+                    type: "string", description: "Optional. Filter to a single status. Omit to return all open tasks.",
+                    enum: ["PENDING", "INPROGRESS", "INREVIEW"]
+                },
+            },
+            required: [],
+        },
+        execute: getTasks
+    },
+
+    update_task: {
+        description: "Updates a single open task by id: assign or change its level, and/or submit changes to its content. The content shape depends on the task's type — you were given that shape when the task was raised; only submit fields that match it, using the same structure. Only include what you're actually changing, and never invent a value you don't have a real answer for — omit it instead. Never reconstruct the task's full content from scratch; submit only the delta, and let the harness merge it against what's actually stored.",
+        parameters: {
+            type: "object",
+            properties: {
+                id: {
+                    type: "string",
+                    description: "The task's id, exactly as given to you.",
+                },
+                level: {
+                    type: "string",
+                    description: "Assign only if you're setting or changing the task's priority. Omit if you're only submitting content changes.",
+                    enum: ["CRITICAL", "HIGH", "MEDIUM", "LOW"],
+                },
+                comment: {
+                    type: "string",
+                    description: "Optional note attached to the task — why you couldn't complete the rest, or context worth the user seeing.",
+                },
+                content: {
+                    type: "object",
+                    description: "Changes to the task's content, in the same structure as the task's type. For a QUESTIONNAIRE task, this is an array of { index, answer } for whichever questions you can resolve — nothing else, and never repeat the question's own text back. Other task types will have their own shape; match whatever was given to you for this task.",
+                },
+            },
+            required: ["id"],
+        },
+        execute: updateTask
+    },
+}
