@@ -1,4 +1,4 @@
-import { MainContentStatus, MainLogLevel, MainMessageStatus, MainTriggerType } from "../../generated/prisma";
+import { MainContentStatus, MainLogLevel, MainMessageStatus, MainTriggerType, SubAgent } from "../../generated/prisma";
 import { getAutomatedLog } from "./helpers/automatedMessages";
 import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
@@ -13,14 +13,15 @@ const connection = new Redis(process.env.REDIS_URL!, {
 
 const chatQueue = new Queue("chat-osamu-dazai", { connection });
 
-export async function sendChatMessage(userId: string, contents: UserMessageData["contents"]) {
+export async function sendChatMessage(userId: string, contents: UserMessageData["contents"], triggerType: MainTriggerType = MainTriggerType.USER, agent?: SubAgent) {
     try {
         const { chatId, principalName, connections } = await getChatId(userId)
 
         const data = await prisma.mainChatMessage.create({
             data: {
-                triggerType: MainTriggerType.USER,
+                triggerType,
                 status: MainMessageStatus.SUCCESS,
+                agent,
                 chatId,
                 contents: {
                     create: contents.map((content, sequence) => ({
