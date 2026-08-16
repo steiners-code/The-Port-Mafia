@@ -1,4 +1,4 @@
-import { MainContentType, MainFileType, MainLogLevel } from "../generated/prisma"
+import { AppType, MainContentType, MainFileType, MainLogLevel, MainTaskLevel, MainTaskStatus, SubAgent } from "../generated/prisma"
 import { LOGLEVEL } from "./enums"
 
 export type Logs = {
@@ -149,3 +149,37 @@ type UserInputStep = {
 }
 
 export type Step = UserInputStep | ModelOutputStep | ThoughtStep | FunctionCallStep | FunctionResultStep
+
+export type MainTask = {
+    id: string
+    title: string
+    level: MainTaskLevel
+    status: MainTaskStatus
+} & QuestionnaireTask
+
+export type QuestionnaireTask = SubAgents & {
+    type: "QUESTIONNAIRE",
+    content: Question[]
+}
+
+export type Question = {
+    index: number,
+    question: string,
+    answer: string | null
+    answeredBy: "USER" | "DAZAI" | null
+}
+
+export type CreateTaskBody = { title: string } & QuestionnaireTaskBody
+
+export type QuestionnaireTaskBody = SubAgents & {
+    type: "QUESTIONNAIRE",
+    questions: string[],
+}
+
+export type SubAgents = MahaLinkedIn
+
+type MahaLinkedIn = {
+    subAgent: typeof SubAgent.MAHA
+    subAgentPlatform: typeof AppType.LINKEDIN
+    subAgentRole: "OBSERVER" | "ANALYST" | "STRATEGIST" | "WRITER" | "HANDLER"
+}
