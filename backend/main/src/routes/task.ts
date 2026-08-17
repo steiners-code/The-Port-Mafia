@@ -1,10 +1,15 @@
-import { getMainTasks } from '../actions/task/getMainTasks';
-import { createTask } from '../actions/task/createTask';
+import { getMainTasks } from '../actions/tasks/getMainTasks';
+import { getTaskById } from '../actions/tasks/getTaskById';
+import { createTask } from '../actions/tasks/createTask';
 import { CreateTaskBody } from '../lib/types';
 import Elysia, { t } from 'elysia';
 
 const userId = t.Object({
     "x-user-id": t.String({ error: "Missing API-Gateway ID: userId" })
+})
+
+const taskId = t.Object({
+    "id": t.String({ error: "Missing Requested Task ID: id" })
 })
 
 const filters = t.Object({
@@ -29,7 +34,7 @@ const mahaLinkedInTaskBody = t.Object({
 const createTaskBody = t.Union([mahaLinkedInTaskBody]);
 
 export const taskRoutes = new Elysia({ prefix: '/tasks' })
-    .get('/get', async ({ status, headers, query }) => {
+    .get('/', async ({ status, headers, query }) => {
         const userId = headers['x-user-id']
         const filters = query.filters
 
@@ -40,6 +45,19 @@ export const taskRoutes = new Elysia({ prefix: '/tasks' })
     }, {
         headers: userId,
         query: t.Optional(filters)
+    })
+
+    .get('/get', async ({ status, headers, query }) => {
+        const userId = headers['x-user-id']
+        const taskId = query.id
+
+        const { success, data, ...res } = await getTaskById(userId, taskId)
+        if (!success || !data) return status(res.status, { message: res.message, details: res.details })
+
+        return status(200, data)
+    }, {
+        headers: userId,
+        query: taskId
     })
 
     .post('/create', async ({ headers, status, body }) => {

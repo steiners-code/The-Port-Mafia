@@ -20,6 +20,7 @@ export async function createTask(userId: string, data: CreateTaskBody) {
             data: {
                 userId,
                 content,
+                type: data.type,
                 title: data.title,
                 subAgent: data.subAgent,
                 subAgentPlatform: data.subAgentPlatform,

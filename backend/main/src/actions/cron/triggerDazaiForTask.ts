@@ -9,19 +9,10 @@ export async function triggerDazaiForTask(userId: string, principalName: string,
     }, {
         contentType: "MEDIA",
         output: {
-            name: `${data.status} Task - ${data.title}`,
-            category: "TEXT",
-            extension: "MD",
-            data: [
-                `# Task - ${data.title}`,
-                `**Status:** ${data.status} - **Level:** ${data.level} - **Type:** ${data.type}`,
-                `Task ID: ${data.id}`,
-                '---',
-                `Requested by ${data.subAgent}, the ${data.subAgentPlatform} for ${data.subAgentPlatform}`,
-                '---',
-                '# Content',
-                JSON.stringify(data.content, null, 2),
-            ].join('\n')
+            name: data.title,
+            category: "TASK",
+            extension: "TASK",
+            id: data.id,
         }
     }]
 
