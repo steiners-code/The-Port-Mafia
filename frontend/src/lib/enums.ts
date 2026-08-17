@@ -46,3 +46,23 @@ export enum MESSAGESTATUS {
     SUCCESS = "SUCCESS",
     FAILED = "FAILED"
 }
+
+export enum AGENT {
+    DAZAI = "DAZAI",
+    MAHA = "MAHA",
+}
+
+export enum TASKSTATUS {
+    COMPLETED = "COMPLETED",
+    PENDING = "PENDING",
+    INREVIEW = "INREVIEW",
+    INPROGRESS = "INPROGRESS",
+    CANCELLED = "CANCELLED",
+}
+
+export enum TASKLEVEL {
+    CRITICAL = "CRITICAL",
+    HIGH = "HIGH",
+    MEDIUM = "MEDIUM",
+    EASY = "EASY",
+}

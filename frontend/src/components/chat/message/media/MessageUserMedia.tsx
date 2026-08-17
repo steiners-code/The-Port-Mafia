@@ -55,7 +55,7 @@ const MessageUserMedia = ({ id, output, messageColors, removeContent, showClose 
 
             <div
                 id={id}
-                className={cn("w-30 aspect-square cursor-pointer border! overflow-hidden rounded-sm",
+                className={cn("w-30 aspect-square cursor-pointer border rounded-sm",
                     highlightedId === id ? "animate-border-shine" : "border-border",
                     messageColors
                 )}

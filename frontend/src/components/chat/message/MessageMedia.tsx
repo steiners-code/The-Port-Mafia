@@ -2,6 +2,7 @@
 
 import MessageMediaAction from "./media/action/MessageMediaAction";
 import MessageMediaDefault from "./media/MessageMediaDefault";
+import MessageMediaTask from "./media/MessageMediaTask";
 import { MediaWithAction } from "@/lib/types/media";
 import { JsonValue } from "@/lib/types"
 
@@ -14,6 +15,8 @@ const MessageMedia = ({ output, id }: { output: JsonValue, id: string }) => {
     switch (data.category) {
         case "ACTION":
             return <MessageMediaAction output={data} id={id} />
+        case "TASK":
+            return <MessageMediaTask output={data} id={id} />
         default:
             return <MessageMediaDefault output={data} id={id} />
     }

@@ -23,14 +23,13 @@ const MediaFile = ({ fileType }: { userId: string, fileType: File["fileType"] })
         return (
             <div className="w-full h-screen flex items-center justify-center gap-2 text-muted-foreground">
                 <Loader2 className="animate-spin size-5!" />
-                <span>Loading...</span>
             </div>
         )
 
     if (!data) {
         return (
             <div className="w-full h-full flex items-center justify-between gap-2 text-muted-foreground">
-                Nothing to show
+                The s*cret document is em*ty
             </div>
         )
     }

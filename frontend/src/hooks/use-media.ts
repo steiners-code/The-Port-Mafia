@@ -1,6 +1,6 @@
 "use client"
 
-import { Logs, MediaData, MediaWithoutType, Thought, Tool } from "@/lib/types/media";
+import { Logs, MediaData, MediaWithoutType, Task, Thought, Tool } from "@/lib/types/media";
 import { Agent, getAgentByPathname } from "@/data/agents";
 import { useSidebar } from "@/components/ui/sidebar";
 import { usePathname } from "next/navigation";
@@ -8,7 +8,7 @@ import { useEffect, useRef } from "react";
 import { JsonValue } from "@/lib/types";
 import { create } from "zustand";
 
-export type ContentType = "MEDIA" | "THOUGHT" | "LOGS" | "TOOL"
+export type ContentType = "MEDIA" | "THOUGHT" | "LOGS" | "TOOL" | "TASK"
 
 type MediaStore = {
     data: MediaData
@@ -33,12 +33,16 @@ function openMediaFn(output: JsonValue, type: ContentType, agent: Agent | null =
             return { type, messageId }
 
         case "TOOL":
-            const { message, output: tOutput } = output as Tool;
-            return { type, message, output: tOutput }
+            const { message, output: toolOutput } = output as Tool;
+            return { type, message, output: toolOutput }
 
         case "MEDIA":
-            const mOutput = output as MediaWithoutType
-            return { type, ...mOutput }
+            const mediaOutput = output as MediaWithoutType;
+            return { type, ...mediaOutput }
+
+        case "TASK":
+            const taskOutput = output as Task;
+            return { type, ...taskOutput }
     }
 }
 

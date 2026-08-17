@@ -6,6 +6,7 @@ import { MediaData } from "@/lib/types/media";
 import MediaThought from "./MediaThought";
 import MediaMedia from "./MediaMedia";
 import MediaLogs from "./MediaLogs";
+import MediaTask from "./MediaTask";
 import MediaTool from "./MediaTool";
 import { TYPE } from "@/lib/enums";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,8 @@ const mediaRender = (data: MediaData) => {
             return <MediaLogs messageId={data.messageId} />
         case "MEDIA":
             return <MediaMedia data={data} />
+        case "TASK":
+            return <MediaTask taskId={data.id} title={data.name} />
         default:
             return <UnsupportedMediaType type={"data?.type!"} extension="UNDEFINED" />
     }

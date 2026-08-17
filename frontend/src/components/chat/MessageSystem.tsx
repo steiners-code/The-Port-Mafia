@@ -1,16 +1,18 @@
 import { useHighlightStore } from "@/hooks/use-highlight-content";
+import { AGENT, MESSAGESTATUS, TYPE } from "@/lib/enums";
+import MessageSystemAgent from "./MessageSystemAgent";
 import MessageThought from "./message/MessageThought";
 import MessageMedia from "./message/MessageMedia";
-import { MESSAGESTATUS, TYPE } from "@/lib/enums";
 import { PendingMessage } from "./PendingMessage";
 import { InfoIcon } from "@phosphor-icons/react";
 import MessageTool from "./message/MessageTool";
 import MessageText from "./message/MessageText";
+import { getAgentByEnum } from "@/data/agents";
 import { MessageContent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-function renderMessage(type: TYPE, content: MessageContent) {
-    switch (type) {
+function renderMessage(content: MessageContent) {
+    switch (content.contentType) {
         case TYPE.TEXT:
             return content.message && <MessageText key={content.id} status={content.status} content={content.message} />
         case TYPE.THOUGHT:
@@ -22,8 +24,18 @@ function renderMessage(type: TYPE, content: MessageContent) {
     }
 }
 
-const MessageSystem = ({ status, contents, agentId, textColors }: { status: MESSAGESTATUS, contents: MessageContent[], agentId?: string, textColors?: string }) => {
+function isCorrectSubAgent(agent: AGENT | null): agent is AGENT {
+    if (!agent) return false;
+    return Object.values(AGENT).includes(agent);
+}
+
+const MessageSystem = ({ status, contents, agentId, agent, textColors }: { status: MESSAGESTATUS, contents: MessageContent[], agent: AGENT | null, agentId?: string, textColors?: string }) => {
     const { highlightedId } = useHighlightStore();
+
+    if (isCorrectSubAgent(agent)) {
+        const subAgent = getAgentByEnum(agent)
+        return <MessageSystemAgent contents={contents} messageColors={subAgent?.colors.message} />
+    }
 
     if (status === MESSAGESTATUS.QUEUED) {
         return (
@@ -52,7 +64,7 @@ const MessageSystem = ({ status, contents, agentId, textColors }: { status: MESS
                         content.contentType !== "MEDIA" && highlightedId === content.id && "animate-pulse-highlight",
                     )}
                 >
-                    {renderMessage(content.contentType, content)}
+                    {renderMessage(content)}
                 </div>
             ))}
 
