@@ -70,6 +70,42 @@ function appendMessageToCache(old: InfiniteData<Chat> | undefined, message: Chat
 }
 
 /**
+ * For a message.full event (USER or SUBAGENT-originated, already fully
+ * formed at creation, no follow-up content.created/content.completed
+ * events coming). If the trigger is USER and the last message currently
+ * in cache is still the optimistic placeholder, replace it in place —
+ * that's the real row reconciling the optimistic one. Any other case
+ * (no optimistic message sitting there, or a non-USER trigger such as a
+ * SUBAGENT-sourced system message) just appends normally.
+ */
+function upsertFullMessage(
+    old: InfiniteData<Chat> | undefined,
+    message: ChatMessage
+): InfiniteData<Chat> | undefined {
+    if (!old || !old.pages.length) return appendMessageToCache(old, message);
+
+    const lastIndex = old.pages.length - 1;
+    const lastPage = old.pages[lastIndex];
+    if (!lastPage) return appendMessageToCache(old, message);
+
+    const lastMessageIndex = lastPage.messages.length - 1;
+    const lastMessage = lastPage.messages[lastMessageIndex];
+
+    const shouldReplaceOptimistic =
+        message.triggerType === TRIGGER.USER &&
+        lastMessage &&
+        lastMessage.id.startsWith("optimistic-");
+
+    if (!shouldReplaceOptimistic) return appendMessageToCache(old, message);
+
+    const pages = [...old.pages];
+    const messages = [...lastPage.messages];
+    messages[lastMessageIndex] = message;
+    pages[lastIndex] = { ...lastPage, messages };
+    return { ...old, pages };
+}
+
+/**
  * SSE now owns the live view of a conversation: the user's own send still
  * gets an optimistic bubble and a real-row reconciliation on mutation
  * success, but the agent's reply — creation, status transitions, content
@@ -103,12 +139,38 @@ export function useChat() {
 
     function handleEvent(event: SSEEvent) {
         switch (event.event_type) {
+            case "message.full": {
+                const message: ChatMessage = {
+                    id: event.message.id,
+                    createdAt: event.message.createdAt,
+                    triggerType: event.message.triggerType,
+                    status: event.message.status,
+                    agent: event.message.agent,
+                    contents: event.message.contents.map((c) => ({
+                        id: c.id,
+                        contentType: c.contentType as MessageContent["contentType"],
+                        status: c.status as MessageContent["status"],
+                        message: c.message,
+                        output: c.output as MessageContent["output"],
+                        logs: null,
+                        createdAt: c.createdAt,
+                    })),
+                };
+
+                queryClient.setQueryData<InfiniteData<Chat>>(CHAT_QUERY_KEY, (old) =>
+                    upsertFullMessage(old, message)
+                );
+                break;
+            }
+
+
             case "message.created": {
                 const message: ChatMessage = {
                     id: event.message.id,
                     createdAt: event.message.createdAt,
                     triggerType: event.message.triggerType,
                     status: event.message.status,
+                    agent: event.message.agent,
                     contents: [],
                 };
 
@@ -191,6 +253,7 @@ export function useChat() {
             const optimisticMessage: ChatMessage = {
                 id: optimisticId,
                 createdAt: new Date(),
+                agent: null,
                 triggerType: TRIGGER.USER,
                 status: MESSAGESTATUS.SUCCESS,
                 contents: payload.contents.map((content, index) => ({
