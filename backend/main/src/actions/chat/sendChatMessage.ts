@@ -2,6 +2,7 @@ import { MainContentStatus, MainLogLevel, MainMessageStatus, MainTriggerType, Su
 import { getAutomatedLog } from "./helpers/automatedMessages";
 import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
+import { sendEvent } from "../../lib/send-event";
 import { getChatId } from "./getChatId";
 import { prisma } from "../../lib/db";
 import { Queue } from "bullmq";
@@ -38,6 +39,27 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
                         }
                     })),
                 },
+            },
+            include: { contents: true }
+        });
+
+        await sendEvent({
+            event_type: "message.full",
+            message: {
+                id: data.id,
+                status: MainMessageStatus.SUCCESS,
+                createdAt: data.createdAt,
+                triggerType: data.triggerType,
+                agent: data.agent,
+                contents: data.contents.map((c) => ({
+                    id: c.id,
+                    contentType: c.contentType,
+                    sequence: c.sequence,
+                    message: c.message,
+                    output: c.output,
+                    status: c.status,
+                    createdAt: c.createdAt,
+                }))
             }
         });
 

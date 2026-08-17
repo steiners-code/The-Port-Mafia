@@ -1,6 +1,5 @@
 import { MainTaskLevel, MainTaskStatus } from "../../../../generated/prisma";
 import { MainTask, Question } from "../../../../lib/types";
-import { JsonValue } from "@prisma/client/runtime/client";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 
@@ -32,19 +31,26 @@ function isQuestionnaireContentInput(value: unknown): value is ContentAnswerInpu
     );
 }
 
-export async function updateTask(args: { id: string; level?: string; comment?: string; content?: JsonValue }, { userId }: ToolContext) {
-    if (!args.level && !args.comment && !args.content) {
-        return {
-            success: false,
-            message: "At least one of level, comment, or content is required to make a change.",
-        };
+type UpdateTaskArgs = {
+    id: string;
+    level?: string;
+    comment?: string;
+    questionnaireAnswers?: ContentAnswerInput[];
+    accountPerformance?: unknown;
+    postPerformance?: unknown;
+};
+
+export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) {
+    const changes: string[] = [];
+
+    const hasAnyChange = args.level || args.comment || args.questionnaireAnswers || args.accountPerformance || args.postPerformance;
+
+    if (!hasAnyChange) {
+        throw new Error("At least one of level, comment, questionnaireAnswers, accountPerformance, or postPerformance is required to make a change.");
     }
 
     if (args.level && !isValidLevel(args.level)) {
-        return {
-            success: false,
-            message: `The provided level "${args.level}" is invalid. Valid values are: ${TASK_LEVELS.join(" | ")}.`,
-        };
+        throw new Error(`The provided level "${args.level}" is invalid. Valid values are: ${TASK_LEVELS.join(" | ")}.`);
     }
 
     const task = await prisma.mainTask.findUnique({ where: { id: args.id, userId } });
@@ -56,10 +62,7 @@ export async function updateTask(args: { id: string; level?: string; comment?: s
      * must match the task's own userId before anything below runs.
      */
     if (!task) {
-        return {
-            success: false,
-            message: "Task not found.",
-        };
+        throw new Error("Task not found.");
     }
 
     let newContent: MainTask["content"] = task.content as MainTask["content"];
@@ -73,43 +76,52 @@ export async function updateTask(args: { id: string; level?: string; comment?: s
      */
     let nextStatus: MainTaskStatus | undefined;
 
-    if (args.content) {
+    const contentProvided = Boolean(args.questionnaireAnswers || args.accountPerformance || args.postPerformance);
+
+    if (contentProvided) {
         switch (task.type) {
-            case "QUESTIONNAIRE":
-                if (!isQuestionnaireContentInput(args.content)) {
-                    return {
-                        success: false,
-                        message: "Invalid content for a QUESTIONNAIRE task. Expected a non-empty array of { index: number, answer: string }.",
-                    };
+            case "QUESTIONNAIRE": {
+                if (args.accountPerformance || args.postPerformance) {
+                    throw new Error("This task is of type QUESTIONNAIRE — submit questionnaireAnswers, not accountPerformance or postPerformance.");
+                }
+
+                if (!isQuestionnaireContentInput(args.questionnaireAnswers)) {
+                    throw new Error("Invalid questionnaireAnswers. Expected a non-empty array of { index: number, answer: string }.");
                 }
 
                 const existing = task.content as Question[];
                 const existingIndices = new Set(existing.map((q) => q.index));
 
-                for (const item of args.content) {
+                for (const item of args.questionnaireAnswers) {
                     if (!existingIndices.has(item.index)) {
-                        return {
-                            success: false,
-                            message: `No question with index ${item.index} exists on this task.`,
-                        };
+                        throw new Error(`No question with index ${item.index} exists on this task.`);
                     }
                 }
 
                 newContent = existing.map((q) => {
-                    const update = (args.content as ContentAnswerInput[]).find((c) => c.index === q.index);
+                    const update = args.questionnaireAnswers!.find((c) => c.index === q.index);
                     if (!update) return q;
                     return { ...q, answer: update.answer, answeredBy: "DAZAI" as const };
                 });
 
                 const isFullyAnswered = newContent.every((q) => q.answer !== null);
                 if (isFullyAnswered) nextStatus = MainTaskStatus.INREVIEW;
-                break;
 
+                const answeredCount = args.questionnaireAnswers.length;
+                changes.push(`${answeredCount} question${answeredCount === 1 ? "" : "s"} answered.`);
+
+                nextStatus = MainTaskStatus.INPROGRESS
+                break;
+            }
+
+            /**
+             * ACCOUNT_PERFORMANCE and POST_PERFORMANCE aren't implemented
+             * yet — falls through here too if a QUESTIONNAIRE task somehow
+             * reaches this switch with neither branch matched, and for any
+             * other task type until its case is added.
+             */
             default:
-                return {
-                    success: false,
-                    message: `Unsupported task type "${task.type}".`,
-                };
+                throw new Error(`Task type "${task.type}" isn't supported by update_task yet.`);
         }
     }
 
@@ -117,7 +129,7 @@ export async function updateTask(args: { id: string; level?: string; comment?: s
         where: { id: task.id },
         data: {
             ...(args.level && { level: args.level as MainTaskLevel }),
-            ...(args.content && { content: newContent }),
+            ...(contentProvided && { content: newContent }),
             ...(nextStatus && { status: nextStatus }),
             ...(args.comment && {
                 comments: { create: { content: args.comment } },
@@ -126,9 +138,12 @@ export async function updateTask(args: { id: string; level?: string; comment?: s
         select: { id: true, level: true, status: true, content: true },
     });
 
+    if (args.level) changes.push(`Level set to ${args.level}.`);
+    if (args.comment) changes.push("Comment added.");
+    if (nextStatus) changes.push(`Task moved to ${nextStatus} — every question now has an answer.`);
+
     return {
-        success: true,
-        message: "Task has been successfully updated!",
-        task: updated,
+        message: `${changes.join(" ")} This change is already saved. Do not call update_task again for this task unless you have something new to add.`,
+        updatedTask: updated,
     };
 }

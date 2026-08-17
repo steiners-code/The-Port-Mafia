@@ -291,6 +291,60 @@ const TOOL_MESSAGES: Record<ToolName, ToolMessagePool> = {
             "Failed to render. I'll sort it out",
         ],
     },
+
+    get_all_active_tasks: {
+        started: [
+            "Taking stock of what's still open",
+            "Checking the board. Let's see what's piled up",
+            "Counting what hasn't been dealt with yet",
+        ],
+        completedSuccess: [
+            "Board's accounted for. Nothing's slipping past me",
+            "Got the overview. Manageable, as always",
+            "Tallied. I know exactly where things stand",
+        ],
+        completedError: [
+            "Couldn't get a read on the board. I'll circle back",
+            "The overview didn't come through. Annoying, not alarming",
+            "That count failed. Try again in a moment",
+        ],
+    },
+
+    get_whole_task_by_id: {
+        started: [
+            "Pulling the full file on this one",
+            "Going back for the details on this task",
+            "Fetching the whole thing — I want it exact, not remembered",
+        ],
+        completedSuccess: [
+            "Got the full picture. Nothing missing now",
+            "Task pulled in full. Good, I hate guessing",
+            "There it is, complete — exactly as it was raised",
+        ],
+        completedError: [
+            "Couldn't pull that task. It's still out there somewhere",
+            "That fetch failed. I'll try again before I assume anything",
+            "Didn't come through. I'd rather fail than fabricate it",
+        ],
+    },
+
+    update_task: {
+        started: [
+            "Updating the record. This one's final, so bear with me",
+            "Writing the change in. No do-overs after this",
+            "Committing this to the task — for real, this time",
+        ],
+        completedSuccess: [
+            "Done. That's on the record now",
+            "Updated cleanly. Consider it handled",
+            "Filed. Whatever this was, it's settled",
+        ],
+        completedError: [
+            "That update didn't take. I'll own it and try again",
+            "Couldn't write the change. It's not lost, just late",
+            "Failed to commit. Give me another pass at it",
+        ],
+    },
 };
 
 const TOOL_FALLBACK: Record<"started" | "completed", string[]> = {

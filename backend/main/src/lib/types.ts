@@ -37,6 +37,12 @@ export type Artifact = BaseMetadata & {
     category: "ARTIFACT"
 }
 
+export type Task = BaseMetadata & {
+    id: string,
+    extension: "TASK",
+    category: "TASK"
+}
+
 type PDFDocument = BaseMetadata & {
     uri?: string,
     data?: string,
@@ -58,7 +64,7 @@ type TextDocument = BaseMetadata & {
 }
 
 export type Document = TextDocument | ImageDocument
-export type Output = File | Document
+export type Output = File | Task | Document
 
 export type UserMessageData = {
     contents: {

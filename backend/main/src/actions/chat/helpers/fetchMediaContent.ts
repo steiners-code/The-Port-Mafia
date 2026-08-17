@@ -1,6 +1,7 @@
 import { Content, Output } from "../../../lib/types";
+import { getTaskById } from "../../tasks/getTaskById";
 
-export async function fetchMediaContent(data: Output): Promise<Content[]> {
+export async function fetchMediaContent(data: Output, userId: string): Promise<Content[]> {
     const content: Content[] = []
 
     switch (data.category) {
@@ -27,11 +28,27 @@ export async function fetchMediaContent(data: Output): Promise<Content[]> {
                 data: res.data,
                 mime_type: res.mimeType,
             })
+            break;
+
+        case "TASK":
+            const task = await getTaskById(userId, data.id)
+            if (!task.success || !task.data) break;
+            content.push({
+                type: "text",
+                text: [
+                    `# Task - ${task.data.title}`,
+                    `**Status:** ${task.data.status} - **Level:** ${task.data.level} - **Type:** ${task.data.type}`,
+                    `Task ID: ${task.data.id}`,
+                    '---',
+                    `Requested by ${task.data.subAgent}, the ${task.data.subAgentPlatform} for ${task.data.subAgentPlatform}`,
+                    '---',
+                    '# Content',
+                    JSON.stringify(task.data.content, null, 2),
+                ].join('\n')
+            })
 
     }
 
-    // TODO: fetch media content from db or blob storage server based on contentId and category inside the metadata.
-    // Resolve the content for specific categories like image, pdf, csv etc. using switch and specifc file content extractor.
     return content;
 }
 

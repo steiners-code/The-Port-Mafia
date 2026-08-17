@@ -23,6 +23,7 @@ export async function getOrCreateChat(userId: string, cursor?: { createdAt: Date
                 id: true,
                 createdAt: true,
                 triggerType: true,
+                agent: true,
                 contents: {
                     select: {
                         id: true,

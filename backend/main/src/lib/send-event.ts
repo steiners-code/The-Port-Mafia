@@ -1,4 +1,4 @@
-import { MainContentStatus, MainContentType, MainMessageStatus, MainTriggerType } from "../generated/prisma"
+import { MainContentStatus, MainContentType, MainMessageStatus, MainTriggerType, SubAgent } from "../generated/prisma"
 import { JsonValue } from "@prisma/client/runtime/client"
 import Redis from "ioredis"
 
@@ -15,15 +15,36 @@ export async function sendEvent(data: Event) {
 }
 
 
-export type Event = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent
+export type Event = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent | MessageFullEvent
+
+type MessageFullEvent = {
+    event_type: "message.full"
+    message: {
+        id: string,
+        triggerType: MainTriggerType,
+        agent: SubAgent | null,
+        status: typeof MainMessageStatus.SUCCESS,
+        createdAt: Date,
+        contents: {
+            id: string,
+            contentType: MainContentType,
+            sequence: number,
+            message: string | null,
+            output: JsonValue,
+            status: MainContentStatus,
+            createdAt: Date,
+        }[]
+    }
+}
 
 type MessageCreatedEvent = {
     event_type: "message.created"
     message: {
         id: string,
         triggerType: MainTriggerType,
+        agent: SubAgent | null,
         createdAt: Date,
-        status: typeof MainMessageStatus.QUEUED
+        status: typeof MainMessageStatus.QUEUED | typeof MainMessageStatus.SUCCESS
     }
 }
 
