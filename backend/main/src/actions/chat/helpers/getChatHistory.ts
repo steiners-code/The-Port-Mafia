@@ -1,3 +1,4 @@
+import { MainMessageStatus, SubAgent } from "../../../generated/prisma";
 import { createSystemContent } from "./createSystemContent";
 import { Step, UserMessageData } from "../../../lib/types";
 import { createUserContent } from "./createUserContent";
@@ -5,7 +6,7 @@ import { prisma } from "../../../lib/db";
 import { startOfDay } from "date-fns";
 
 export async function getChatHistory(userId: string, contents: UserMessageData["contents"]): Promise<Step[]> {
-    const userContent = await createUserContent(contents);
+    const userContent = await createUserContent(contents, userId);
     const historyContent: Step[] = []
     const dayStart = startOfDay(new Date());
 
@@ -15,6 +16,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
             select: {
                 messages: {
                     where: {
+                        status: { in: [MainMessageStatus.SUCCESS, MainMessageStatus.PENDING] },
                         createdAt: {
                             gte: dayStart,
                         },
@@ -23,6 +25,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
                         id: true,
                         createdAt: true,
                         triggerType: true,
+                        agent: true,
                         contents: {
                             select: {
                                 contentType: true,
@@ -51,13 +54,18 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
 
             switch (message.triggerType) {
                 case "USER":
-                    const userData = await createUserContent(message.contents)
+                    const userData = await createUserContent(message.contents, userId)
                     historyContent.push(userData);
                     break;
 
                 case "SYSTEM":
-                    const systemData = await createSystemContent(message.contents)
-                    historyContent.push(...systemData)
+                    if (isCorrectSubAgent(message.agent)) {
+                        const systemData = await createUserContent(message.contents, userId)
+                        historyContent.push(systemData)
+                    } else {
+                        const systemData = await createSystemContent(message.contents)
+                        historyContent.push(...systemData)
+                    }
                     break;
 
                 case "CRON":
@@ -70,4 +78,9 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
         console.error(error);
         return [userContent];
     }
+}
+
+export function isCorrectSubAgent(agent: SubAgent | null | undefined): agent is SubAgent {
+    if (!agent) return false;
+    return Object.values(SubAgent).includes(agent);
 }
