@@ -12,7 +12,6 @@ import { MainTask } from "../../lib/types";
  * Symmetric with the original delegation trigger, which follows the same
  * /internal/trigger/{role} shape.
  */
-
 const SERVICE_HOSTS: Record<SubAgent, string> = {
     MAHA: "http://mafia-linkedin:3000",
 };
@@ -21,7 +20,7 @@ function taskAnswersRoute(role: string) {
     return `/internal/task-answers/${role.toLowerCase()}`;
 }
 
-export async function reportTaskCompletionToSubAgent(task: MainTask) {
+export async function reportTaskCompletionToSubAgent(userId: string, task: MainTask & { id: string; subAgent: SubAgent; subAgentRole: string }) {
     const host = SERVICE_HOSTS[task.subAgent];
     if (!host) {
         throw new Error(`No internal host configured for sub-agent "${task.subAgent}".`);
@@ -29,8 +28,12 @@ export async function reportTaskCompletionToSubAgent(task: MainTask) {
 
     await fetch(`${host}${taskAnswersRoute(task.subAgentRole)}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-User-Id": userId,
+        },
         body: JSON.stringify({
+            taskId: task.id,
             title: task.title,
             type: task.type,
             content: task.content,

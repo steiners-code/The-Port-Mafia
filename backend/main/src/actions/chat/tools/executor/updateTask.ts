@@ -1,4 +1,5 @@
-import { MainTaskLevel, MainTaskStatus } from "../../../../generated/prisma";
+import { reportTaskCompletionToSubAgent } from "../../../tasks/reportTaskCompletionToSubAgent";
+import { MainTaskLevel, MainTaskStatus, SubAgent } from "../../../../generated/prisma";
 import { MainTask, Question } from "../../../../lib/types";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
@@ -9,6 +10,18 @@ const TASK_LEVELS = [
     MainTaskLevel.MEDIUM,
     MainTaskLevel.LOW,
 ] as const;
+
+/**
+ * Only truly terminal states are blocked. INREVIEW is deliberately NOT
+ * here — that's exactly the state this tool needs to keep working from,
+ * since it's Dazai submitting cleaned-up answers after Ningen Shikaku
+ * that moves a task out of INREVIEW in the first place.
+ */
+const CLOSED_STATUSES: MainTaskStatus[] = [
+    MainTaskStatus.COMPLETED,
+    // MainTaskStatus.DISCARDED,
+    MainTaskStatus.CANCELLED,
+];
 
 function isValidLevel(value: string): value is MainTaskLevel {
     return (TASK_LEVELS as readonly string[]).includes(value);
@@ -65,11 +78,20 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
         throw new Error("Task not found.");
     }
 
+    if (CLOSED_STATUSES.includes(task.status)) {
+        throw new Error(`This task is already ${task.status.toLowerCase()} and can no longer be updated.`);
+    }
+
     let newContent: MainTask["content"] = task.content as MainTask["content"];
 
     /**
      * Set only when this update leaves every item in the content fully
-     * answered — moves the task to INREVIEW so the human can check what's
+     * answered. Where it lands depends on how the task got here:
+     * INREVIEW means it already went through Ningen Shikaku (human
+     * answered, Dazai was asked to clean it up) — full completion here
+     * means it's actually done, so it promotes to COMPLETED and gets
+     * reported back to the sub-agent that raised it. Fully answered from
+     * any other status moves it to INREVIEW so the human can check what's
      * being stated about them before it goes anywhere further. Left
      * undefined (i.e. status untouched) on a partial answer; this never
      * downgrades a status, only promotes on full completion.
@@ -105,12 +127,14 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
                 });
 
                 const isFullyAnswered = newContent.every((q) => q.answer !== null);
-                if (isFullyAnswered) nextStatus = MainTaskStatus.INREVIEW;
+                if (isFullyAnswered) {
+                    nextStatus = task.status === MainTaskStatus.INREVIEW
+                        ? MainTaskStatus.COMPLETED
+                        : MainTaskStatus.INREVIEW;
+                }
 
                 const answeredCount = args.questionnaireAnswers.length;
                 changes.push(`${answeredCount} question${answeredCount === 1 ? "" : "s"} answered.`);
-
-                nextStatus = MainTaskStatus.INPROGRESS
                 break;
             }
 
@@ -140,7 +164,26 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
 
     if (args.level) changes.push(`Level set to ${args.level}.`);
     if (args.comment) changes.push("Comment added.");
-    if (nextStatus) changes.push(`Task moved to ${nextStatus} — every question now has an answer.`);
+
+    if (nextStatus === MainTaskStatus.INREVIEW) {
+        changes.push(`Task moved to INREVIEW — every question now has an answer.`);
+    }
+
+    /**
+     * This tool runs as the AI, so the outbound call needs the actual
+     * user's id carried explicitly — it's not implicit the way an
+     * in-browser fetch would have a session cookie. userId here comes
+     * from ToolContext, tied to the real authenticated conversation.
+     */
+    if (nextStatus === MainTaskStatus.COMPLETED) {
+        await reportTaskCompletionToSubAgent(userId, {
+            ...updated,
+            subAgent: task.subAgent,
+            subAgentRole: task.subAgentRole,
+            subAgentPlatform: task.subAgentPlatform,
+        } as MainTask);
+        changes.push(`Task completed and reported back to ${task.subAgent}.`);
+    }
 
     return {
         message: `${changes.join(" ")} This change is already saved. Do not call update_task again for this task unless you have something new to add.`,

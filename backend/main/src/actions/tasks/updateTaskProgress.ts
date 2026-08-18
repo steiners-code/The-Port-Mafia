@@ -26,7 +26,6 @@ export const updateQuestionnaireBody = t.Object({
     ),
 })
 
-
 const CLOSED_STATUSES: MainTaskStatus[] = [
     MainTaskStatus.COMPLETED,
     // MainTaskStatus.DISCARDED,
@@ -183,7 +182,7 @@ export async function updateTaskProgress(userId: string, body: UpdateTaskProgres
                 },
             });
 
-            await reportTaskCompletionToSubAgent({
+            await reportTaskCompletionToSubAgent(userId, {
                 ...updated,
                 content: mergedContent,
             } as MainTask & { id: string; subAgent: SubAgent });
