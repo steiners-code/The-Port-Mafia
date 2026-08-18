@@ -1,6 +1,7 @@
+import { updateQuestionnaireBody, updateTaskProgress } from '../actions/tasks/updateTaskProgress';
+import { createTask, createTaskBody } from '../actions/tasks/createTask';
 import { getMainTasks } from '../actions/tasks/getMainTasks';
 import { getTaskById } from '../actions/tasks/getTaskById';
-import { createTask } from '../actions/tasks/createTask';
 import { CreateTaskBody } from '../lib/types';
 import Elysia, { t } from 'elysia';
 
@@ -15,23 +16,6 @@ const taskId = t.Object({
 const filters = t.Object({
     filters: t.Object({})
 })
-
-const mahaLinkedInTaskBody = t.Object({
-    title: t.String({ minLength: 1 }),
-    type: t.Literal("QUESTIONNAIRE"),
-    subAgent: t.Literal("MAHA"),
-    subAgentPlatform: t.Literal("LINKEDIN"),
-    subAgentRole: t.Union([
-        t.Literal("OBSERVER"),
-        t.Literal("ANALYST"),
-        t.Literal("STRATEGIST"),
-        t.Literal("WRITER"),
-        t.Literal("HANDLER"),
-    ]),
-    questions: t.Array(t.String({ minLength: 1 }), { minItems: 1 }),
-});
-
-const createTaskBody = t.Union([mahaLinkedInTaskBody]);
 
 export const taskRoutes = new Elysia({ prefix: '/tasks' })
     .get('/', async ({ status, headers, query }) => {
@@ -73,4 +57,16 @@ export const taskRoutes = new Elysia({ prefix: '/tasks' })
     }, {
         headers: userId,
         body: createTaskBody,
+    })
+
+    .post('/update/questionnaire', async ({ headers, status, body }) => {
+        const userId = headers['x-user-id']
+
+        const res = await updateTaskProgress(userId, body)
+        if (!res.success) return status(res.status, { message: res.message })
+
+        return status(200, res.message)
+    }, {
+        headers: userId,
+        body: updateQuestionnaireBody,
     })

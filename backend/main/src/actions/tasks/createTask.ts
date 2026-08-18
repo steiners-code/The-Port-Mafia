@@ -3,6 +3,24 @@ import { triggerDazaiForTask } from "../cron/triggerDazaiForTask";
 import { CreateTaskBody, MainTask } from "../../lib/types";
 import { MainTaskStatus } from "../../generated/prisma";
 import { prisma } from "../../lib/db";
+import { t } from "elysia";
+
+const mahaLinkedInTaskBody = t.Object({
+    title: t.String({ minLength: 1 }),
+    type: t.Literal("QUESTIONNAIRE"),
+    subAgent: t.Literal("MAHA"),
+    subAgentPlatform: t.Literal("LINKEDIN"),
+    subAgentRole: t.Union([
+        t.Literal("OBSERVER"),
+        t.Literal("ANALYST"),
+        t.Literal("STRATEGIST"),
+        t.Literal("WRITER"),
+        t.Literal("HANDLER"),
+    ]),
+    questions: t.Array(t.String({ minLength: 1 }), { minItems: 1 }),
+});
+
+export const createTaskBody = t.Union([mahaLinkedInTaskBody]);
 
 export async function createTask(userId: string, data: CreateTaskBody) {
     let content: MainTask["content"] = [];
