@@ -9,8 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { QuestionnaireTask } from "@/lib/types";
-import { toast } from "sonner";
 import { TASKSTATUS } from "@/lib/enums";
+import { toast } from "sonner";
 
 type AnswerInput = {
     index: number,
@@ -85,7 +85,7 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
                 ))}
             </div>
 
-            {status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED && (
+            {status !== TASKSTATUS.COMPLETED && status !== TASKSTATUS.CANCELLED && (
                 <div className="relative w-full flex items-center justify-end gap-0! mb-20 lg:mb-0">
                     <Button
                         type="submit"
