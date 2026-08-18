@@ -10,6 +10,7 @@ const MediaThought = ({ agent, annotations, summary }: { agent: Agent | null, an
     return (
         <MediaWrapper metadata={{
             name: agent?.name || "AI-chan",
+            category: "THOUGHT",
             extension: "THOUGHT",
             description: agent?.quote
         }}>

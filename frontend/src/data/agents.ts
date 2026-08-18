@@ -1,3 +1,5 @@
+import { AGENT, APPTYPE } from "@/lib/enums";
+
 export type AgentFeature = {
   id: string;
   label: string;
@@ -6,6 +8,7 @@ export type AgentFeature = {
 
 export type Agent = {
   id: string;
+  enum: AGENT,
   name: string;
   warning: string;
   quote: string;
@@ -28,11 +31,12 @@ export type Agent = {
 export const agents: Agent[] = [
   {
     id: "osamu-dazai",
+    enum: AGENT.DAZAI,
     name: "Osamu Dazai",
     warning: "Never commit a double suicide with him.",
     quote: "I want to die without trying. Will you commit a double suicide with me?",
     avatarSrc: "/dazai-avatar.png",
-    platform: 'Main',
+    platform: "MAIN",
     route: '/main',
     colors: {
       text: "text-[#3F332B] dark:text-[#B59B76]",
@@ -43,11 +47,12 @@ export const agents: Agent[] = [
   },
   {
     id: "maha-balor",
+    enum: AGENT.MAHA,
     name: "Maha Balor",
     warning: "Never let her seduce you.",
     quote: "Brother Illugh! You may call me your sister, but your body seems to be telling the truth!",
     avatarSrc: "/maha-avatar.png",
-    platform: 'LinkedIn',
+    platform: APPTYPE.LINKEDIN,
     route: '/linkedin',
     colors: {
       text: "text-[#5261B0] dark:text-[#7794D1]",
@@ -59,3 +64,5 @@ export const agents: Agent[] = [
 ];
 
 export const getAgentByPathname = (pathname: string) => agents.find((agent) => agent.route === pathname);
+export const getAgentByEnum = (agentEnum: AGENT) => agents.find((agent) => agent.enum === agentEnum);
+export const getAgentByPlatform = (platform: APPTYPE) => agents.find((agent) => agent.platform === platform);

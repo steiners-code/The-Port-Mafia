@@ -10,6 +10,7 @@ export async function createAIChatMessage(chatId: string) {
         },
         select: {
             id: true,
+            agent: true,
             triggerType: true,
             createdAt: true,
         }

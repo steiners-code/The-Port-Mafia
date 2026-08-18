@@ -1,8 +1,8 @@
 "use client";
 
+import { AGENT, MESSAGESTATUS, TRIGGER } from "@/lib/enums";
 import { ChatMessage, MessageContent } from "@/lib/types";
 import { formatDistanceToNowStrict } from "date-fns";
-import { MESSAGESTATUS, TRIGGER } from "@/lib/enums";
 import { CopyIcon } from "@phosphor-icons/react";
 import { useMedia } from "@/hooks/use-media";
 import MessageSystem from "./MessageSystem";
@@ -25,10 +25,10 @@ const flexDirection = {
     "USER": "flex-row-reverse"
 }
 
-function renderMessage(type: TRIGGER, status: MESSAGESTATUS, contents: MessageContent[], agent?: Agent) {
+function renderMessage(type: TRIGGER, status: MESSAGESTATUS, contents: MessageContent[], messageAgent: AGENT | null, agent?: Agent) {
     switch (type) {
         case TRIGGER.SYSTEM:
-            return <MessageSystem status={status} contents={contents} agentId={agent?.id} textColors={agent?.colors.text} />
+            return <MessageSystem status={status} agent={messageAgent} contents={contents} agentId={agent?.id} textColors={agent?.colors.text} />
         case TRIGGER.USER:
             return <MessageUser contents={contents} messageColors={agent?.colors.message} />
         case TRIGGER.CRON:
@@ -57,7 +57,7 @@ const Message = ({ data, actionsDisabled = false }: { data: ChatMessage, actions
 
     return (
         <div className={cn("w-full flex flex-col group/message last:mb-32", alignment[data.triggerType])}>
-            {renderMessage(data.triggerType, data.status, data.contents, agent)}
+            {renderMessage(data.triggerType, data.status, data.contents, data.agent, agent)}
 
             {!actionsDisabled && data.status !== MESSAGESTATUS.PENDING && data.status !== MESSAGESTATUS.QUEUED && (
                 <div className={cn("flex items-center gap-1 opacity-0 group-hover/message:opacity-100 transition-opacity",

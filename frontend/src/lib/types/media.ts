@@ -16,7 +16,10 @@ export type Thought = {
     agent: Agent | null,
 }
 
-export type ThoughtMetadata = BaseMetadata & { extension: "THOUGHT" }
+export type ThoughtMetadata = BaseMetadata & {
+    category: "THOUGHT"
+    extension: "THOUGHT"
+}
 
 // ---------- LOGS ---------- 
 
@@ -25,7 +28,10 @@ export type Logs = {
     messageId: string,
 }
 
-export type LogsMetadata = BaseMetadata & { extension: string }
+export type LogsMetadata = BaseMetadata & {
+    category: "LOGS",
+    extension: string
+}
 
 export type Tool = {
     type: "TOOL",
@@ -38,7 +44,10 @@ export type Tool = {
     }
 }
 
-export type ToolMetadata = BaseMetadata & { extension: "TOOL" }
+export type ToolMetadata = BaseMetadata & {
+    category: "TOOL"
+    extension: "TOOL"
+}
 
 // ---------- TEXT ---------- 
 
@@ -72,6 +81,16 @@ export type ImageMetadata = BaseMetadata & {
     extension: "PNG" | "JPEG" | "WEBP" | "HEIC" | "HEIF" | "GIF" | "BMP" | "TIFF" | (string & {}),
 }
 
+// ---------- TASK ---------- 
+export type Task = TaskMetadata & {
+    id: string,
+}
+
+export type TaskMetadata = BaseMetadata & {
+    category: "TASK",
+    extension: "QUESTIONNAIRE",
+}
+
 // ---------- ACTION ---------- 
 export type Action = { category: "ACTION" } & ComponentAction
 
@@ -83,10 +102,10 @@ export type ComponentAction = {
 }
 
 // ---------- MEDIA ---------- 
-export type MediaWithoutType = File | Text | Image
+export type MediaWithoutType = File | Text | Image | Task
 export type MediaWithAction = MediaWithoutType | Action
 export type Media = MediaWithoutType & { type: "MEDIA" }
 export type MediaMetadata = FileMetadata | TextMetadata | ImageMetadata
 
-export type Metadata = ThoughtMetadata | LogsMetadata | ToolMetadata | MediaMetadata
-export type MediaData = Thought | Media | Logs | Tool | null
+export type Metadata = ThoughtMetadata | LogsMetadata | ToolMetadata | TaskMetadata | MediaMetadata
+export type MediaData = Thought | Media | Logs | Tool | (Task & { type: "TASK" }) | null

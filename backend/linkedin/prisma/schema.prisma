@@ -234,6 +234,12 @@ enum LinkedinLogLevel {
   @@schema("linkedin")
 }
 
+enum LinkedinMainAgent {
+  DAZAI
+
+  @@schema("linkedin")
+}
+
 model LinkedinChat {
   id     String @id @default(cuid())
   userId String @unique
@@ -251,6 +257,7 @@ model LinkedinChatMessage {
   chatId String
   chat   LinkedinChat @relation(fields: [chatId], references: [id], onDelete: Cascade)
 
+  agent       LinkedinMainAgent?
   triggerType LinkedinTriggerType
   status      LinkedinMessageStatus @default(QUEUED)
 

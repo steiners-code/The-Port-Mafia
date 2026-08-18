@@ -1,11 +1,12 @@
-import { LinkedinContentStatus, LinkedinLogLevel, LinkedinTriggerType } from "../../generated/prisma";
+import { LinkedinContentStatus, LinkedinLogLevel, LinkedinMainAgent, LinkedinMessageStatus, LinkedinTriggerType } from "../../generated/prisma";
 import { getAutomatedLog } from "./helpers/automatedMessages";
 import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
+import { sendEvent } from "../../lib/send-event";
 import { getChatId } from "./getChatId";
 import { prisma } from "../../lib/db";
-import Redis from "ioredis";
 import { Queue } from "bullmq";
+import Redis from "ioredis";
 
 const connection = new Redis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: null,
@@ -13,14 +14,16 @@ const connection = new Redis(process.env.REDIS_URL!, {
 
 const chatQueue = new Queue("chat-maha-balor", { connection });
 
-export async function sendChatMessage(userId: string, contents: UserMessageData["contents"]) {
+export async function sendChatMessage(userId: string, contents: UserMessageData["contents"], triggerType: LinkedinTriggerType = LinkedinTriggerType.USER, agent?: LinkedinMainAgent) {
     try {
         const { chatId, principalName, linkedinConnected } = await getChatId(userId)
 
-        await prisma.linkedinChatMessage.create({
+        const data = await prisma.linkedinChatMessage.create({
             data: {
-                triggerType: LinkedinTriggerType.USER,
+                triggerType,
+                agent,
                 chatId,
+                status: LinkedinMessageStatus.SUCCESS,
                 contents: {
                     create: contents.map((content, sequence) => ({
                         contentType: content.contentType,
@@ -36,6 +39,27 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
                         }
                     })),
                 },
+            },
+            include: { contents: true }
+        });
+
+        await sendEvent({
+            event_type: "message.full",
+            message: {
+                id: data.id,
+                status: LinkedinMessageStatus.SUCCESS,
+                createdAt: data.createdAt,
+                triggerType: data.triggerType,
+                agent: data.agent,
+                contents: data.contents.map((c) => ({
+                    id: c.id,
+                    contentType: c.contentType,
+                    sequence: c.sequence,
+                    message: c.message,
+                    output: c.output,
+                    status: c.status,
+                    createdAt: c.createdAt,
+                }))
             }
         });
 

@@ -1,4 +1,4 @@
-import { cronDBCleanup } from "../actions/cron/cron-db-cleanup";
+import { cronDBCleanup } from "../actions/cron/cronDBCleanup";
 import { verifySystemSecret } from "../lib/crypto";
 import Elysia, { t } from "elysia";
 

@@ -1,4 +1,4 @@
-import { LOGLEVEL, MESSAGESTATUS, STATUS, TRIGGER, TYPE } from "./enums"
+import { AGENT, APPTYPE, LOGLEVEL, MESSAGESTATUS, STATUS, TASKLEVEL, TASKSTATUS, TRIGGER, TYPE } from "./enums"
 
 export type JsonValue = string | number | boolean | { [k: string]: JsonValue } | JsonValue[] | null
 
@@ -20,7 +20,8 @@ export type Chat = {
 export type ChatMessage = {
     id: string,
     createdAt: Date,
-    triggerType: TRIGGER, // "SYSTEM" | "CRON" | "USER",
+    agent: AGENT | null, // "DAZAI" | "MAHA" etc...
+    triggerType: TRIGGER, // "SYSTEM" | "CRON" | "USER"
     status: MESSAGESTATUS,
     contents: MessageContent[]
 }
@@ -53,12 +54,33 @@ export type Annotation = {
  * the backend's Event union in sendEvent.ts — kept separate here rather
  * than shared, since frontend/backend live in different packages.
  */
-export type SSEEvent = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent
+export type SSEEvent = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent | MessageFullEvent
+
+type MessageFullEvent = {
+    event_type: "message.full"
+    message: {
+        id: string,
+        agent: AGENT | null,
+        triggerType: TRIGGER,
+        status: typeof MESSAGESTATUS.SUCCESS,
+        createdAt: Date,
+        contents: {
+            id: string,
+            contentType: TYPE,
+            sequence: number,
+            message: string | null,
+            output: JsonValue,
+            status: STATUS,
+            createdAt: Date,
+        }[]
+    }
+}
 
 type MessageCreatedEvent = {
     event_type: "message.created"
     message: {
         id: string,
+        agent: AGENT | null,
         triggerType: TRIGGER,
         createdAt: Date,
         status: typeof MESSAGESTATUS.QUEUED | typeof MESSAGESTATUS.SUCCESS
@@ -113,4 +135,39 @@ type ContentCompletedEvent = {
         output: JsonValue,
         status: STATUS
     }
+}
+
+export type Task = {
+    id: string
+    title: string
+    level: TASKLEVEL
+    status: TASKSTATUS
+    createdAt: Date,
+    updatedAt: Date,
+} & QuestionnaireTask
+
+export type QuestionnaireTask = SubAgents & {
+    type: "QUESTIONNAIRE",
+    content: Question[]
+}
+
+export type Question = {
+    index: number,
+    question: string,
+    answer: string | null
+    answeredBy: "USER" | "DAZAI" | null
+}
+
+export type SubAgents = MahaLinkedIn | DazaiLinkedIn
+
+type DazaiLinkedIn = {
+    subAgent: typeof AGENT.MAHA
+    subAgentPlatform: typeof APPTYPE.LINKEDIN
+    subAgentRole: "OBSERVER" | "ANALYST" | "STRATEGIST" | "WRITER" | "HANDLER"
+}
+
+type MahaLinkedIn = {
+    subAgent: typeof AGENT.MAHA
+    subAgentPlatform: typeof APPTYPE.LINKEDIN
+    subAgentRole: "OBSERVER" | "ANALYST" | "STRATEGIST" | "WRITER" | "HANDLER"
 }

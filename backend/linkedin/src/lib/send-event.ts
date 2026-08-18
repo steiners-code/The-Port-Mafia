@@ -15,13 +15,34 @@ export async function sendEvent(data: Event) {
 }
 
 
-export type Event = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent
+export type Event = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent | MessageFullEvent
+
+type MessageFullEvent = {
+    event_type: "message.full"
+    message: {
+        id: string,
+        triggerType: LinkedinTriggerType,
+        agent: "DAZAI" | null,
+        status: typeof LinkedinMessageStatus.SUCCESS,
+        createdAt: Date,
+        contents: {
+            id: string,
+            contentType: LinkedinContentType,
+            sequence: number,
+            message: string | null,
+            output: JsonValue,
+            status: LinkedinContentStatus,
+            createdAt: Date,
+        }[]
+    }
+}
 
 type MessageCreatedEvent = {
     event_type: "message.created"
     message: {
         id: string,
         triggerType: LinkedinTriggerType,
+        agent: "DAZAI" | null,
         createdAt: Date,
         status: typeof LinkedinMessageStatus.QUEUED
     }

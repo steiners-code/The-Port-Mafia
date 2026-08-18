@@ -36,6 +36,7 @@ const MediaTool = ({ message, output }: { message: string, output: Tool["output"
     return (
         <MediaWrapper metadata={{
             name: output.funcCallName,
+            category: "TOOL",
             extension: "TOOL",
         }}>
             <div className="space-y-4 react-markdown">

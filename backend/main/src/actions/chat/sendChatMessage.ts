@@ -1,7 +1,8 @@
-import { MainContentStatus, MainLogLevel, MainMessageStatus, MainTriggerType } from "../../generated/prisma";
+import { MainContentStatus, MainLogLevel, MainMessageStatus, MainTriggerType, SubAgent } from "../../generated/prisma";
 import { getAutomatedLog } from "./helpers/automatedMessages";
 import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
+import { sendEvent } from "../../lib/send-event";
 import { getChatId } from "./getChatId";
 import { prisma } from "../../lib/db";
 import { Queue } from "bullmq";
@@ -13,14 +14,15 @@ const connection = new Redis(process.env.REDIS_URL!, {
 
 const chatQueue = new Queue("chat-osamu-dazai", { connection });
 
-export async function sendChatMessage(userId: string, contents: UserMessageData["contents"]) {
+export async function sendChatMessage(userId: string, contents: UserMessageData["contents"], triggerType: MainTriggerType = MainTriggerType.USER, agent?: SubAgent) {
     try {
         const { chatId, principalName, connections } = await getChatId(userId)
 
         const data = await prisma.mainChatMessage.create({
             data: {
-                triggerType: MainTriggerType.USER,
+                triggerType,
                 status: MainMessageStatus.SUCCESS,
+                agent,
                 chatId,
                 contents: {
                     create: contents.map((content, sequence) => ({
@@ -37,6 +39,27 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
                         }
                     })),
                 },
+            },
+            include: { contents: true }
+        });
+
+        await sendEvent({
+            event_type: "message.full",
+            message: {
+                id: data.id,
+                status: MainMessageStatus.SUCCESS,
+                createdAt: data.createdAt,
+                triggerType: data.triggerType,
+                agent: data.agent,
+                contents: data.contents.map((c) => ({
+                    id: c.id,
+                    contentType: c.contentType,
+                    sequence: c.sequence,
+                    message: c.message,
+                    output: c.output,
+                    status: c.status,
+                    createdAt: c.createdAt,
+                }))
             }
         });
 

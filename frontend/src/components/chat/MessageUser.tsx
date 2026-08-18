@@ -11,7 +11,7 @@ const MessageUser = ({ contents, messageColors }: { contents: MessageContent[], 
     const mediaContent = contents.filter(c => c.contentType === TYPE.MEDIA)
 
     return (
-        <div className="flex flex-col items-end justify-end gap-2 px-2 mb-2! w-full sm:w-fit sm:max-w-md lg:max-w-xl">
+        <div className="flex flex-col items-end gap-2 px-2 mb-2! w-full sm:w-fit sm:max-w-md lg:max-w-xl">
             {mediaContent.length !== 0 && (
                 <div className="relative w-full h-fit overflow-hidden">
                     {mediaContent.length > 4 && <>
@@ -31,12 +31,12 @@ const MessageUser = ({ contents, messageColors }: { contents: MessageContent[], 
             )}
 
             {textContent.length !== 0 && (
-                <div className={cn("py-2 rounded-sm text-[1.025rem] rounded-tr-none", messageColors)}>
+                <div className={cn("py-2 px-1 rounded-sm rounded-tr-none text-[1.025rem] w-fit", messageColors)}>
                     {textContent.map(content => (
                         <div
                             key={content.id}
                             id={content.id}
-                            className={cn("w-full h-fit rounded-sm! px-2",
+                            className={cn("w-full h-fit rounded-xs px-2",
                                 highlightedId === content.id && "animate-pulse-highlight",
                             )}
                         >

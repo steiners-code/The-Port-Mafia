@@ -75,6 +75,7 @@ const Chat = () => {
                         triggerType: TRIGGER.CRON,
                         status: MESSAGESTATUS.SUCCESS,
                         createdAt: new Date(),
+                        agent: null,
                         contents: [{
                             id: "no-chat-history-text-message",
                             contentType: TYPE.TEXT,

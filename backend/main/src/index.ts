@@ -4,6 +4,7 @@ import { authRoutes } from "./routes/auth";
 import { cronRoutes } from "./routes/cron";
 import { chatRoutes } from "./routes/chat";
 import { blobRoutes } from "./routes/blob";
+import { taskRoutes } from "./routes/task";
 
 const app = new Elysia()
   .use(authRoutes)
@@ -11,6 +12,7 @@ const app = new Elysia()
   .use(cronRoutes)
   .use(chatRoutes)
   .use(blobRoutes)
+  .use(taskRoutes)
   .get("/health", () => "Main Service is Healthy!")
   .listen(3000);
 

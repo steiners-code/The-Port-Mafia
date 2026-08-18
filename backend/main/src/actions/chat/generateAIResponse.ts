@@ -9,6 +9,8 @@ import { getSystemPrompt } from "./helpers/getSystemPrompt";
 import { getChatHistory } from "./helpers/getChatHistory";
 import { Connections } from "./helpers/subAgents";
 
+const MAX_REITERATIONS = 5;
+
 type GenerateAIResponseData = {
     messageId: string,
     userId: string,
@@ -36,14 +38,30 @@ type StepState = {
 
 export async function generateAIResponse({ messageId, userId, principalName, connections, contents }: GenerateAIResponseData) {
     let reRun: boolean = false;
+    let reRunCount: number = 0;
     let activeIndex: number | null = null;
 
     try {
-        await updateAIChatMessage(messageId, LinkedinMessageStatus.PENDING);
+        await updateAIChatMessage(messageId, MainMessageStatus.PENDING);
 
         do {
+            if (reRunCount >= MAX_REITERATIONS) {
+                const capContentId = await createMessageContent(messageId, MainContentType.TEXT, 0);
+                await updateMessageContent({
+                    context: { userId, messageId, principalName },
+                    contentId: capContentId,
+                    status: MainContentStatus.COMPLETED,
+                    logs: [{ level: MainLogLevel.ERROR, message: "Reached max tool-call reiterations for this turn.", createdAt: new Date() }],
+                    output: {
+                        type: "model_output",
+                        text: "[Stopped]: This turn made too many tool calls in a row without resolving. Stopping here rather than continuing indefinitely.",
+                    }
+                });
+                break;
+            }
             const stepStates: Record<number, StepState> = {}
 
+            reRunCount++;
             reRun = false;
             const systemPrompt = await getSystemPrompt(userId, principalName, connections)
             const chatHistory = await getChatHistory(userId, contents);

@@ -59,7 +59,6 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
         return (
             <div className="w-full h-full flex items-center justify-center gap-1">
                 <Loader2 className="size-5! animate-spin text-muted-foreground" />
-                <span className="animate-pulse text-muted-foreground">Loading...</span>
             </div>
         )
     }
@@ -68,10 +67,11 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
         return (
             <MediaWrapper metadata={{
                 name: "LOGS",
+                category: "LOGS",
                 extension: formatDate(new Date(), "EEEE, dd MMMM yyyy")
             }}>
                 <div className="w-full h-full flex items-center justify-center gap-1 text-muted-foreground">
-                    No Logs to Display
+                    No Logs. Either everything is fine or in SHAMBLES
                 </div>
             </MediaWrapper>
         )
@@ -80,6 +80,7 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
     return (
         <MediaWrapper metadata={{
             name: "LOGS",
+            category: "LOGS",
             extension: formatDate(data[0]?.createdAt || new Date(), "EEEE, dd MMMM yyyy")
         }}>
             <div className="space-y-8 animate-in">
