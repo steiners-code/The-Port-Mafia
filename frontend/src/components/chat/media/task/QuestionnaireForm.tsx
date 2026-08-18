@@ -29,6 +29,8 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
 
 
     const handleChange = (e: ChangeEvent<HTMLTextAreaElement>, index: number) => {
+        if (status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED) return;
+
         const value = e.target.value;
         setFormData((prev) => {
             const exists = prev.some((item) => item.index === index);
@@ -42,6 +44,14 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
     }
 
     async function handleSubmit(action: "MarkComplete" | "SaveProgress" | "NingenShikaku") {
+        if (status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED) {
+            toast.error("Unable to update task!", {
+                description: `The task has already been ${status.toLowerCase()}`,
+                id: taskId
+            });
+            return;
+        }
+
         setIsSubmitting(true);
 
         const answers = formData.filter(
@@ -53,12 +63,12 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
         setIsSubmitting(false);
 
         if (!res.success) {
-            toast.error(res.message);
+            toast.error(res.message, { id: taskId });
             return;
         }
 
         queryClient.invalidateQueries({ queryKey: ["tasks", taskId] })
-        toast.success(res.message);
+        toast.success(res.message, { id: taskId });
     }
 
     const primaryAction = isComplete ? "MarkComplete" : "SaveProgress";
@@ -75,6 +85,7 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
                             <p className="px-2 text-foreground group-hover/form:text-muted-foreground group-hover/question:text-foreground transition-colors">{c.question}</p>
 
                             <Textarea
+                                disabled={status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED}
                                 className="bg-transparent! h-fit! min-h-fit! ring-0! border-0! border-b-2! rounded-none! text-[1rem]! resize-none! text-inherit! group-hover/form:text-muted-foreground! focus:text-inherit! group-hover/question:text-inherit! border-inherit!"
                                 value={formData.find((item) => item.index === c.index)?.answer || ""}
                                 onChange={(e) => handleChange(e, c.index)}
@@ -85,52 +96,50 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
                 ))}
             </div>
 
-            {status !== TASKSTATUS.COMPLETED && status !== TASKSTATUS.CANCELLED && (
-                <div className="relative w-full flex items-center justify-end gap-0! mb-20 lg:mb-0">
-                    <Button
-                        type="submit"
-                        variant="secondary"
-                        disabled={isSubmitting}
-                        className="rounded-sm! rounded-r-none! cursor-pointer"
-                        onClick={() => handleSubmit(primaryAction)}
-                    >
-                        <PrimaryIcon size={16} />
-                        <span>{primaryLabel}</span>
-                    </Button>
+            <div className="relative w-full flex items-center justify-end gap-0! mb-20 lg:mb-0">
+                <Button
+                    type="submit"
+                    variant="secondary"
+                    disabled={isSubmitting}
+                    className="rounded-sm! rounded-r-none! cursor-pointer"
+                    onClick={() => handleSubmit(primaryAction)}
+                >
+                    <PrimaryIcon size={16} />
+                    <span>{primaryLabel}</span>
+                </Button>
 
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            render={
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    disabled={isSubmitting}
-                                    className="rounded-sm! rounded-l-none! border-l! cursor-pointer px-2"
-                                >
-                                    <CaretDownIcon size={14} />
-                                </Button>
-                            }
-                        />
+                <DropdownMenu>
+                    <DropdownMenuTrigger
+                        render={
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                disabled={isSubmitting}
+                                className="rounded-sm! rounded-l-none! border-l! cursor-pointer px-2"
+                            >
+                                <CaretDownIcon size={14} />
+                            </Button>
+                        }
+                    />
 
-                        <DropdownMenuContent align="end" className="z-100! w-full space-y-1 rounded-sm! my-2!">
-                            <DropdownMenuItem onClick={() => handleSubmit("SaveProgress")} className="rounded-sm! cursor-pointer py-2 gap-3">
-                                <FloppyDiskIcon size={16} />
-                                Save Progress
-                            </DropdownMenuItem>
-                            <Separator />
-                            <DropdownMenuItem onClick={() => handleSubmit("MarkComplete")} className="rounded-sm! cursor-pointer py-2 gap-3">
-                                <CheckCircleIcon size={16} />
-                                Mark as Complete
-                            </DropdownMenuItem>
-                            <Separator />
-                            <DropdownMenuItem onClick={() => handleSubmit("NingenShikaku")} className="rounded-sm! cursor-pointer py-2 gap-3">
-                                <SkullIcon size={16} />
-                                Ningen Shikaku
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            )}
+                    <DropdownMenuContent align="end" className="z-100! w-full space-y-1 rounded-sm! my-2!">
+                        <DropdownMenuItem onClick={() => handleSubmit("SaveProgress")} className="rounded-sm! cursor-pointer py-2 gap-3">
+                            <FloppyDiskIcon size={16} />
+                            Save Progress
+                        </DropdownMenuItem>
+                        <Separator />
+                        <DropdownMenuItem onClick={() => handleSubmit("MarkComplete")} className="rounded-sm! cursor-pointer py-2 gap-3">
+                            <CheckCircleIcon size={16} />
+                            Mark as Complete
+                        </DropdownMenuItem>
+                        <Separator />
+                        <DropdownMenuItem onClick={() => handleSubmit("NingenShikaku")} className="rounded-sm! cursor-pointer py-2 gap-3">
+                            <SkullIcon size={16} />
+                            Ningen Shikaku
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
         </>
     )
 }

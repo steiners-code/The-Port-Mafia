@@ -9,7 +9,7 @@ import { MainTriggerType } from "../../generated/prisma";
  * automated event. Wording is voiced as her addressing Dazai directly —
  * not full ghostwriting, just enough that the attribution reads true.
  */
-export async function triggerDaziaForTask(userId: string, data: MainTask, principalName: string) {
+export async function triggerDazaiForTask(userId: string, principalName: string, data: MainTask) {
     const questionList = data.content
         .map((q) => `${q.index + 1}. ${q.question}`)
         .join("\n");
