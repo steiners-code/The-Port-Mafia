@@ -30,7 +30,7 @@ export const statusStyles: Record<TASKSTATUS, string> = {
 const renderTaskContent = (task: Task) => {
     switch (task.type) {
         case "QUESTIONNAIRE":
-            return <QuestionnaireForm content={task.content} />
+            return <QuestionnaireForm taskId={task.id} content={task.content} status={task.status} />
     }
 }
 
@@ -75,7 +75,7 @@ const MediaTask = ({ title, taskId }: { taskId: string, title: string }) => {
             category: "TASK",
             extension: data.type,
         }}>
-            <div className="space-y-8">
+            <div className="space-y-8 h-fit">
                 <div className="space-y-1">
                     <div className="flex items-center">
                         <span className={cn("font-serif font-medium text-sm tracking-wider", agent?.colors.text)}>

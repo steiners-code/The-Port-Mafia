@@ -1,7 +1,5 @@
 "use client";
 
-import { useRef } from "react";
-
 const MediaText = ({ content }: { content: string }) => {
     return (
         <div className="text-foreground react-markdown space-y-0">

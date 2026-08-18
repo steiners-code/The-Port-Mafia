@@ -13,15 +13,15 @@ import { toast } from "sonner"
 export const statusIcon = (status?: TASKSTATUS, size: number = 14) => {
     switch (status) {
         case TASKSTATUS.COMPLETED:
-            return <CheckCircleIcon weight="duotone" size={size} color="#19d44b" />
+            return <CheckCircleIcon weight="duotone" size={size} color="#19d44b" className="flex-1 max-w-fit" />
         case TASKSTATUS.PENDING:
-            return <ClockIcon weight="duotone" size={size} color="#8b8b93" />
+            return <ClockIcon weight="duotone" size={size} color="#8b8b93" className="flex-1 max-w-fit" />
         case TASKSTATUS.INREVIEW:
-            return <EyeIcon weight="duotone" size={size} color="#e8a33d" />
+            return <EyeIcon weight="duotone" size={size} color="#e8a33d" className="flex-1 max-w-fit" />
         case TASKSTATUS.INPROGRESS:
-            return <ArrowsClockwiseIcon weight="regular" size={size} color="#c2185b" /> // className="animate-spin"
+            return <ArrowsClockwiseIcon weight="regular" size={size} color="#c2185b" className="flex-1 max-w-fit" /> // className="animate-spin"
         case TASKSTATUS.CANCELLED:
-            return <XCircleIcon weight="duotone" size={size} color="#d41919" />
+            return <XCircleIcon weight="duotone" size={size} color="#d41919" className="flex-1 max-w-fit" />
         default:
             return <Loader2 size={size} className="animate-spin text-muted-foreground" />
     }
@@ -48,10 +48,10 @@ const MessageMediaTask = ({ output, id }: { output: Task, id: string }) => {
             {statusIcon(data?.status)}
             <Button
                 variant="link"
-                className="p-0! hover:underline underline-offset-3! cursor-pointer font-serif! font-light! tracking-wide transition-all"
+                className="max-w-fit w-full flex-1 mx-0! p-0! hover:underline underline-offset-3! cursor-pointer font-serif! font-light! tracking-wide transition-all truncate!"
                 onClick={() => openMedia(output, "TASK")}
             >
-                {data?.title || output.name}
+                <p className="truncate">{data?.title || output.name}</p>
             </Button>
         </div>
     )
