@@ -1,41 +1,106 @@
-import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus } from "../../generated/prisma";
-import { createStreamWithRetry, StreamInitError } from "./helpers/createStreamWithRetry";
-import { LinkedinLog, StepState, UserMessageData } from "../../lib/types";
-import { updateMessageContent } from "./helpers/updateMessageContent";
-import { createMessageContent } from "./helpers/createMessageContent";
-import { getAutomatedLog } from "./helpers/automatedMessages";
-import { updateAIChatMessage } from "./helpers/chatMessage";
-import { getSystemPrompt } from "./helpers/getSystemPrompt";
-import { getChatHistory } from "./helpers/getChatHistory";
-import { TOOL_SCHEMAS } from "./tools";
+import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus, LinkedinPostCategory, LinkedinTechniqueRole } from "../../../generated/prisma";
+import { createStreamWithRetry, StreamInitError } from "../helpers/createStreamWithRetry";
+import { getChatHistoryForMessage } from "../getChatHistoryForMessage";
+import { createMessageContent } from "../helpers/createMessageContent";
+import { updateMessageContent } from "../helpers/updateMessageContent";
+import { getAnalystSystemPrompt } from "./getAnalystSystemPrompt";
+import { handleAnalystResponse } from "./handleAnalystResponse";
+import { getAutomatedLog } from "../helpers/automatedMessages";
+import { updateAIChatMessage } from "../helpers/chatMessage";
+import { LinkedinLog, StepState } from "../../../lib/types";
+import { getToolSchemasForRole } from "../tools";
 import { Type } from "@google/genai";
 
-const MAX_REITERATIONS = 5;
+const MAX_REITERATIONS = 20;
 
-const MessageSchema = {
+const AnalysisSchema = {
     type: Type.OBJECT,
     properties: {
-        message: {
+        category: {
+            type: Type.STRING,
+            enum: ["EDUCATIONAL", "PERSONAL", "BUILD_IN_PUBLIC", "ADAPTIVE"],
+        },
+        angle: {
+            type: Type.STRING,
+        },
+        hook_technique_slug: {
             type: Type.STRING,
             nullable: true,
         },
+        body_technique_slug: {
+            type: Type.STRING,
+            nullable: true,
+        },
+        cta_technique_slug: {
+            type: Type.STRING,
+            nullable: true,
+        },
+        new_techniques: {
+            type: Type.ARRAY,
+            items: {
+                type: Type.OBJECT,
+                properties: {
+                    slug: {
+                        type: Type.STRING,
+                    },
+                    role: {
+                        type: Type.STRING,
+                        enum: ["HOOK", "BODY", "CTA"],
+                    },
+                    category: {
+                        type: Type.STRING,
+                        enum: ["EDUCATIONAL", "PERSONAL", "BUILD_IN_PUBLIC", "ADAPTIVE"],
+                    },
+                    description: {
+                        type: Type.STRING,
+                    },
+                    content: {
+                        type: Type.STRING,
+                    },
+                },
+                required: ["slug", "role", "category", "description", "content"],
+            },
+        },
+        narration: {
+            type: Type.STRING,
+        },
     },
-    required: ["message"],
+    required: [
+        "category",
+        "angle",
+        "hook_technique_slug",
+        "body_technique_slug",
+        "cta_technique_slug",
+        "new_techniques",
+        "narration",
+    ],
 }
 
-type JsonOutput = {
-    message: string | null
+export type AnalystResponse = {
+    category: LinkedinPostCategory
+    angle: string
+    hook_technique_slug: string | null
+    body_technique_slug: string | null
+    cta_technique_slug: string | null
+    new_techniques: {
+        slug: string,
+        role: LinkedinTechniqueRole
+        category: LinkedinPostCategory
+        description: string,
+        content: string,
+    }[]
+    narration: string
 }
 
-type GenerateAIResponseData = {
+type GenerateAnalystResponse = {
     messageId: string,
     userId: string,
     principalName: string,
-    linkedinConnected: boolean,
-    contents: UserMessageData["contents"],
 }
 
-export async function generateAIResponse({ messageId, userId, principalName, linkedinConnected, contents }: GenerateAIResponseData) {
+const ANALYST_TOOLS = getToolSchemasForRole("ANALYST")
+
+export async function generateAnalystResponse({ messageId, userId, principalName }: GenerateAnalystResponse) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
     let activeIndex: number | null = null;
@@ -44,29 +109,14 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
         await updateAIChatMessage(messageId, LinkedinMessageStatus.PENDING);
 
         do {
-            if (reRunCount >= MAX_REITERATIONS) {
-                const capContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
-                await updateMessageContent({
-                    context: { userId, messageId, principalName },
-                    contentId: capContentId,
-                    status: LinkedinContentStatus.COMPLETED,
-                    logs: [{ level: LinkedinLogLevel.ERROR, message: "Reached max tool-call reiterations for this turn.", createdAt: new Date() }],
-                    output: {
-                        type: "model_output",
-                        text: "[Stopped]: This turn made too many tool calls in a row without resolving. Stopping here rather than continuing indefinitely.",
-                    }
-                });
-                break;
-            }
-            const stepStates: Record<number, StepState> = {}
-
             reRunCount++;
             reRun = false;
-            const systemPrompt = await getSystemPrompt(userId, principalName, linkedinConnected)
-            const chatHistory = await getChatHistory(userId, contents);
-            if (!chatHistory) throw new Error("Unable to retrieve chat history!")
 
-            const stream = await createStreamWithRetry(systemPrompt, chatHistory, MessageSchema, TOOL_SCHEMAS);
+            const stepStates: Record<number, StepState> = {}
+            const systemPrompt = await getAnalystSystemPrompt({ userId, principalName, maxCalls: MAX_REITERATIONS, remainingCalls: MAX_REITERATIONS - reRunCount })
+            const chatHistory = await getChatHistoryForMessage(messageId);
+            const TOOL_SCHEMAS = MAX_REITERATIONS > reRunCount ? ANALYST_TOOLS : undefined
+            const stream = await createStreamWithRetry(systemPrompt, chatHistory, AnalysisSchema, TOOL_SCHEMAS)
 
             for await (const event of stream) {
                 console.log(`[stream event] type=${event.event_type} index=${(event as any).index ?? "-"}`);
@@ -176,11 +226,13 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                             createdAt: new Date()
                         })
 
-                        let cleanMessage: string | null = state.text;
+                        let parsed: AnalystResponse;
                         try {
-                            const parsed: JsonOutput = JSON.parse(state.text.replace(/^```(?:json)?\s*|\s*```$/g, ""));
-                            cleanMessage = parsed.message ?? null;
-                        } catch { }
+                            parsed = JSON.parse(state.text.trim() ? state.text.replace(/^```(?:json)?\s*|\s*```$/g, "") : "null");
+                        } catch (error) {
+                            console.error("[ERROR]: ", error)
+                            throw new Error(`Unable to parse JsonOutput: ${error instanceof Error ? error.message : "Unkown Error!"}`)
+                        }
 
                         await updateMessageContent({
                             context: { userId, messageId, principalName },
@@ -192,13 +244,15 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                                 thoughtSignature: state.thoughtSignature,
                                 thoughtSummary: state.thoughtSummary,
                                 annotations: state.annotations,
-                                text: cleanMessage,
+                                text: parsed?.narration,
                                 funcCallId: state.funcCallId,
                                 funcCallName: state.funcCallName,
                                 funcArgsAccumulate: state.funcArgsAccumulate,
                             },
                             startedAt: state.startedAt
                         })
+
+                        await handleAnalystResponse(parsed, { messageId, userId })
                         break;
 
                     case "interaction.completed":
@@ -253,7 +307,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                         break;
                 }
             }
-        } while (reRun);
+        } while (reRun)
     } catch (error) {
         console.error("[generateAIResponse] fatal error:", error);
         const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0, false);

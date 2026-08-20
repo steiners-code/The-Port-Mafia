@@ -1,10 +1,11 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel } from "../../../../generated/prisma";
 import { getAutomatedLog } from "../../helpers/automatedMessages";
+import { sendEvent } from "../../../../lib/send-event";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 
-export async function displayConnectButton(args: { reason: string }, { messageId, userId }: ToolContext) {
-    await prisma.linkedinMessageContent.create({
+export async function displayConnectButton(args: { reason: string }, { messageId }: ToolContext) {
+    const data = await prisma.linkedinMessageContent.create({
         data: {
             chatMessageId: messageId,
             contentType: LinkedinContentType.MEDIA,
@@ -34,10 +35,9 @@ export async function displayConnectButton(args: { reason: string }, { messageId
         },
     });
 
-    // await sendEvent({ event_type: EventType.CONTENTCREATED, message: { ...data } })
+    await sendEvent({ event_type: "content.created", content: { ...data, messageId, status: LinkedinContentStatus.COMPLETED } })
 
     return {
-        success: true,
         message: "The LinkedIn connect button has been surfaced to the user's screen and is now visible to them.",
         componentName: "LinkedInConnectButton",
     };

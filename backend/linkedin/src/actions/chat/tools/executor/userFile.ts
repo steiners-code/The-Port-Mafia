@@ -1,6 +1,6 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinFileType, LinkedinLogLevel } from "../../../../generated/prisma";
 import { getAutomatedLog } from "../../helpers/automatedMessages";
-import { EventType } from "../../../../lib/enums";
+import { sendEvent } from "../../../../lib/send-event";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
@@ -22,7 +22,6 @@ export async function writeUserFile(args: { content: string }, { userId }: ToolC
     })
 
     return {
-        success: true,
         message: "USER.md has been updated and saved. This change is now permanent — there's no need to write again unless something new comes up that isn't reflected here.",
         fileName: "USER.md",
         contentLength: args.content.length,
@@ -45,7 +44,7 @@ export async function readUserFile(args: { content: string }, { userId }: ToolCo
 }
 
 export async function displayUserFile(args: {}, { userId, messageId }: ToolContext) {
-    await prisma.linkedinMessageContent.create({
+    const data = await prisma.linkedinMessageContent.create({
         data: {
             chatMessageId: messageId,
             contentType: LinkedinContentType.MEDIA,
@@ -77,10 +76,9 @@ export async function displayUserFile(args: {}, { userId, messageId }: ToolConte
         },
     });
 
-    // await sendEvent({ event_type: EventType.CONTENTCREATED, message: { ...data } })
+    await sendEvent({ event_type: "content.created", content: { ...data, messageId, status: LinkedinContentStatus.COMPLETED } })
 
     return {
-        success: true,
         message: "USER.md has been surfaced to the user's screen and is now visible to them.",
         fileName: "USER.md",
     };
