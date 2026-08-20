@@ -2,11 +2,13 @@ import { Elysia } from "elysia";
 import { authRoutes } from "./routes/auth";
 import { cronRoutes } from "./routes/cron";
 import { chatRoutes } from "./routes/chat";
+import { internalRoutes } from "./routes/internal";
 
 const app = new Elysia()
   .use(authRoutes)
   .use(cronRoutes)
   .use(chatRoutes)
+  .use(internalRoutes)
   .get("/health", () => "LinkedIn service is Healthy!")
   .listen(3000);
 

@@ -1,6 +1,23 @@
 import { LinkedinContentType, LinkedinFileType, LinkedinLogLevel } from "../generated/prisma"
 import { LOGLEVEL } from "./enums"
 
+export type StepState = {
+    type: "thought" | "model_output" | "function_call";
+    contentId: string;
+    logs: LinkedinLog[];
+
+    thoughtSignature?: string;
+    thoughtSummary: string;
+    annotations: Annotation[];
+    startedAt: Date;
+
+    text: string;
+
+    funcCallId: string,
+    funcCallName: string,
+    funcArgsAccumulate: string,
+};
+
 export type TypeLinkedinTokens = {
     access_token: string,
     expires_in: number,
@@ -159,3 +176,15 @@ type UserInputStep = {
 }
 
 export type Step = UserInputStep | ModelOutputStep | ThoughtStep | FunctionCallStep | FunctionResultStep
+
+export type MessageContext = {
+    messageId: string,
+    userId: string
+}
+
+export type Question = {
+    index: number,
+    question: string,
+    answer: string | null
+    answeredBy: "USER" | "DAZAI" | null
+}
