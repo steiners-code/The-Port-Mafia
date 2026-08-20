@@ -14,13 +14,9 @@ type ThoughtContentOutput = {
     annotations?: Annotation[],
 }
 
-type JsonOutput = {
-    message: string | null
-}
-
 type TextContentOutput = {
     type: "model_output",
-    text: string
+    text: string | null
 }
 
 type ToolContentOutput = {
@@ -85,17 +81,11 @@ export async function updateMessageContent({
             break;
 
         case "model_output":
-            let cleanMessage: string | null = output.text;
-            try {
-                const parsed: JsonOutput = JSON.parse(output.text.replace(/^```(?:json)?\s*|\s*```$/g, ""));
-                cleanMessage = parsed.message ?? null;
-            } catch { }
-
             data = await prisma.linkedinMessageContent.update({
                 where: { id: contentId },
                 data: {
                     status: status,
-                    message: cleanMessage,
+                    message: output.text,
                     logs: {
                         createMany: {
                             data: logs,

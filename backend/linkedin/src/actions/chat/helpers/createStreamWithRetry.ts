@@ -1,7 +1,10 @@
 import { LinkedinLog, Step } from "../../../lib/types";
-import { GoogleGenAI, Type } from "@google/genai";
 import { awaitRateLimit } from "./rateLimiter";
-import { TOOL_SCHEMAS } from "../tools";
+import { GoogleGenAI } from "@google/genai";
+
+type InteractionTools = NonNullable<
+    Parameters<GoogleGenAI["interactions"]["create"]>[0]
+>["tools"];
 
 const ai = new GoogleGenAI({
     apiKey: process.env.LINKEDIN_GEMINI_API_KEY
@@ -21,7 +24,7 @@ export class StreamInitError extends Error {
     }
 }
 
-export async function createStreamWithRetry(systemPrompt: string, chatHistory: Step[], retries = 3, delayMs = 2000) {
+export async function createStreamWithRetry(systemPrompt: string, chatHistory: Step[], schema: object, TOOL_SCHEMAS?: InteractionTools, retries = 3, delayMs = 2000) {
     const logs: LinkedinLog[] = [];
 
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -39,16 +42,7 @@ export async function createStreamWithRetry(systemPrompt: string, chatHistory: S
                 response_format: {
                     mime_type: "application/json",
                     type: "text",
-                    schema: {
-                        type: Type.OBJECT,
-                        properties: {
-                            message: {
-                                type: Type.STRING,
-                                nullable: true,
-                            },
-                        },
-                        required: ["message"],
-                    }
+                    schema,
                 },
                 // safety_settings: safetySettings,
                 tools: TOOL_SCHEMAS,
