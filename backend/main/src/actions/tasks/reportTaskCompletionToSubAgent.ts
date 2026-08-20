@@ -17,7 +17,7 @@ const SERVICE_HOSTS: Record<SubAgent, string> = {
 };
 
 function taskAnswersRoute(role: string) {
-    return `/internal/task-answers/${role.toLowerCase()}`;
+    return `/internal/task-report/${role.toLowerCase()}`;
 }
 
 export async function reportTaskCompletionToSubAgent(userId: string, task: MainTask & { id: string; subAgent: SubAgent; subAgentRole: string }) {
@@ -33,8 +33,6 @@ export async function reportTaskCompletionToSubAgent(userId: string, task: MainT
             "X-User-Id": userId,
         },
         body: JSON.stringify({
-            taskId: task.id,
-            title: task.title,
             type: task.type,
             content: task.content,
         }),

@@ -187,5 +187,5 @@ export type SubAgents = MahaLinkedIn
 type MahaLinkedIn = {
     subAgent: typeof SubAgent.MAHA
     subAgentPlatform: typeof AppType.LINKEDIN
-    subAgentRole: "OBSERVER" | "ANALYST" | "STRATEGIST" | "WRITER" | "HANDLER"
+    subAgentRole: "ANALYST" | "STRATEGIST" | "OBSERVER" | "WRITER" | "HANDLER"
 }
