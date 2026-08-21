@@ -69,6 +69,31 @@ function appendMessageToCache(old: InfiniteData<Chat> | undefined, message: Chat
     return { ...old, pages };
 }
 
+function removeMessageFromCache(old: InfiniteData<Chat> | undefined, messageId: string): InfiniteData<Chat> | undefined {
+    if (!old) return old;
+
+    let found = false;
+    const pages = old.pages.map((page) => {
+        if (!page) return page;
+        const messages = page.messages.filter((m) => {
+            if (m.id !== messageId) return true;
+            found = true;
+            return false;
+        });
+        return found ? { ...page, messages } : page;
+    });
+
+    if (!found) return old;
+    return { ...old, pages };
+}
+
+function removeContentFromCache(old: InfiniteData<Chat> | undefined, messageId: string, contentId: string): InfiniteData<Chat> | undefined {
+    return updateMessageInCache(old, messageId, (m) => ({
+        ...m,
+        contents: m.contents.filter((c) => c.id !== contentId),
+    }));
+}
+
 /**
  * For a message.full event (USER or SUBAGENT-originated, already fully
  * formed at creation, no follow-up content.created/content.completed
@@ -191,6 +216,13 @@ export function useChat() {
                 break;
             }
 
+            case "message.wiped": {
+                queryClient.setQueryData<InfiniteData<Chat>>(CHAT_QUERY_KEY, (old) =>
+                    removeMessageFromCache(old, event.message.id)
+                );
+                break;
+            }
+
             case "content.created": {
                 const content: MessageContent = {
                     id: event.content.id,
@@ -227,6 +259,13 @@ export function useChat() {
                     });
                     return { ...old, pages };
                 });
+                break;
+            }
+
+            case "content.wiped": {
+                queryClient.setQueryData<InfiniteData<Chat>>(CHAT_QUERY_KEY, (old) =>
+                    removeContentFromCache(old, event.content.messageId, event.content.id)
+                );
                 break;
             }
         }

@@ -54,7 +54,7 @@ export type Annotation = {
  * the backend's Event union in sendEvent.ts — kept separate here rather
  * than shared, since frontend/backend live in different packages.
  */
-export type SSEEvent = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent | MessageFullEvent
+export type SSEEvent = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | MessageWipedEvent | ContentCreatedEvent | ContentCompletedEvent | ContentWipedEvent | MessageFullEvent
 
 type MessageFullEvent = {
     event_type: "message.full"
@@ -103,6 +103,13 @@ type MessageCompletedEvent = {
     }
 }
 
+type MessageWipedEvent = {
+    event_type: "message.wiped"
+    message: {
+        id: string
+    }
+}
+
 type ContentCreatedEvent = {
     event_type: "content.created"
     content: {
@@ -134,6 +141,14 @@ type ContentCompletedEvent = {
         message: string | null,
         output: JsonValue,
         status: STATUS
+    }
+}
+
+type ContentWipedEvent = {
+    event_type: "content.wiped"
+    content: {
+        id: string,
+        messageId: string
     }
 }
 
