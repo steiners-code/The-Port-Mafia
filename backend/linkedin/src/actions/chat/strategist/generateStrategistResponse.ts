@@ -198,6 +198,10 @@ export async function generateStrategistResponse({ messageId, userId, principalN
                             contentId: [state.contentId],
                         });
 
+                        if (!parsed) {
+                            break;
+                        }
+
                         if (isFinalResponse(parsed)) {
                             await handleStrategistResponse(parsed, category, { messageId, userId })
                         } else {

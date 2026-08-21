@@ -92,6 +92,10 @@ export type AnalystResponse = {
     narration: string
 }
 
+function isAnalystResponse(parsed: AnalystResponse): parsed is AnalystResponse {
+    return "new_techniques" in parsed;
+}
+
 type GenerateAnalystResponse = {
     messageId: string,
     userId: string,
@@ -252,7 +256,9 @@ export async function generateAnalystResponse({ messageId, userId, principalName
                             startedAt: state.startedAt
                         })
 
-                        await handleAnalystResponse(parsed, { messageId, userId })
+                        if (parsed !== null && isAnalystResponse(parsed)) {
+                            await handleAnalystResponse(parsed, { messageId, userId })
+                        }
                         break;
 
                     case "interaction.completed":

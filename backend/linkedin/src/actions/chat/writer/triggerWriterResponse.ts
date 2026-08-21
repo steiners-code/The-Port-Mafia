@@ -1,18 +1,15 @@
-import { generateWriterResponse } from "./generateWriterResponse";
 import { WriterInput } from "../observer/handleObserverResponse";
 import { appendHistoryEntry } from "../../../lib/cache";
 import { MessageContext } from "../../../lib/types";
 import { getChatId } from "../getChatId";
-// import { Queue } from "bullmq";
-// import Redis from "ioredis";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
 
-// TODO: To be added in worker.ts
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
 
-// const connection = new Redis(process.env.REDIS_URL!, {
-//     maxRetriesPerRequest: null,
-// });
-
-// const chatQueue = new Queue("writer-maha-balor", { connection });
+const chatQueue = new Queue("writer-maha-balor", { connection });
 
 function formatTechnique(technique: string | null, role: string): string {
     if (!technique) return `${role}: null — no guidance for this role.`;
@@ -60,7 +57,7 @@ export async function triggerWriterResponse(input: WriterInput, context: Message
             text: userInputText,
         });
 
-        await generateWriterResponse({
+        await chatQueue.add("linkedin-post", {
             messageId,
             userId: context.userId,
             principalName,
@@ -70,15 +67,9 @@ export async function triggerWriterResponse(input: WriterInput, context: Message
             body_technique: input.body_technique,
             cta_technique: input.cta_technique,
             facts: input.facts,
+        }, {
+            jobId: messageId,
         });
-
-        // await chatQueue.add("linkedin-post", {
-        //     messageId,
-        //     userId: context.userId,
-        //     principalName,
-        // }, {
-        //     jobId: messageId,
-        // });
 
         return {
             success: true,

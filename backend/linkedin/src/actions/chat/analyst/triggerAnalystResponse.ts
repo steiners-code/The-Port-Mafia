@@ -1,20 +1,17 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus, LinkedinTriggerType } from "../../../generated/prisma";
-import { generateAnalystResponse } from "./generateAnalystResponse";
 import { getAutomatedLog } from "../helpers/automatedMessages";
 import { createAIChatMessage } from "../helpers/chatMessage";
 import { sendEvent } from "../../../lib/send-event";
 import { getChatId } from "../getChatId";
 import { prisma } from "../../../lib/db";
-// import { Queue } from "bullmq";
-// import Redis from "ioredis";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
 
-// TODO: To be added in worker.ts
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
 
-// const connection = new Redis(process.env.REDIS_URL!, {
-//     maxRetriesPerRequest: null,
-// });
-
-// const chatQueue = new Queue("analyst-maha-balor", { connection });
+const chatQueue = new Queue("analyst-maha-balor", { connection });
 
 export async function triggerAnalystResponse(userId: string) {
     try {
@@ -65,15 +62,13 @@ export async function triggerAnalystResponse(userId: string) {
 
         const messageId = await createAIChatMessage(chatId)
 
-        await generateAnalystResponse({ messageId, userId, principalName })
-
-        // await chatQueue.add("linkedin-post", {
-        //     messageId,
-        //     userId,
-        //     principalName,
-        // }, {
-        //     jobId: messageId,
-        // });
+        await chatQueue.add("linkedin-post", {
+            messageId,
+            userId,
+            principalName,
+        }, {
+            jobId: messageId,
+        });
 
         return {
             success: true,

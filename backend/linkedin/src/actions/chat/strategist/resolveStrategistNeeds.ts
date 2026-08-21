@@ -39,5 +39,10 @@ export async function resolveStrategistNeeds(needs: StrategistNeedsResponse["nee
         throw new Error(`Failed to create STRATEGIST questionnaire task: ${response.status} ${response.statusText} — ${body}`);
     }
 
-    return response.json();
+    try {
+        return await response.json();
+    } catch (error) {
+        const rawBody = await response.text().catch(() => "<unreadable response body>");
+        throw new Error(`STRATEGIST questionnaire task creation returned a 2xx but the body wasn't valid JSON: ${error instanceof Error ? error.message : "Unknown parse error"} — raw body: ${rawBody}`);
+    }
 }

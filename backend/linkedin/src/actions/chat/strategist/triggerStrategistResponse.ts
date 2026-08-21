@@ -1,19 +1,16 @@
-import { generateStrategistResponse } from "./generateStrategistResponse";
 import { StrategistInput } from "../analyst/handleAnalystResponse";
 import { appendHistoryEntry, setSeed } from "../../../lib/cache";
 import { MessageContext } from "../../../lib/types";
 import { getChatId } from "../getChatId";
 import { Type } from "@google/genai";
-// import { Queue } from "bullmq";
-// import Redis from "ioredis";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
 
-// TODO: To be added in worker.ts
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
 
-// const connection = new Redis(process.env.REDIS_URL!, {
-//     maxRetriesPerRequest: null,
-// });
-
-// const chatQueue = new Queue("strategist-maha-balor", { connection });
+const chatQueue = new Queue("strategist-maha-balor", { connection });
 
 function formatTechnique(t: StrategistInput["hook_technique"], role: string): string {
     if (!t) return `${role}: null — nothing in the bank fit this role.`;
@@ -74,16 +71,15 @@ export async function triggerStrategistResponse(input: StrategistInput, context:
         // resolve category for the final-turn call.
         await setSeed(context.userId, "STRATEGIST", input);
 
-        await generateStrategistResponse({ messageId, userId: context.userId, principalName, schema: StrategistNeedsSchema, category: input.category });
-
-        // await chatQueue.add("linkedin-post", {
-        //     messageId,
-        //     userId: context.userId,
-        //     principalName,
-        //     input,
-        // }, {
-        //     jobId: messageId,
-        // });
+        await chatQueue.add("linkedin-post", {
+            messageId,
+            userId: context.userId,
+            principalName,
+            schema: StrategistNeedsSchema,
+            category: input.category
+        }, {
+            jobId: messageId,
+        });
 
         return {
             success: true,

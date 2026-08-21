@@ -6,7 +6,6 @@ import { getChatId } from "../getChatId";
 import { Type } from "@google/genai";
 
 type TaskReportBody = {
-    title: string;
     type: "QUESTIONNAIRE";
     content: Question[];
 };

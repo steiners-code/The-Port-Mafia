@@ -6,11 +6,10 @@ import { updateMessageContent } from "../helpers/updateMessageContent";
 import { getObserverSystemPrompt } from "./getObserverSystemPrompt";
 import { handleObserverResponse } from "./handleObserverResponse";
 import { getAutomatedLog } from "../helpers/automatedMessages";
+import { resolveObserverNeeds } from "./resolveObserverNeeds";
 import { updateAIChatMessage } from "../helpers/chatMessage";
 import { LinkedinLog, StepState } from "../../../lib/types";
 import { appendHistoryEntry } from "../../../lib/cache";
-
-const MAX_REITERATIONS = 20;
 
 /**
  * SOUL_C's two shapes (SOUL_C.md §5) — needs still outstanding, or the
@@ -29,8 +28,8 @@ export type ObserverFactsResponse = {
 
 export type ObserverResponse = ObserverNeedsResponse | ObserverFactsResponse;
 
-function isFactsResponse(parsed: ObserverResponse): parsed is ObserverFactsResponse {
-    return !("needs" in parsed);
+function isObserverNeedsResponse(parsed: ObserverResponse): parsed is ObserverNeedsResponse {
+    return "needs" in parsed;
 }
 
 type GenerateObserverResponse = {
@@ -182,7 +181,7 @@ export async function generateObserverResponse({ messageId, userId, principalNam
 
                         let parsed: ObserverResponse;
                         try {
-                            parsed = JSON.parse(state.text.replace(/^```(?:json)?\s*|\s*```$/g, ""));
+                            parsed = JSON.parse(state.text.trim() ? state.text.replace(/^```(?:json)?\s*|\s*```$/g, "") : "null");
                         } catch (error) {
                             console.error("[ERROR]: ", error)
                             throw new Error(`Unable to parse JsonOutput: ${error instanceof Error ? error.message : "Unkown Error!"}`)
@@ -220,7 +219,13 @@ export async function generateObserverResponse({ messageId, userId, principalNam
                         // WRITER; a needs response stops here and waits
                         // on the principal's answer via the task-report
                         // route.
-                        if (isFactsResponse(parsed)) {
+                        if (!parsed) {
+                            break;
+                        }
+
+                        if (isObserverNeedsResponse(parsed)) {
+                            await resolveObserverNeeds(parsed.needs, userId)
+                        } else {
                             if (!facts) {
                                 throw new Error("Observer produced a facts-shaped final response but no facts were supplied to generateObserverResponse — this call must be the task-report resumption, which is required to pass the real answered Q&A pairs in.");
                             }

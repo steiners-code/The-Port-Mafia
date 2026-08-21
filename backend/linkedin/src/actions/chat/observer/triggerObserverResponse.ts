@@ -1,19 +1,16 @@
 import { ObserverInput } from "../strategist/handleStrategistResponse";
-import { generateObserverResponse } from "./generateObserverResponse";
 import { appendHistoryEntry, setSeed } from "../../../lib/cache";
 import { MessageContext } from "../../../lib/types";
 import { getChatId } from "../getChatId";
 import { Type } from "@google/genai";
-// import { Queue } from "bullmq";
-// import Redis from "ioredis";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
 
-// TODO: To be added in worker.ts
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
 
-// const connection = new Redis(process.env.REDIS_URL!, {
-//     maxRetriesPerRequest: null,
-// });
-
-// const chatQueue = new Queue("observer-maha-balor", { connection });
+const chatQueue = new Queue("observer-maha-balor", { connection });
 
 function formatTechnique(technique: string | null, role: string): string {
     if (!technique) return `${role}: null — no guidance for this role.`;
@@ -78,7 +75,7 @@ export async function triggerObserverResponse(input: ObserverInput, context: Mes
         // resolve category/title/techniques for the facts-turn call.
         await setSeed(context.userId, "OBSERVER", input);
 
-        await generateObserverResponse({
+        await chatQueue.add("linkedin-post", {
             messageId,
             userId: context.userId,
             principalName,
@@ -88,15 +85,9 @@ export async function triggerObserverResponse(input: ObserverInput, context: Mes
             hook_technique: input.hook_technique,
             body_technique: input.body_technique,
             cta_technique: input.cta_technique,
+        }, {
+            jobId: messageId,
         });
-
-        // await chatQueue.add("linkedin-post", {
-        //     messageId,
-        //     userId: context.userId,
-        //     principalName,
-        // }, {
-        //     jobId: messageId,
-        // });
 
         return {
             success: true,
