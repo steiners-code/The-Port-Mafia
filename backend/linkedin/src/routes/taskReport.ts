@@ -7,7 +7,6 @@ const userId = t.Object({
 });
 
 const questionnaireBody = t.Object({
-    title: t.String({ minLength: 1 }),
     type: t.Literal("QUESTIONNAIRE"),
     content: t.Array(
         t.Object({
