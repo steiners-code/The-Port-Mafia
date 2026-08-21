@@ -1,9 +1,16 @@
-import { generateObserverResponse } from "../observer/generateObserverResponse";
+import { appendHistoryEntry, getHistory, getSeed } from "../../../lib/cache";
 import { ObserverInput } from "../strategist/handleStrategistResponse";
-import { getHistory, getSeed } from "../../../lib/cache";
 import { Question } from "../../../lib/types";
 import { getChatId } from "../getChatId";
 import { Type } from "@google/genai";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
+
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
+
+const chatQueue = new Queue("observer-maha-balor", { connection });
 
 type TaskReportBody = {
     type: "QUESTIONNAIRE";
@@ -83,13 +90,22 @@ export async function handleObserverTaskReport(userId: string, body: TaskReportB
         const { messageId } = observerCache;
         const { principalName } = await getChatId(userId);
 
-        // No model round-trip needed to assemble facts — the answered
-        // Question[] already carries question+answer paired correctly,
-        // which is everything SOUL_D needs. The model's final turn here
-        // only produces narration for the activity log.
         const facts = answered.map((q) => ({ question: q.question, answer: q.answer as string }));
 
-        await generateObserverResponse({
+        const userInputText = [
+            `${principalName} has answered what you asked for. Here is what you needed:`,
+            "",
+            ...answered.map((q) => `Q: ${q.question}\nA: ${q.answer}`),
+            "",
+            "You have everything you need now. Respond with your narration only — a plain, one or two sentence note for the activity log confirming you're ready to hand this off. Don't restate the answers; the harness already has them.",
+        ].join("\n");
+
+        await appendHistoryEntry(userId, "OBSERVER", messageId, {
+            type: "user_input",
+            text: userInputText,
+        });
+
+        await chatQueue.add("linkedin-post", {
             messageId,
             userId,
             principalName,
@@ -100,6 +116,8 @@ export async function handleObserverTaskReport(userId: string, body: TaskReportB
             body_technique: seed.body_technique,
             cta_technique: seed.cta_technique,
             facts,
+        }, {
+            jobId: `${messageId}-final`,
         });
 
         return {

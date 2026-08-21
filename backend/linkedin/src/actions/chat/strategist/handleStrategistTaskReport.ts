@@ -1,9 +1,16 @@
-import { generateStrategistResponse } from "../strategist/generateStrategistResponse";
 import { appendHistoryEntry, getHistory, getSeed } from "../../../lib/cache";
 import { StrategistInput } from "../analyst/handleAnalystResponse";
 import { Question } from "../../../lib/types";
 import { getChatId } from "../getChatId";
 import { Type } from "@google/genai";
+import { Queue } from "bullmq";
+import Redis from "ioredis";
+
+const connection = new Redis(process.env.REDIS_URL!, {
+    maxRetriesPerRequest: null,
+});
+
+const chatQueue = new Queue("strategist-maha-balor", { connection });
 
 type TaskReportBody = {
     type: "QUESTIONNAIRE";
@@ -119,13 +126,17 @@ export async function handleStrategistTaskReport(userId: string, body: TaskRepor
             text: userInputText,
         });
 
-        await generateStrategistResponse({
+        const res = await chatQueue.add("linkedin-post", {
             messageId,
             userId,
             principalName,
             schema: StrategistFinalSchema,
             category,
+        }, {
+            jobId: `${messageId}-final`,
         });
+
+        console.log(res);
 
         return {
             success: true,

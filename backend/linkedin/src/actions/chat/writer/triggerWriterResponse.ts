@@ -1,5 +1,5 @@
 import { WriterInput } from "../observer/handleObserverResponse";
-import { appendHistoryEntry } from "../../../lib/cache";
+import { appendHistoryEntry, setSeed } from "../../../lib/cache";
 import { MessageContext } from "../../../lib/types";
 import { getChatId } from "../getChatId";
 import { Queue } from "bullmq";
@@ -29,7 +29,7 @@ function formatFacts(facts: WriterInput["facts"]): string {
  * resolved back out of redis — everything D needs is already fully in
  * hand right here, in WriterInput, at trigger time.
  */
-export async function triggerWriterResponse(input: WriterInput, context: MessageContext) {
+export async function triggerWriterResponse(input: WriterInput, context: MessageContext, jobId?: string) {
     try {
         const { principalName } = await getChatId(context.userId);
         const { messageId } = context;
@@ -57,6 +57,8 @@ export async function triggerWriterResponse(input: WriterInput, context: Message
             text: userInputText,
         });
 
+        await setSeed(context.userId, "WRITER", input);
+
         await chatQueue.add("linkedin-post", {
             messageId,
             userId: context.userId,
@@ -68,7 +70,7 @@ export async function triggerWriterResponse(input: WriterInput, context: Message
             cta_technique: input.cta_technique,
             facts: input.facts,
         }, {
-            jobId: messageId,
+            jobId: jobId ?? messageId,
         });
 
         return {

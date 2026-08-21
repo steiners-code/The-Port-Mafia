@@ -1,6 +1,7 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus, LinkedinPostCategory, LinkedinMediaType } from "../../../generated/prisma";
 import { createStreamWithRetry, StreamInitError } from "../helpers/createStreamWithRetry";
 import { getChatHistoryForRole } from "../helpers/getChatHistoryForRole";
+import { displayContinueButton } from "../helpers/displayContinueButton";
 import { createMessageContent } from "../helpers/createMessageContent";
 import { updateMessageContent } from "../helpers/updateMessageContent";
 import { getWriterSystemPrompt } from "./getWriterSystemPrompt";
@@ -306,6 +307,11 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                                 },
                                 startedAt: errorState.startedAt
                             })
+
+                            await appendHistoryEntry(userId, "WRITER", messageId, {
+                                type: "model",
+                                contentId: [errorState.contentId]
+                            })
                         } else if (messageId) {
                             const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
                             await updateMessageContent({
@@ -318,9 +324,15 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                                     text: `[Error]: ${errorMessage}`
                                 }
                             });
+
+                            await appendHistoryEntry(userId, "WRITER", messageId, {
+                                type: "model",
+                                contentId: [errContentId]
+                            })
                         }
 
                         await updateAIChatMessage(messageId, LinkedinMessageStatus.FAILED);
+                        await displayContinueButton({ messageId, role: "WRITER", reason: errorMessage })
                         break;
                 }
             }

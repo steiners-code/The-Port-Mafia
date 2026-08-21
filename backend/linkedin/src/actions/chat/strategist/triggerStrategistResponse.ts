@@ -38,7 +38,7 @@ const StrategistNeedsSchema = {
     required: ["needs", "narration"],
 }
 
-export async function triggerStrategistResponse(input: StrategistInput, context: MessageContext) {
+export async function triggerStrategistResponse(input: StrategistInput, context: MessageContext, jobId?: string) {
     try {
         const { principalName } = await getChatId(context.userId);
         const messageId = context.messageId;
@@ -78,7 +78,7 @@ export async function triggerStrategistResponse(input: StrategistInput, context:
             schema: StrategistNeedsSchema,
             category: input.category
         }, {
-            jobId: messageId,
+            jobId: jobId ?? messageId,
         });
 
         return {

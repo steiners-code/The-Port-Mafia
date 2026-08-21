@@ -44,7 +44,7 @@ const ObserverNeedsSchema = {
  * needs to re-derive it from a raw cache read the way the strategist
  * task-report action did.
  */
-export async function triggerObserverResponse(input: ObserverInput, context: MessageContext) {
+export async function triggerObserverResponse(input: ObserverInput, context: MessageContext, jobId?: string) {
     try {
         const { principalName } = await getChatId(context.userId);
         const { messageId } = context;
@@ -86,7 +86,7 @@ export async function triggerObserverResponse(input: ObserverInput, context: Mes
             body_technique: input.body_technique,
             cta_technique: input.cta_technique,
         }, {
-            jobId: messageId,
+            jobId: jobId ?? messageId,
         });
 
         return {

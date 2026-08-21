@@ -1,5 +1,6 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus, LinkedinPostCategory } from "../../../generated/prisma";
 import { createStreamWithRetry, StreamInitError } from "../helpers/createStreamWithRetry";
+import { displayContinueButton } from "../helpers/displayContinueButton";
 import { getChatHistoryForRole } from "../helpers/getChatHistoryForRole";
 import { createMessageContent } from "../helpers/createMessageContent";
 import { updateMessageContent } from "../helpers/updateMessageContent";
@@ -267,6 +268,10 @@ export async function generateObserverResponse({ messageId, userId, principalNam
                                 },
                                 startedAt: errorState.startedAt
                             })
+                            await appendHistoryEntry(userId, "OBSERVER", messageId, {
+                                type: "model",
+                                contentId: [errorState.contentId]
+                            })
                         } else if (messageId) {
                             const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
                             await updateMessageContent({
@@ -279,9 +284,14 @@ export async function generateObserverResponse({ messageId, userId, principalNam
                                     text: `[Error]: ${errorMessage}`
                                 }
                             });
+                            await appendHistoryEntry(userId, "OBSERVER", messageId, {
+                                type: "model",
+                                contentId: [errContentId]
+                            })
                         }
 
                         await updateAIChatMessage(messageId, LinkedinMessageStatus.FAILED);
+                        await displayContinueButton({ messageId, role: "OBSERVER", reason: errorMessage })
                         break;
                 }
             }

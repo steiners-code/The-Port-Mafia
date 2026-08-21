@@ -14,7 +14,7 @@ export async function displayConnectButton(args: { reason: string }, { messageId
             output: {
                 name: "LinkedinConnectButton",
                 message: args.reason,
-                type: "COMPONENT",
+                actionType: "COMPONENT",
                 category: "ACTION",
             },
             logs: {

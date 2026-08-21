@@ -1,5 +1,6 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus, LinkedinPostCategory, LinkedinTechniqueRole } from "../../../generated/prisma";
 import { createStreamWithRetry, StreamInitError } from "../helpers/createStreamWithRetry";
+import { displayContinueButton } from "../helpers/displayContinueButton";
 import { getChatHistoryForMessage } from "../getChatHistoryForMessage";
 import { createMessageContent } from "../helpers/createMessageContent";
 import { updateMessageContent } from "../helpers/updateMessageContent";
@@ -8,6 +9,7 @@ import { handleAnalystResponse } from "./handleAnalystResponse";
 import { getAutomatedLog } from "../helpers/automatedMessages";
 import { updateAIChatMessage } from "../helpers/chatMessage";
 import { LinkedinLog, StepState } from "../../../lib/types";
+import { appendHistoryEntry } from "../../../lib/cache";
 import { getToolSchemasForRole } from "../tools";
 import { Type } from "@google/genai";
 
@@ -295,6 +297,11 @@ export async function generateAnalystResponse({ messageId, userId, principalName
                                 },
                                 startedAt: errorState.startedAt
                             })
+
+                            await appendHistoryEntry(userId, "ANALYST", messageId, {
+                                type: "model",
+                                contentId: [errorState.contentId]
+                            })
                         } else if (messageId) {
                             const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
                             await updateMessageContent({
@@ -307,9 +314,15 @@ export async function generateAnalystResponse({ messageId, userId, principalName
                                     text: `[Error]: ${errorMessage}`
                                 }
                             });
+
+                            await appendHistoryEntry(userId, "ANALYST", messageId, {
+                                type: "model",
+                                contentId: [errContentId]
+                            })
                         }
 
                         await updateAIChatMessage(messageId, LinkedinMessageStatus.FAILED);
+                        await displayContinueButton({ messageId, role: "ANALYST", reason: errorMessage })
                         break;
                 }
             }
