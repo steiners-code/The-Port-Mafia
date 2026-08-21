@@ -6,7 +6,7 @@ import MessageMediaTask from "./media/MessageMediaTask";
 import { MediaWithAction } from "@/lib/types/media";
 import { JsonValue } from "@/lib/types"
 
-const MessageMedia = ({ output, id }: { output: JsonValue, id: string }) => {
+const MessageMedia = ({ output, id, messageId }: { output: JsonValue, id: string, messageId: string }) => {
     if (typeof output !== "object" || Array.isArray(output))
         return;
 
@@ -14,7 +14,7 @@ const MessageMedia = ({ output, id }: { output: JsonValue, id: string }) => {
 
     switch (data.category) {
         case "ACTION":
-            return <MessageMediaAction output={data} id={id} />
+            return <MessageMediaAction output={data} id={id} messageId={messageId} />
         case "TASK":
             return <MessageMediaTask output={data} id={id} />
         default:

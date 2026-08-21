@@ -22,6 +22,7 @@ export async function updateTaskProgress({ taskId, action, answers }: UpdateTask
             message: res.data?.message ?? "Task updated successfully.",
         };
     } catch (error) {
+        console.log(error);
         return {
             success: false,
             message: "Failed to update the task. Please try again.",

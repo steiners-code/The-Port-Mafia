@@ -1,17 +1,20 @@
+import LinkedInContinueButton from "./component/LinkedInContinueButton";
 import LinkedInConnectButton from "./component/LinkedInConnectButton";
 import { Action, ComponentAction } from "@/lib/types/media"
 
-const renderComponent = (componentName: ComponentAction["name"], id: string, message: ComponentAction["message"]) => {
-    switch (componentName) {
+const renderComponent = (id: string, data: ComponentAction, messageId: string) => {
+    switch (data.name) {
         case "LinkedinConnectButton":
-            return <LinkedInConnectButton id={id} message={message} />
+            return <LinkedInConnectButton id={id} message={data.message} />
+        case "LinkedinContinueButton":
+            return <LinkedInContinueButton id={id} message={data.message} role={data.role} messageId={messageId} />
     }
 }
 
-const MessageMediaAction = ({ output, id }: { output: Action, id: string }) => {
+const MessageMediaAction = ({ output, id, messageId }: { output: Action, id: string, messageId: string }) => {
     switch (output.actionType) {
         case "COMPONENT":
-            return renderComponent(output.name, id, output.message)
+            return renderComponent(id, output, messageId)
     }
 }
 

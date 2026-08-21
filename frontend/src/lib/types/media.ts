@@ -1,4 +1,4 @@
-import { Annotation, JsonValue } from "../types"
+import { Annotation, JsonValue, SubAgents } from "../types"
 import { Agent } from "@/data/agents"
 
 export type FileMediaExtensions = "USER" | "MEMORY" | "EXPERIENCE" | "JOURNAL"
@@ -95,10 +95,17 @@ export type TaskMetadata = BaseMetadata & {
 export type Action = { category: "ACTION" } & ComponentAction
 
 // ---------- COMPONENT ---------- 
-export type ComponentAction = {
-    actionType: "COMPONENT",
-    name: "LinkedinConnectButton",
+export type ComponentAction = { actionType: "COMPONENT" } & (LinkedinConnectComponent | LinkedinContinueComponent)
+
+export type LinkedinConnectComponent = {
+    name: "LinkedinConnectButton"
     message?: string
+}
+
+export type LinkedinContinueComponent = {
+    name: "LinkedinContinueButton"
+    message?: string
+    role: SubAgents["subAgentRole"]
 }
 
 // ---------- MEDIA ---------- 
