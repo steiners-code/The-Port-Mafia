@@ -20,7 +20,7 @@ function taskAnswersRoute(role: string) {
     return `/internal/task-report/${role.toLowerCase()}`;
 }
 
-export async function reportTaskCompletionToSubAgent(userId: string, task: MainTask & { id: string; subAgent: SubAgent; subAgentRole: string }) {
+export async function reportTaskCompletionToSubAgent(userId: string, task: MainTask) {
     const host = SERVICE_HOSTS[task.subAgent];
     if (!host) {
         throw new Error(`No internal host configured for sub-agent "${task.subAgent}".`);

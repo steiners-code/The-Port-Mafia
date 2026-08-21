@@ -53,7 +53,7 @@ export const taskRoutes = new Elysia({ prefix: '/tasks' })
         const { success, ...res } = await createTask(userId, data);
         if (!success) return status(res.status, { message: res.message, details: res.details })
 
-        return status(200, res.message)
+        return status(200, { message: res.message })
     }, {
         headers: userId,
         body: createTaskBody,
@@ -65,7 +65,7 @@ export const taskRoutes = new Elysia({ prefix: '/tasks' })
         const res = await updateTaskProgress(userId, body)
         if (!res.success) return status(res.status, { message: res.message })
 
-        return status(200, res.message)
+        return status(200, { message: res.message })
     }, {
         headers: userId,
         body: updateQuestionnaireBody,

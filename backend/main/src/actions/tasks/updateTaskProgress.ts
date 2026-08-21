@@ -185,7 +185,7 @@ export async function updateTaskProgress(userId: string, body: UpdateTaskProgres
             await reportTaskCompletionToSubAgent(userId, {
                 ...updated,
                 content: mergedContent,
-            } as MainTask & { id: string; subAgent: SubAgent });
+            } as MainTask);
 
             return {
                 status: 200,
