@@ -1,4 +1,4 @@
-import { MainMessageStatus, SubAgent } from "../../../generated/prisma";
+import { MainContentStatus, MainMessageStatus, SubAgent } from "../../../generated/prisma";
 import { createSystemContent } from "./createSystemContent";
 import { Step, UserMessageData } from "../../../lib/types";
 import { createUserContent } from "./createUserContent";
@@ -16,7 +16,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
             select: {
                 messages: {
                     where: {
-                        status: { in: [MainMessageStatus.SUCCESS, MainMessageStatus.PENDING] },
+                        status: { notIn: [MainMessageStatus.QUEUED] },
                         createdAt: {
                             gte: dayStart,
                         },
@@ -27,6 +27,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
                         triggerType: true,
                         agent: true,
                         contents: {
+                            where: { status: { in: [MainContentStatus.COMPLETED] } },
                             select: {
                                 contentType: true,
                                 message: true,
@@ -50,7 +51,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
         }
 
         for (const message of history.messages) {
-            if (message.contents.length === 0) break;
+            if (message.contents.length === 0) continue;
 
             switch (message.triggerType) {
                 case "USER":

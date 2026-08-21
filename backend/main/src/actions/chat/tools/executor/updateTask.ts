@@ -1,8 +1,9 @@
 import { reportTaskCompletionToSubAgent } from "../../../tasks/reportTaskCompletionToSubAgent";
-import { MainTaskLevel, MainTaskStatus, SubAgent } from "../../../../generated/prisma";
+import { MainTaskLevel, MainTaskStatus } from "../../../../generated/prisma";
 import { MainTask, Question } from "../../../../lib/types";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
+import { HarnessError } from "..";
 
 const TASK_LEVELS = [
     MainTaskLevel.CRITICAL,
@@ -59,11 +60,11 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
     const hasAnyChange = args.level || args.comment || args.questionnaireAnswers || args.accountPerformance || args.postPerformance;
 
     if (!hasAnyChange) {
-        throw new Error("At least one of level, comment, questionnaireAnswers, accountPerformance, or postPerformance is required to make a change.");
+        throw new HarnessError("At least one of level, comment, questionnaireAnswers, accountPerformance, or postPerformance is required to make a change.");
     }
 
     if (args.level && !isValidLevel(args.level)) {
-        throw new Error(`The provided level "${args.level}" is invalid. Valid values are: ${TASK_LEVELS.join(" | ")}.`);
+        throw new HarnessError(`The provided level "${args.level}" is invalid. Valid values are: ${TASK_LEVELS.join(" | ")}.`);
     }
 
     const task = await prisma.mainTask.findUnique({ where: { id: args.id, userId } });
@@ -75,11 +76,11 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
      * must match the task's own userId before anything below runs.
      */
     if (!task) {
-        throw new Error("Task not found.");
+        throw new HarnessError("Task not found.");
     }
 
     if (CLOSED_STATUSES.includes(task.status)) {
-        throw new Error(`This task is already ${task.status.toLowerCase()} and can no longer be updated.`);
+        throw new HarnessError(`This task is already ${task.status.toLowerCase()} and can no longer be updated.`);
     }
 
     let newContent: MainTask["content"] = task.content as MainTask["content"];
@@ -104,11 +105,11 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
         switch (task.type) {
             case "QUESTIONNAIRE": {
                 if (args.accountPerformance || args.postPerformance) {
-                    throw new Error("This task is of type QUESTIONNAIRE — submit questionnaireAnswers, not accountPerformance or postPerformance.");
+                    throw new HarnessError("This task is of type QUESTIONNAIRE — submit questionnaireAnswers, not accountPerformance or postPerformance.");
                 }
 
                 if (!isQuestionnaireContentInput(args.questionnaireAnswers)) {
-                    throw new Error("Invalid questionnaireAnswers. Expected a non-empty array of { index: number, answer: string }.");
+                    throw new HarnessError("Invalid questionnaireAnswers. Expected a non-empty array of { index: number, answer: string }.");
                 }
 
                 const existing = task.content as Question[];
@@ -116,7 +117,7 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
 
                 for (const item of args.questionnaireAnswers) {
                     if (!existingIndices.has(item.index)) {
-                        throw new Error(`No question with index ${item.index} exists on this task.`);
+                        throw new HarnessError(`No question with index ${item.index} exists on this task.`);
                     }
                 }
 
@@ -130,7 +131,7 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
                 if (isFullyAnswered) {
                     nextStatus = task.status === MainTaskStatus.INREVIEW
                         ? MainTaskStatus.COMPLETED
-                        : MainTaskStatus.INREVIEW;
+                        : MainTaskStatus.INPROGRESS;
                 }
 
                 const answeredCount = args.questionnaireAnswers.length;
@@ -145,7 +146,7 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
              * other task type until its case is added.
              */
             default:
-                throw new Error(`Task type "${task.type}" isn't supported by update_task yet.`);
+                throw new HarnessError(`Task type "${task.type}" isn't supported by update_task yet.`);
         }
     }
 
@@ -165,8 +166,8 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
     if (args.level) changes.push(`Level set to ${args.level}.`);
     if (args.comment) changes.push("Comment added.");
 
-    if (nextStatus === MainTaskStatus.INREVIEW) {
-        changes.push(`Task moved to INREVIEW — every question now has an answer.`);
+    if (nextStatus === MainTaskStatus.INPROGRESS) {
+        changes.push(`Task moved to INPROGRESS — every question now has an answer.`);
     }
 
     /**
@@ -176,13 +177,16 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
      * from ToolContext, tied to the real authenticated conversation.
      */
     if (nextStatus === MainTaskStatus.COMPLETED) {
-        await reportTaskCompletionToSubAgent(userId, {
+        const success = await reportTaskCompletionToSubAgent(userId, {
             ...updated,
             subAgent: task.subAgent,
             subAgentRole: task.subAgentRole,
             subAgentPlatform: task.subAgentPlatform,
         } as MainTask);
-        changes.push(`Task completed and reported back to ${task.subAgent}.`);
+        if (success)
+            changes.push(`Task completed and reported back to ${task.subAgent}.`);
+        else
+            changes.push(`Task completed but failed to report back to ${task.subAgent}. Ask user to report back to agent.`);
     }
 
     return {

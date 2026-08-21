@@ -26,7 +26,7 @@ export async function reportTaskCompletionToSubAgent(userId: string, task: MainT
         throw new Error(`No internal host configured for sub-agent "${task.subAgent}".`);
     }
 
-    await fetch(`${host}${taskAnswersRoute(task.subAgentRole)}`, {
+    const res = await fetch(`${host}${taskAnswersRoute(task.subAgentRole)}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -37,4 +37,8 @@ export async function reportTaskCompletionToSubAgent(userId: string, task: MainT
             content: task.content,
         }),
     });
+
+    console.log(res)
+
+    return res.ok
 }

@@ -1,6 +1,6 @@
 import { reportTaskCompletionToSubAgent } from "./reportTaskCompletionToSubAgent";
 import { triggerDazaiNingenShikaku } from "../cron/triggerDazaiNingenShikaku";
-import { MainTaskStatus, SubAgent } from "../../generated/prisma";
+import { MainTaskStatus } from "../../generated/prisma";
 import { MainTask, Question } from "../../lib/types";
 import { prisma } from "../../lib/db";
 import { t } from "elysia";

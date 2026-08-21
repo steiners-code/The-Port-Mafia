@@ -1,6 +1,7 @@
 import { MainTaskStatus } from "../../../../generated/prisma";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
+import { HarnessError } from "..";
 
 const ACTIVE_TASK_STATUSES = [
     MainTaskStatus.PENDING,
@@ -51,7 +52,7 @@ function summarize(tasks: { status: MainTaskStatus; level: string; subAgentPlatf
 
 export async function getTasks(args: { status?: string }, { userId }: ToolContext) {
     if (args.status && !isActiveStatus(args.status))
-        throw new Error(`The provided status "${args.status}" is invalid. Valid values are: ${ACTIVE_TASK_STATUSES.join(" | ")}.`);
+        throw new HarnessError(`The provided status "${args.status}" is invalid. Valid values are: ${ACTIVE_TASK_STATUSES.join(" | ")}.`);
 
     const tasks = await prisma.mainTask.findMany({
         where: {
@@ -116,7 +117,7 @@ export async function getWholeTaskById(args: { id: string }, { userId }: ToolCon
     });
 
     if (!task) {
-        throw new Error("Task not found.");
+        throw new HarnessError("Task not found.");
     }
 
     return {
