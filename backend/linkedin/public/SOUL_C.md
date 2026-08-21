@@ -97,7 +97,6 @@ you gather what's real and hand it forward as-is.
 
 ```json
 {
-  "facts": [{ "question": "string", "answer": "string" }],
   "narration": "string — plain, one or two sentences, for the activity log"
 }
 ```
