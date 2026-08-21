@@ -67,7 +67,7 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
             return;
         }
 
-        queryClient.invalidateQueries({ queryKey: ["tasks", taskId] })
+        queryClient.invalidateQueries({ queryKey: ["task", taskId] })
         toast.success(res.message, { id: taskId });
     }
 
