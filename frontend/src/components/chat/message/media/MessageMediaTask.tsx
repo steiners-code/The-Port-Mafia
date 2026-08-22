@@ -15,7 +15,7 @@ export const statusIcon = (status?: TASKSTATUS, size: number = 14) => {
         case TASKSTATUS.COMPLETED:
             return <CheckCircleIcon weight="duotone" size={size} color="#19d44b" className="flex-1 max-w-fit" />
         case TASKSTATUS.PENDING:
-            return <ClockIcon weight="duotone" size={size} color="#8b8b93" className="flex-1 max-w-fit" />
+            return <ClockIcon weight="duotone" size={size} color="#ffea05" className="flex-1 max-w-fit" />
         case TASKSTATUS.INREVIEW:
             return <EyeIcon weight="duotone" size={size} color="#e8a33d" className="flex-1 max-w-fit" />
         case TASKSTATUS.INPROGRESS:

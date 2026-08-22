@@ -44,7 +44,7 @@ const LinkedInContinueButton = ({
                         Paused — waiting on you
                     </h1>
                     <p className="line-clamp-2 md:line-clamp-3 text-xs sm:text-sm md:text-xs lg:text-sm text-muted-foreground">
-                        {message}
+                        [{role}] - {message}
                     </p>
                 </div>
             </div>

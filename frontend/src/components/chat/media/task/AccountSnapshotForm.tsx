@@ -1,47 +1,44 @@
-"use client";
-
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AnswerInput, updateQuestionnaireTaskProgress } from "@/actions/tasks/update-task-progress";
-import { CheckCircleIcon, CaretDownIcon, FloppyDiskIcon, SkullIcon } from "@phosphor-icons/react";
+import { SnapshotInput, updateAccountSnapshotTaskProgress } from "@/actions/tasks/update-task-progress";
+import { CheckCircleIcon, CaretDownIcon, FloppyDiskIcon } from "@phosphor-icons/react";
+import { AccountSnapshotTask, Task } from "@/lib/types";
 import { useMemo, ChangeEvent, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
-import { QuestionnaireTask, Task } from "@/lib/types";
-import { Textarea } from "@/components/ui/textarea";
 import MediaTaskWrapper from "./MediaTaskWrapper";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { TASKSTATUS } from "@/lib/enums";
 import { toast } from "sonner";
 
-const QuestionnaireForm = ({ taskId, data, status }: { taskId: string, data: Task, status: TASKSTATUS }) => {
-    const content = data.content as QuestionnaireTask["content"];
+const AccountSnapshotForm = ({ taskId, data, status }: { taskId: string, data: Task, status: TASKSTATUS }) => {
+    const content = data.content as AccountSnapshotTask["content"];
 
     const queryClient = useQueryClient();
-    const [formData, setFormData] = useState<AnswerInput>(content.map(c => ({ index: c.index, answer: c.answer })))
+    const [formData, setFormData] = useState<SnapshotInput>(content)
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const isComplete = useMemo(
-        () => formData.every((item) => item.answer !== null && item.answer.trim().length > 0),
+        () => formData.connectionsTotal !== null && formData.followersTotal !== null,
         [formData]
     );
 
+    const disabled = useMemo(
+        () => status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED || isSubmitting,
+        [status, isSubmitting]
+    )
 
-    const handleChange = (e: ChangeEvent<HTMLTextAreaElement>, index: number) => {
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         if (status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED) return;
 
-        const value = e.target.value;
-        setFormData((prev) => {
-            const exists = prev.some((item) => item.index === index);
-            if (exists) {
-                return prev.map((item) =>
-                    item.index === index ? { ...item, answer: value } : item
-                );
-            }
-            return [...prev, { index, answer: value }];
-        });
+        const value = Number(e.target.value);
+        const name = e.target.name;
+
+        setFormData((prev) => ({ ...prev, [name]: value }));
     }
 
-    async function handleSubmit(action: "MarkComplete" | "SaveProgress" | "NingenShikaku") {
+    async function handleSubmit(action: "MarkComplete" | "SaveProgress") {
         if (status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED) {
             toast.error("Unable to update task!", {
                 description: `The task has already been ${status.toLowerCase()}`,
@@ -52,11 +49,7 @@ const QuestionnaireForm = ({ taskId, data, status }: { taskId: string, data: Tas
 
         setIsSubmitting(true);
 
-        const answers = formData.filter(
-            (item) => item.answer !== null && item.answer.trim().length > 0
-        );
-
-        const res = await updateQuestionnaireTaskProgress({ taskId, action, answers });
+        const res = await updateAccountSnapshotTaskProgress({ taskId, action, data: formData });
 
         setIsSubmitting(false);
 
@@ -111,35 +104,49 @@ const QuestionnaireForm = ({ taskId, data, status }: { taskId: string, data: Tas
                             <CheckCircleIcon size={16} />
                             Mark as Complete
                         </DropdownMenuItem>
-                        <Separator />
-                        <DropdownMenuItem onClick={() => handleSubmit("NingenShikaku")} className="rounded-sm! cursor-pointer py-2 gap-3">
-                            <SkullIcon size={16} />
-                            Ningen Shikaku
-                        </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
         }>
             <div className="space-y-8 group/form">
-                {content.map(c => (
-                    <div key={c.index} className="flex items-start group/question">
-                        <span className="font-serif font-semibold">{c.index}.</span>
-                        <div className="flex flex-col gap-2 items-start">
-                            <p className="px-2 text-foreground group-hover/form:text-muted-foreground group-hover/question:text-foreground transition-colors">{c.question}</p>
+                <div className="flex flex-col gap-3 items-start group/question">
+                    <p className="px-2 font-serif text-[1.1rem] text-foreground group-hover/form:text-muted-foreground group-hover/question:text-foreground transition-colors">Weekly account export</p>
 
-                            <Textarea
-                                disabled={status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED}
-                                className="bg-transparent! h-fit! min-h-fit! ring-0! border-0! border-b-2! rounded-none! text-[1rem]! resize-none! text-inherit! group-hover/form:text-muted-foreground! focus:text-inherit! group-hover/question:text-inherit! border-inherit!"
-                                value={formData.find((item) => item.index === c.index)?.answer || ""}
-                                onChange={(e) => handleChange(e, c.index)}
-                                placeholder="Your Answer"
+                    <div className="w-full flex items-center flex-wrap gap-4">
+                        <div className="min-w-37.5 flex-1 flex flex-col gap-1.5">
+                            <Label htmlFor="connectionsTotal" className="px-2 text-xs text-muted-foreground">Connections</Label>
+                            <Input
+                                id="connectionsTotal"
+                                disabled={disabled}
+                                className="min-w-37.5 flex-1! w-full! bg-transparent! h-fit! min-h-fit! ring-0! border-0! border-b-2! rounded-none! text-[1rem]! resize-none! text-inherit! group-hover/form:text-muted-foreground! focus:text-inherit! group-hover/question:text-inherit! border-inherit! appearance-none!"
+                                name="connectionsTotal"
+                                type="number"
+                                min={0}
+                                value={formData.connectionsTotal ?? ""}
+                                onChange={handleChange}
+                                placeholder="Connections"
+                            />
+                        </div>
+
+                        <div className="min-w-37.5 flex-1 flex flex-col gap-1.5">
+                            <Label htmlFor="followersTotal" className="px-2 text-xs text-muted-foreground">Followers</Label>
+                            <Input
+                                id="followersTotal"
+                                disabled={disabled}
+                                className="min-w-37.5 flex-1! w-full! bg-transparent! h-fit! min-h-fit! ring-0! border-0! border-b-2! rounded-none! text-[1rem]! resize-none! text-inherit! group-hover/form:text-muted-foreground! focus:text-inherit! group-hover/question:text-inherit! border-inherit! appearance-none!"
+                                name="followersTotal"
+                                type="number"
+                                min={0}
+                                value={formData.followersTotal ?? ""}
+                                onChange={handleChange}
+                                placeholder="Followers"
                             />
                         </div>
                     </div>
-                ))}
+                </div>
             </div>
         </MediaTaskWrapper>
     )
 }
 
-export default QuestionnaireForm
+export default AccountSnapshotForm

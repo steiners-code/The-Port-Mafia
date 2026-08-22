@@ -34,7 +34,7 @@ const MessageSystem = ({ status, contents, agentId, agent, textColors, messageId
 
     if (isCorrectSubAgent(agent)) {
         const subAgent = getAgentByEnum(agent)
-        return <MessageSystemAgent contents={contents} messageColors={subAgent?.colors.message} />
+        return <MessageSystemAgent contents={contents} messageColors={subAgent?.colors.message} messageId={messageId} status={status} />
     }
 
     if (status === MESSAGESTATUS.QUEUED) {
@@ -69,7 +69,7 @@ const MessageSystem = ({ status, contents, agentId, agent, textColors, messageId
             ))}
 
             {status === MESSAGESTATUS.FAILED && <span className="italic text-destructive font-light text-xs px-2">Failed</span>}
-            {/* {status === MESSAGESTATUS.PENDING && <PendingMessage agentId={agentId || "osamu-dazai"} />} */}
+            {status === MESSAGESTATUS.PENDING && <PendingMessage agentId={agentId || "osamu-dazai"} />}
         </div>
     )
 }

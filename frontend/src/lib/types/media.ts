@@ -88,7 +88,7 @@ export type Task = TaskMetadata & {
 
 export type TaskMetadata = BaseMetadata & {
     category: "TASK",
-    extension: "QUESTIONNAIRE",
+    extension: "QUESTIONNAIRE" | "POST_PERFORMANCE" | "ACCOUNT_SNAPSHOT",
 }
 
 // ---------- ACTION ---------- 

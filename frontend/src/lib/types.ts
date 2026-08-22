@@ -152,16 +152,16 @@ type ContentWipedEvent = {
     }
 }
 
-export type Task = {
+export type Task = SubAgents & {
     id: string
     title: string
     level: TASKLEVEL
     status: TASKSTATUS
     createdAt: Date,
     updatedAt: Date,
-} & QuestionnaireTask
+} & (QuestionnaireTask | PostPerformanceTask | AccountSnapshotTask)
 
-export type QuestionnaireTask = SubAgents & {
+export type QuestionnaireTask = {
     type: "QUESTIONNAIRE",
     content: Question[]
 }
@@ -171,6 +171,31 @@ export type Question = {
     question: string,
     answer: string | null
     answeredBy: "USER" | "DAZAI" | null
+}
+
+export type PostPerformanceTask = {
+    type: "POST_PERFORMANCE",
+    content: PostPerformance[],
+}
+
+export type PostPerformance = {
+    postId: string,
+    title: string,
+    impressions: number,
+    reactions: number,
+    comments: number,
+    reposts: number,
+}
+
+export type AccountSnapshot = {
+    date: string,
+    connectionsTotal: number
+    followersTotal: number
+}
+
+export type AccountSnapshotTask = {
+    type: "ACCOUNT_SNAPSHOT",
+    content: AccountSnapshot,
 }
 
 export type SubAgents = MahaLinkedIn | DazaiLinkedIn
