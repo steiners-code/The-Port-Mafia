@@ -1,7 +1,7 @@
-import { appendHistoryEntry, getHistory, getSeed } from "../../../lib/cache";
-import { ObserverInput } from "../strategist/handleStrategistResponse";
-import { Question } from "../../../lib/types";
-import { getChatId } from "../getChatId";
+import { ObserverInput } from "../chat/strategist/handleStrategistResponse";
+import { appendHistoryEntry, getHistory, getSeed } from "../../lib/cache";
+import { getChatId } from "../chat/getChatId";
+import { Question } from "../../lib/types";
 import { Type } from "@google/genai";
 import { Queue } from "bullmq";
 import Redis from "ioredis";
@@ -11,11 +11,6 @@ const connection = new Redis(process.env.REDIS_URL!, {
 });
 
 const chatQueue = new Queue("observer-maha-balor", { connection });
-
-type TaskReportBody = {
-    type: "QUESTIONNAIRE";
-    content: Question[];
-};
 
 type ActionResult = {
     success: boolean;
@@ -45,18 +40,9 @@ const ObserverFactsSchema = {
     required: ["narration"],
 }
 
-export async function handleObserverTaskReport(userId: string, body: TaskReportBody): Promise<ActionResult> {
+export async function handleObserverTaskReport(userId: string, body: Question[]): Promise<ActionResult> {
     try {
-        if (body.type !== "QUESTIONNAIRE") {
-            return {
-                success: false,
-                status: 400,
-                message: "Unexpected task type reported to the observer endpoint.",
-                details: `Expected type "QUESTIONNAIRE", received "${body.type}".`,
-            };
-        }
-
-        const answered = cleanAnsweredQuestions(body.content);
+        const answered = cleanAnsweredQuestions(body);
 
         if (answered.length === 0) {
             return {
@@ -117,7 +103,7 @@ export async function handleObserverTaskReport(userId: string, body: TaskReportB
             cta_technique: seed.cta_technique,
             facts,
         }, {
-            jobId: `${messageId}-final`,
+            jobId: `${messageId}-final-${new Date().toString()}`,
         });
 
         return {

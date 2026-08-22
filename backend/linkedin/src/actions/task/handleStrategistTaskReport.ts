@@ -1,7 +1,7 @@
-import { appendHistoryEntry, getHistory, getSeed } from "../../../lib/cache";
-import { StrategistInput } from "../analyst/handleAnalystResponse";
-import { Question } from "../../../lib/types";
-import { getChatId } from "../getChatId";
+import { appendHistoryEntry, getHistory, getSeed } from "../../lib/cache";
+import { StrategistInput } from "../chat/analyst/handleAnalystResponse";
+import { getChatId } from "../chat/getChatId";
+import { Question } from "../../lib/types";
 import { Type } from "@google/genai";
 import { Queue } from "bullmq";
 import Redis from "ioredis";
@@ -11,11 +11,6 @@ const connection = new Redis(process.env.REDIS_URL!, {
 });
 
 const chatQueue = new Queue("strategist-maha-balor", { connection });
-
-type TaskReportBody = {
-    type: "QUESTIONNAIRE";
-    content: Question[];
-};
 
 type ActionResult = {
     success: boolean;
@@ -67,18 +62,9 @@ function cleanAnsweredQuestions(content: Question[]): Question[] {
         .sort((a, b) => a.index - b.index);
 }
 
-export async function handleStrategistTaskReport(userId: string, body: TaskReportBody): Promise<ActionResult> {
+export async function handleStrategistTaskReport(userId: string, body: Question[]): Promise<ActionResult> {
     try {
-        if (body.type !== "QUESTIONNAIRE") {
-            return {
-                success: false,
-                status: 400,
-                message: "Unexpected task type reported to the strategist endpoint.",
-                details: `Expected type "QUESTIONNAIRE", received "${body.type}".`,
-            };
-        }
-
-        const answered = cleanAnsweredQuestions(body.content);
+        const answered = cleanAnsweredQuestions(body);
 
         if (answered.length === 0) {
             return {
@@ -133,7 +119,7 @@ export async function handleStrategistTaskReport(userId: string, body: TaskRepor
             schema: StrategistFinalSchema,
             category,
         }, {
-            jobId: `${messageId}-final`,
+            jobId: `${messageId}-final-${new Date().toString()}`,
         });
 
         console.log(res);
