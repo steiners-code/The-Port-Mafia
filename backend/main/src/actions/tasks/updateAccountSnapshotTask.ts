@@ -37,16 +37,11 @@ type AccountSnapshotInput = {
 
 function isValidData(value: unknown): value is AccountSnapshotInput {
     return (
-        Array.isArray(value) &&
-        value.every(
-            (item) =>
-                typeof item === "object" &&
-                item !== null &&
-                typeof (item as any).date === "string" &&
-                typeof (item as any).connectionsTotal === "number" &&
-                typeof (item as any).followersTotal === "number"
-        )
-    );
+        typeof value === "object" &&
+        value !== null &&
+        typeof (value as any).connectionsTotal === "number" &&
+        typeof (value as any).followersTotal === "number"
+    )
 }
 
 export type updateAccountSnapshotTaskBody = {
@@ -76,7 +71,7 @@ export async function updateAccountSnapshotTask(userId: string, body: updateAcco
         return {
             status: 400,
             success: false,
-            message: "Invalid data. Expected an array of { followersTotal: number, connectionsTotal: number, date: string }.",
+            message: "Invalid data. Expected { followersTotal: number, connectionsTotal: number }.",
         };
     }
 
