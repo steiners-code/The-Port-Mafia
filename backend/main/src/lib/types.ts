@@ -191,8 +191,8 @@ export type PostPerformance = {
 
 export type AccountSnapshot = {
     date: string,
-    connectionsTotal: number
-    followersTotal: number
+    connectionsTotal: number | null
+    followersTotal: number | null
 }
 
 export type AccountSnapshotTask = {
