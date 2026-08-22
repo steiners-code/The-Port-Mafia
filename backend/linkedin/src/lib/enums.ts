@@ -1,7 +1,8 @@
 export enum LOGLEVEL {
     ERROR = "ERROR",
     INFO = "INFO",
-    WARN = "WARN"
+    WARN = "WARN",
+    SUCCESS = "SUCCESS"
 }
 
 export enum APPTYPE {

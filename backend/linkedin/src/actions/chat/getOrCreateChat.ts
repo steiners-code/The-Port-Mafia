@@ -22,6 +22,7 @@ export async function getOrCreateChat(userId: string, cursor?: { createdAt: Date
             select: {
                 id: true,
                 createdAt: true,
+                status: true,
                 triggerType: true,
                 contents: {
                     select: {
