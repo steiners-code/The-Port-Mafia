@@ -1,3 +1,5 @@
+import { createPostPerformanceTask } from "./createPostPerformanceTask";
+import { createAccountSnapshotTask } from "./createAccountSnapshotTask";
 import { createQuestionnaireTask } from "./createQuestionnaireTask";
 import { triggerDazaiForTask } from "../cron/triggerDazaiForTask";
 import { CreateTaskBody, MainTask } from "../../lib/types";
@@ -12,15 +14,35 @@ const mahaLinkedInTaskBody = t.Object({
     subAgentPlatform: t.Literal("LINKEDIN"),
     subAgentRole: t.Union([
         t.Literal("OBSERVER"),
-        t.Literal("ANALYST"),
         t.Literal("STRATEGIST"),
-        t.Literal("WRITER"),
-        t.Literal("HANDLER"),
     ]),
     questions: t.Array(t.String({ minLength: 1 }), { minItems: 1 }),
 });
 
-export const createTaskBody = t.Union([mahaLinkedInTaskBody]);
+const mahaPostPerformanceTaskBody = t.Object({
+    title: t.String({ minLength: 1 }),
+    type: t.Literal("POST_PERFORMANCE"),
+    subAgent: t.Literal("MAHA"),
+    subAgentPlatform: t.Literal("LINKEDIN"),
+    subAgentRole: t.Literal("HANDLER"),
+    content: t.Array(t.Object({
+        title: t.String({ minLength: 1 }),
+        postId: t.String({ minLength: 1 }),
+    }))
+});
+
+const mahaAccountSnapshotTaskBody = t.Object({
+    title: t.String({ minLength: 1 }),
+    type: t.Literal("ACCOUNT_SNAPSHOT"),
+    subAgent: t.Literal("MAHA"),
+    subAgentPlatform: t.Literal("LINKEDIN"),
+    subAgentRole: t.Literal("HANDLER"),
+    content: t.Object({
+        date: t.String({ minLength: 1 }),
+    })
+});
+
+export const createTaskBody = t.Union([mahaLinkedInTaskBody, mahaPostPerformanceTaskBody, mahaAccountSnapshotTaskBody]);
 
 export async function createTask(userId: string, data: CreateTaskBody) {
     let content: MainTask["content"] = [];
@@ -28,7 +50,13 @@ export async function createTask(userId: string, data: CreateTaskBody) {
     try {
         switch (data.type) {
             case "QUESTIONNAIRE":
-                content = await createQuestionnaireTask(data.questions)
+                content = createQuestionnaireTask(data.questions)
+                break;
+            case "POST_PERFORMANCE":
+                content = createPostPerformanceTask(data.content)
+                break;
+            case "ACCOUNT_SNAPSHOT":
+                content = createAccountSnapshotTask(data.content)
                 break;
         }
 
@@ -63,7 +91,7 @@ export async function createTask(userId: string, data: CreateTaskBody) {
             id: task.id,
             level: task.level,
             status: task.status
-        })
+        } as MainTask)
 
         return {
             status: 200,

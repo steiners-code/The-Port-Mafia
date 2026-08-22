@@ -156,14 +156,14 @@ type UserInputStep = {
 
 export type Step = UserInputStep | ModelOutputStep | ThoughtStep | FunctionCallStep | FunctionResultStep
 
-export type MainTask = {
+export type MainTask = SubAgents & {
     id: string
     title: string
     level: MainTaskLevel
     status: MainTaskStatus
-} & QuestionnaireTask
+} & (QuestionnaireTask | PostPerformanceTask | AccountSnapshotTask)
 
-export type QuestionnaireTask = SubAgents & {
+export type QuestionnaireTask = {
     type: "QUESTIONNAIRE",
     content: Question[]
 }
@@ -175,11 +175,51 @@ export type Question = {
     answeredBy: "USER" | "DAZAI" | null
 }
 
-export type CreateTaskBody = { title: string } & QuestionnaireTaskBody
+export type PostPerformanceTask = {
+    type: "POST_PERFORMANCE",
+    content: PostPerformance[],
+}
 
-export type QuestionnaireTaskBody = SubAgents & {
+export type PostPerformance = {
+    postId: string,
+    title: string,
+    impressions: number | null,
+    reactions: number | null,
+    comments: number | null,
+    reposts: number | null,
+}
+
+export type AccountSnapshot = {
+    date: string,
+    connectionsTotal: number
+    followersTotal: number
+}
+
+export type AccountSnapshotTask = {
+    type: "ACCOUNT_SNAPSHOT",
+    content: AccountSnapshot,
+}
+
+export type CreateTaskBody = SubAgents & { title: string } & (QuestionnaireTaskBody | PostPerformanceTaskBody | AccountSnapshotTaskBody)
+
+export type QuestionnaireTaskBody = {
     type: "QUESTIONNAIRE",
     questions: string[],
+}
+
+export type PostPerformanceTaskBody = {
+    type: "POST_PERFORMANCE",
+    content: {
+        postId: string,
+        title: string,
+    }[],
+}
+
+export type AccountSnapshotTaskBody = {
+    type: "ACCOUNT_SNAPSHOT",
+    content: {
+        date: string,
+    },
 }
 
 export type SubAgents = MahaLinkedIn

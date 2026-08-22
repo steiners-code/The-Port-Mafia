@@ -1,8 +1,9 @@
-import { updateQuestionnaireBody, updateTaskProgress } from '../actions/tasks/updateTaskProgress';
+import { updatePostPerformanceBody, updatePostPerformanceTask } from '../actions/tasks/updatePostPerformanceTask';
+import { updateQuestionnaireBody, updateQuestionnaireTask } from '../actions/tasks/updateQuestionnaireTask';
+import { updateAccountSnapshotBody, updateAccountSnapshotTask } from '../actions/tasks/updateAccountSnapshotTask';
 import { createTask, createTaskBody } from '../actions/tasks/createTask';
 import { getMainTasks } from '../actions/tasks/getMainTasks';
 import { getTaskById } from '../actions/tasks/getTaskById';
-import { CreateTaskBody } from '../lib/types';
 import Elysia, { t } from 'elysia';
 
 const userId = t.Object({
@@ -46,11 +47,10 @@ export const taskRoutes = new Elysia({ prefix: '/tasks' })
 
     .post('/create', async ({ headers, status, body }) => {
         const userId = headers["x-user-id"]
-        const data = body as CreateTaskBody;
 
-        if (!data) return status(400, "Bad Request: Missing task requirements.")
+        if (!body) return status(400, "Bad Request: Missing task requirements.")
 
-        const { success, ...res } = await createTask(userId, data);
+        const { success, ...res } = await createTask(userId, body);
         if (!success) return status(res.status, { message: res.message, details: res.details })
 
         return status(200, { message: res.message })
@@ -62,11 +62,35 @@ export const taskRoutes = new Elysia({ prefix: '/tasks' })
     .post('/update/questionnaire', async ({ headers, status, body }) => {
         const userId = headers['x-user-id']
 
-        const res = await updateTaskProgress(userId, body)
+        const res = await updateQuestionnaireTask(userId, body)
         if (!res.success) return status(res.status, { message: res.message })
 
         return status(200, { message: res.message })
     }, {
         headers: userId,
         body: updateQuestionnaireBody,
+    })
+
+    .post('/update/post-performance', async ({ headers, status, body }) => {
+        const userId = headers['x-user-id']
+
+        const res = await updatePostPerformanceTask(userId, body)
+        if (!res.success) return status(res.status, { message: res.message })
+
+        return status(200, { message: res.message })
+    }, {
+        headers: userId,
+        body: updatePostPerformanceBody,
+    })
+
+    .post('/update/account-snapshot', async ({ headers, status, body }) => {
+        const userId = headers['x-user-id']
+
+        const res = await updateAccountSnapshotTask(userId, body)
+        if (!res.success) return status(res.status, { message: res.message })
+
+        return status(200, { message: res.message })
+    }, {
+        headers: userId,
+        body: updateAccountSnapshotBody,
     })
