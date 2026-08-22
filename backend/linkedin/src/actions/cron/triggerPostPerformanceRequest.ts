@@ -14,5 +14,7 @@ export async function triggerPostPerformanceRequest(userId: string) {
 
     const mappedPosts = posts.map(p => ({ postId: p.id, title: p.title }))
 
+    if (!mappedPosts) return;
+
     await requestPostPerformance(userId, mappedPosts)
 }

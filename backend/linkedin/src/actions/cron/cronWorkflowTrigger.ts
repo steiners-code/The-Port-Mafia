@@ -1,5 +1,6 @@
 import { triggerPostPerformanceRequest } from "./triggerPostPerformanceRequest";
 import { triggerAnalystResponse } from "../chat/analyst/triggerAnalystResponse";
+import { isHitting4AMWindow, resolveTimezone } from "./timezone";
 import { clearHistory, clearSeed } from "../../lib/cache";
 import { resolveWeekStart } from "./resolveWeekStart";
 import { LOGLEVEL } from "../../lib/enums";
@@ -9,6 +10,7 @@ import { prisma } from "../../lib/db";
 export async function cronWorkflowTrigger() {
     let index = 0;
     let failedCount = 0;
+    let skippedCount = 0;
     let logs: Logs[] = [];
 
     const users = await prisma.linkedinProfile.findMany({
@@ -19,6 +21,13 @@ export async function cronWorkflowTrigger() {
     for (const user of users) {
         try {
             index++;
+            const timezone = resolveTimezone(user.locale_country);
+            // TODO: for testing
+            // if (!isHitting4AMWindow(timezone)) {
+            //     skippedCount++;
+            //     continue;
+            // }
+
 
             await Promise.all([
                 clearHistory(user.userId, "ANALYST"),
@@ -30,7 +39,7 @@ export async function cronWorkflowTrigger() {
                 clearHistory(user.userId, "WRITER"),
             ]);
 
-            await resolveWeekStart(user.userId, user.locale_country)
+            await resolveWeekStart(user.userId, timezone)
             await triggerPostPerformanceRequest(user.userId)
             await triggerAnalystResponse(user.userId);
 
@@ -57,9 +66,10 @@ export async function cronWorkflowTrigger() {
     return {
         success: true,
         status: 200,
-        message: `Successfully triggered Week Resolution, Post Performance Request and AI Workflows for ${users.length - failedCount} users`,
+        message: `Successfully triggered Week Resolution, Post Performance Request and AI Workflows for ${users.length - failedCount - skippedCount} users`,
         data: {
             triggers_failed: failedCount,
+            skipped_triggers: skippedCount,
             total_triggers: users.length,
             logs,
         },

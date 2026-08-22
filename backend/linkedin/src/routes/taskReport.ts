@@ -26,7 +26,7 @@ const postPerformanceBody = t.Object({
         comments: t.Number(),
         reposts: t.Number(),
         impressions: t.Optional(t.Number()),
-    }),)
+    }))
 });
 
 const accountSnapshotBody = t.Object({

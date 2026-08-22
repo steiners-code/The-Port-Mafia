@@ -1,31 +1,7 @@
+import { requestAccountSnapshot } from "./requestAccountSnapshot";
 import { LinkedinPostCategory } from "../../generated/prisma";
-import { startOfWeek, isBefore } from "date-fns";
+import { startOfWeek, isBefore, isSunday } from "date-fns";
 import { prisma } from "../../lib/db";
-
-/**
- * Approximate single-timezone-per-country mapping. Deliberately not
- * precise for countries spanning multiple zones (US, Russia, Australia,
- * Canada, etc.) — "primary/most common zone" is an accepted
- * approximation for now, not a gap to silently work around with fake
- * precision. Extend as real users from unmapped countries show up;
- * unmapped countries fall back to UTC rather than guessing.
- */
-const COUNTRY_TIMEZONE_MAP: Record<string, string> = {
-    US: "America/New_York",
-    GB: "Europe/London",
-    PK: "Asia/Karachi",
-    IN: "Asia/Kolkata",
-    AE: "Asia/Dubai",
-    DE: "Europe/Berlin",
-    FR: "Europe/Paris",
-    CA: "America/Toronto",
-    AU: "Australia/Sydney",
-    JP: "Asia/Tokyo",
-    SG: "Asia/Singapore",
-    // TODO: extend as real users from other countries show up.
-};
-
-const DEFAULT_TIMEZONE = "UTC";
 
 /**
  * Default 3-2-1-1 allocation shape (SOUL_A.md §4) — mechanical, harness-
@@ -42,11 +18,6 @@ const DEFAULT_WEEKLY_ALLOCATION: { category: LinkedinPostCategory; allocated: nu
     { category: "ADAPTIVE", allocated: 1 },
 ];
 
-function resolveTimezone(localeCountry: string | null | undefined): string {
-    if (!localeCountry) return DEFAULT_TIMEZONE;
-    return COUNTRY_TIMEZONE_MAP[localeCountry.toUpperCase()] ?? DEFAULT_TIMEZONE;
-}
-
 /**
  * Current Monday for a given IANA timezone, as a UTC Date. date-fns'
  * startOfWeek operates on the Date object's own represented instant, so
@@ -61,6 +32,12 @@ function currentMondayInTimezone(timezone: string): Date {
     const zonedNow = new Date(zonedNowString);
 
     return startOfWeek(zonedNow, { weekStartsOn: 1 });
+}
+
+function isSundayInTimezone(timezone: string): boolean {
+    const zonedNowString = new Date().toLocaleString("en-US", { timeZone: timezone });
+    const zonedNow = new Date(zonedNowString);
+    return isSunday(zonedNow);
 }
 
 async function createDefaultAllocation(userId: string, weekStartDate: Date) {
@@ -88,9 +65,9 @@ async function createDefaultAllocation(userId: string, weekStartDate: Date) {
  * not-yet-built decision. This function only ever produces the fixed
  * 3-2-1-1 default, mechanically, for whichever week is current.
  */
-export async function resolveWeekStart(userId: string, locale_country: string): Promise<Date> {
-    const timezone = resolveTimezone(locale_country);
+export async function resolveWeekStart(userId: string, timezone: string): Promise<Date> {
     const currentMonday = currentMondayInTimezone(timezone);
+    const zonedNowString = new Date().toLocaleString("en-US", { timeZone: timezone });
 
     const latestAllocation = await prisma.linkedinWeekSlotAllocation.findFirst({
         where: { userId },
@@ -101,7 +78,12 @@ export async function resolveWeekStart(userId: string, locale_country: string): 
     // No allocation exists at all yet — first-ever trigger for this
     // user. Create the current week's default outright.
     if (!latestAllocation) {
+        await requestAccountSnapshot(userId, { date: zonedNowString })
         return createDefaultAllocation(userId, currentMonday);
+    }
+
+    if (isSundayInTimezone(timezone)) {
+        await requestAccountSnapshot(userId, { date: zonedNowString })
     }
 
     // Existing allocation is still current — this week's Monday hasn't
