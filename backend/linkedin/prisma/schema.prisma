@@ -17,6 +17,7 @@ model LinkedinProfile {
   email           String  @unique
   locale_country  String
   locale_language String
+  timezone String?
 
   sub            String  @unique
   email_verified Boolean @default(false)

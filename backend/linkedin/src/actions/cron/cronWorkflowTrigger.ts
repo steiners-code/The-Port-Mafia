@@ -1,6 +1,5 @@
 import { triggerPostPerformanceRequest } from "./triggerPostPerformanceRequest";
 import { triggerAnalystResponse } from "../chat/analyst/triggerAnalystResponse";
-import { isHitting4AMWindow, resolveTimezone } from "./timezone";
 import { clearHistory, clearSeed } from "../../lib/cache";
 import { resolveWeekStart } from "./resolveWeekStart";
 import { LOGLEVEL } from "../../lib/enums";
@@ -13,22 +12,17 @@ export async function cronWorkflowTrigger() {
     let skippedCount = 0;
     let logs: Logs[] = [];
 
-    const users = await prisma.linkedinProfile.findMany({
-        where: { token: { refresh_token: { not: undefined } } },
-        select: { userId: true, locale_country: true }
-    })
+    type TargetedUser = { userId: string; timezone: string };
 
-    for (const user of users) {
+    const usersToExecute = await prisma.$queryRaw<TargetedUser[]>`
+        SELECT userId, timezone 
+        FROM "LinkedinProfile"
+        WHERE EXTRACT(HOUR FROM (NOW() AT TIME ZONE timezone)) = 4
+    `;
+
+    for (const user of usersToExecute) {
         try {
             index++;
-            const timezone = resolveTimezone(user.locale_country);
-            // TODO: for testing
-            // if (!isHitting4AMWindow(timezone)) {
-            //     skippedCount++;
-            //     continue;
-            // }
-
-
             await Promise.all([
                 clearHistory(user.userId, "ANALYST"),
                 clearSeed(user.userId, "ANALYST"),
@@ -39,7 +33,7 @@ export async function cronWorkflowTrigger() {
                 clearHistory(user.userId, "WRITER"),
             ]);
 
-            await resolveWeekStart(user.userId, timezone)
+            await resolveWeekStart(user.userId, user.timezone)
             await triggerPostPerformanceRequest(user.userId)
             await triggerAnalystResponse(user.userId);
 
@@ -47,7 +41,7 @@ export async function cronWorkflowTrigger() {
                 index,
                 status: 200,
                 level: LOGLEVEL.SUCCESS,
-                message: `Resolved Week, Triggered Post Request and AI Workflow for userId='${user.userId}' at ${user.locale_country}`,
+                message: `Resolved Week, Triggered Post Request and AI Workflow for userId='${user.userId}' at ${user.timezone}`,
                 timestamp: new Date()
             })
         } catch (error) {
@@ -57,7 +51,7 @@ export async function cronWorkflowTrigger() {
                 index,
                 status: 500,
                 level: LOGLEVEL.ERROR,
-                message: `Failed cron triggers for userId='${user.userId}' at ${user.locale_country}. REASON: ${error instanceof Error ? error.message : "Internal Server Error!"}`,
+                message: `Failed cron triggers for userId='${user.userId}' at ${user.timezone}. REASON: ${error instanceof Error ? error.message : "Internal Server Error!"}`,
                 timestamp: new Date()
             })
         }
@@ -66,11 +60,11 @@ export async function cronWorkflowTrigger() {
     return {
         success: true,
         status: 200,
-        message: `Successfully triggered Week Resolution, Post Performance Request and AI Workflows for ${users.length - failedCount - skippedCount} users`,
+        message: `Successfully triggered Week Resolution, Post Performance Request and AI Workflows for ${usersToExecute.length - failedCount - skippedCount} users`,
         data: {
             triggers_failed: failedCount,
             skipped_triggers: skippedCount,
-            total_triggers: users.length,
+            total_triggers: usersToExecute.length,
             logs,
         },
     }
