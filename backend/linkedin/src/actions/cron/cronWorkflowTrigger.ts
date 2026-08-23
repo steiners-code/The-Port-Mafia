@@ -15,10 +15,25 @@ export async function cronWorkflowTrigger() {
     type TargetedUser = { userId: string; timezone: string };
 
     const usersToExecute = await prisma.$queryRaw<TargetedUser[]>`
-        SELECT userId, timezone 
-        FROM "LinkedinProfile"
-        WHERE EXTRACT(HOUR FROM (NOW() AT TIME ZONE timezone)) = 4
+        SELECT p."userId", p."timezone" 
+        FROM "linkedin"."LinkedinProfile" p
+        INNER JOIN "linkedin"."LinkedinToken" t ON t."userId" = p."userId"
+        WHERE EXTRACT(HOUR FROM (NOW() AT TIME ZONE p."timezone")) = 4
     `;
+
+    if (usersToExecute.length === 0) {
+        return {
+            success: true,
+            status: 200,
+            message: `No users require Week Resolution, Post Performance Request and AI Workflow Trigger.`,
+            data: {
+                triggers_failed: failedCount,
+                skipped_triggers: skippedCount,
+                total_triggers: usersToExecute.length,
+                logs,
+            },
+        }
+    }
 
     for (const user of usersToExecute) {
         try {
