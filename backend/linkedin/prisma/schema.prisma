@@ -263,6 +263,7 @@ model LinkedinChatMessage {
   status      LinkedinMessageStatus @default(QUEUED)
 
   contents LinkedinMessageContent[]
+  usages   linkedinMessageUsage[]
 
   createdAt DateTime @default(now())
 
@@ -285,6 +286,28 @@ model LinkedinMessageContent {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@schema("linkedin")
+}
+
+model linkedinMessageUsage {
+  id String @id @default(cuid())
+
+  userId   String
+  provider String
+  model    String
+
+  inputTokens     Int
+  outputTokens    Int
+  reasoningTokens Int @default(0)
+  cachedTokens    Int @default(0)
+  toolUseTokens   Int @default(0)
+  totalTokens     Int
+
+  messageId String
+  message   LinkedinChatMessage @relation(fields: [messageId], references: [id])
+
+  createdAt DateTime @default(now())
 
   @@schema("linkedin")
 }

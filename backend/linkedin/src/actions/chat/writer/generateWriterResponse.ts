@@ -1,5 +1,5 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus, LinkedinPostCategory, LinkedinMediaType } from "../../../generated/prisma";
-import { createStreamWithRetry, StreamInitError } from "../helpers/createStreamWithRetry";
+import { createStreamWithRetry, GenerateConfig, StreamInitError } from "../helpers/createStreamWithRetry";
 import { getChatHistoryForRole } from "../helpers/getChatHistoryForRole";
 import { displayContinueButton } from "../helpers/displayContinueButton";
 import { createMessageContent } from "../helpers/createMessageContent";
@@ -9,6 +9,7 @@ import { getAutomatedLog } from "../helpers/automatedMessages";
 import { handleWriterResponse } from "./handleWriterResponse";
 import { updateAIChatMessage } from "../helpers/chatMessage";
 import { LinkedinLog, StepState } from "../../../lib/types";
+import { recordMessageUsage } from "../recordMessageUsage";
 import { appendHistoryEntry } from "../../../lib/cache";
 import { Type } from "@google/genai";
 
@@ -46,7 +47,7 @@ type GenerateWriterResponse = {
     facts: { question: string; answer: string }[];
 };
 
-const WriterSchema = {
+const schema = {
     type: Type.OBJECT,
     properties: {
         hook: {
@@ -103,6 +104,13 @@ const WriterSchema = {
     ],
 }
 
+const generateConfig: GenerateConfig = {
+    model: process.env.LINKEDIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
+    apiKey: process.env.LINKEDIN_GEMINI_API_KEY!,
+    thinking_level: "high",
+    thinking_summaries: "auto",
+}
+
 export async function generateWriterResponse({ messageId, userId, principalName, category, title, hook_technique, body_technique, cta_technique, facts, angle }: GenerateWriterResponse) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
@@ -118,7 +126,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
             const stepStates: Record<number, StepState> = {}
             const systemPrompt = await getWriterSystemPrompt({ userId, principalName })
             const chatHistory = await getChatHistoryForRole("WRITER", userId);
-            const stream = await createStreamWithRetry(systemPrompt, chatHistory, WriterSchema, undefined)
+            const stream = await createStreamWithRetry({ systemPrompt, chatHistory, schema, ...generateConfig })
 
             for await (const event of stream) {
                 console.log(`[stream event] type=${event.event_type} index=${(event as any).index ?? "-"}`);
@@ -217,6 +225,20 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         break;
 
                     case "step.stop":
+                        const usage = event.step_usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         const state = stepStates[event.index]
                         console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;

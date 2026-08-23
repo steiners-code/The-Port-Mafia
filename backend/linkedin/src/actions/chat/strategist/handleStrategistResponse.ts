@@ -14,15 +14,17 @@ import { MessageContext } from "../../../lib/types";
 export type ObserverInput = {
     category: LinkedinPostCategory;
     title: string;
+    angle: string | null;
     hook_technique: string | null;
     body_technique: string | null;
     cta_technique: string | null;
 };
 
-export async function handleStrategistResponse(args: StrategistFinalResponse, category: LinkedinPostCategory, context: MessageContext) {
+export async function handleStrategistResponse(args: StrategistFinalResponse, angle: string | null, category: LinkedinPostCategory, context: MessageContext) {
     try {
         const observerInput: ObserverInput = {
             category,
+            angle,
             title: args.title,
             hook_technique: args.hook_technique,
             body_technique: args.body_technique,

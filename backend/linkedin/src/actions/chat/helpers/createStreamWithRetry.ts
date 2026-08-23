@@ -6,10 +6,6 @@ type InteractionTools = NonNullable<
     Parameters<GoogleGenAI["interactions"]["create"]>[0]
 >["tools"];
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.LINKEDIN_GEMINI_API_KEY
-});
-
 // const openai = new OpenAI({
 //     baseURL: 'https://api.deepseek.com',
 //     apiKey: process.env.DEEPSEEK_API_KEY!,
@@ -24,7 +20,36 @@ export class StreamInitError extends Error {
     }
 }
 
-export async function createStreamWithRetry(systemPrompt: string, chatHistory: Step[], schema: object, TOOL_SCHEMAS?: InteractionTools, retries = 3, delayMs = 2000) {
+export type GenerateConfig = {
+    model: string,
+    thinking_level: "low" | "high" | "medium" | "minimal",
+    thinking_summaries: "auto" | "none",
+    apiKey: string,
+}
+
+type CreateGenAIStreamArgs = GenerateConfig & {
+    systemPrompt: string,
+    chatHistory: Step[],
+    schema: object,
+    TOOL_SCHEMAS?: InteractionTools,
+    retries?: number,
+    delayMs?: number,
+};
+
+export async function createStreamWithRetry({
+    systemPrompt,
+    chatHistory,
+    model,
+    thinking_level,
+    thinking_summaries,
+    apiKey,
+    schema,
+    TOOL_SCHEMAS,
+    delayMs = 1000,
+    retries = 3,
+}: CreateGenAIStreamArgs) {
+    const ai = new GoogleGenAI({ apiKey });
+
     const logs: LinkedinLog[] = [];
 
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -32,12 +57,12 @@ export async function createStreamWithRetry(systemPrompt: string, chatHistory: S
             await awaitRateLimit()
 
             return await ai.interactions.create({
-                model: process.env.LINKEDIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
+                model,
                 system_instruction: systemPrompt,
                 input: chatHistory,
                 generation_config: {
-                    thinking_level: "high",
-                    thinking_summaries: "auto",
+                    thinking_level,
+                    thinking_summaries,
                 },
                 response_format: {
                     mime_type: "application/json",

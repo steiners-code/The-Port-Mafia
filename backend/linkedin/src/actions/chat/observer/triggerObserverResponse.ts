@@ -54,6 +54,7 @@ export async function triggerObserverResponse(input: ObserverInput, context: Mes
             "",
             `category: ${input.category}`,
             `title: ${input.title}`,
+            `angle: ${input.angle}`,
             "",
             formatTechnique(input.hook_technique, "hook_technique"),
             formatTechnique(input.body_technique, "body_technique"),

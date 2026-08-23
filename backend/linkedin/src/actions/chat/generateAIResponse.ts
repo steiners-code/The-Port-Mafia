@@ -1,5 +1,5 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus } from "../../generated/prisma";
-import { createStreamWithRetry, StreamInitError } from "./helpers/createStreamWithRetry";
+import { createStreamWithRetry, GenerateConfig, StreamInitError } from "./helpers/createStreamWithRetry";
 import { LinkedinLog, StepState, UserMessageData } from "../../lib/types";
 import { updateMessageContent } from "./helpers/updateMessageContent";
 import { createMessageContent } from "./helpers/createMessageContent";
@@ -7,12 +7,13 @@ import { getAutomatedLog } from "./helpers/automatedMessages";
 import { updateAIChatMessage } from "./helpers/chatMessage";
 import { getSystemPrompt } from "./helpers/getSystemPrompt";
 import { getChatHistory } from "./helpers/getChatHistory";
+import { recordMessageUsage } from "./recordMessageUsage";
 import { TOOL_SCHEMAS } from "./tools";
 import { Type } from "@google/genai";
 
 const MAX_REITERATIONS = 5;
 
-const MessageSchema = {
+const schema = {
     type: Type.OBJECT,
     properties: {
         message: {
@@ -33,6 +34,13 @@ type GenerateAIResponseData = {
     principalName: string,
     linkedinConnected: boolean,
     contents: UserMessageData["contents"],
+}
+
+const generateConfig: GenerateConfig = {
+    model: process.env.LINKEDIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
+    apiKey: process.env.LINKEDIN_GEMINI_API_KEY!,
+    thinking_level: "high",
+    thinking_summaries: "auto",
 }
 
 export async function generateAIResponse({ messageId, userId, principalName, linkedinConnected, contents }: GenerateAIResponseData) {
@@ -66,7 +74,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
             const chatHistory = await getChatHistory(userId, contents);
             if (!chatHistory) throw new Error("Unable to retrieve chat history!")
 
-            const stream = await createStreamWithRetry(systemPrompt, chatHistory, MessageSchema, TOOL_SCHEMAS);
+            const stream = await createStreamWithRetry({ systemPrompt, chatHistory, schema, TOOL_SCHEMAS, ...generateConfig });
 
             for await (const event of stream) {
                 console.log(`[stream event] type=${event.event_type} index=${(event as any).index ?? "-"}`);
@@ -165,6 +173,20 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                         break;
 
                     case "step.stop":
+                        const usage = event.step_usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         const state = stepStates[event.index]
                         console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;

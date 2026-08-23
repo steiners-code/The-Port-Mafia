@@ -117,6 +117,7 @@ export async function handleStrategistTaskReport(userId: string, body: Question[
             userId,
             principalName,
             schema: StrategistFinalSchema,
+            angle: seed.angle,
             category,
         }, {
             jobId: `${messageId}-final-${new Date().toString()}`,

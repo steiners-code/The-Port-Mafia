@@ -76,6 +76,7 @@ export async function triggerStrategistResponse(input: StrategistInput, context:
             userId: context.userId,
             principalName,
             schema: StrategistNeedsSchema,
+            angle: input.angle,
             category: input.category
         }, {
             jobId: jobId ?? messageId,

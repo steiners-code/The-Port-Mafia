@@ -1,5 +1,5 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMessageStatus, LinkedinPostCategory, LinkedinTechniqueRole } from "../../../generated/prisma";
-import { createStreamWithRetry, StreamInitError } from "../helpers/createStreamWithRetry";
+import { createStreamWithRetry, GenerateConfig, StreamInitError } from "../helpers/createStreamWithRetry";
 import { displayContinueButton } from "../helpers/displayContinueButton";
 import { getChatHistoryForMessage } from "../getChatHistoryForMessage";
 import { createMessageContent } from "../helpers/createMessageContent";
@@ -9,13 +9,14 @@ import { handleAnalystResponse } from "./handleAnalystResponse";
 import { getAutomatedLog } from "../helpers/automatedMessages";
 import { updateAIChatMessage } from "../helpers/chatMessage";
 import { LinkedinLog, StepState } from "../../../lib/types";
+import { recordMessageUsage } from "../recordMessageUsage";
 import { appendHistoryEntry } from "../../../lib/cache";
 import { getToolSchemasForRole } from "../tools";
 import { Type } from "@google/genai";
 
 const MAX_REITERATIONS = 20;
 
-const AnalysisSchema = {
+const schema = {
     type: Type.OBJECT,
     properties: {
         category: {
@@ -104,6 +105,13 @@ type GenerateAnalystResponse = {
     principalName: string,
 }
 
+const generateConfig: GenerateConfig = {
+    model: process.env.LINKEDIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
+    apiKey: process.env.ANALYST_GEMINI_API_KEY!,
+    thinking_level: "high",
+    thinking_summaries: "auto",
+}
+
 const ANALYST_TOOLS = getToolSchemasForRole("ANALYST")
 
 export async function generateAnalystResponse({ messageId, userId, principalName }: GenerateAnalystResponse) {
@@ -122,7 +130,7 @@ export async function generateAnalystResponse({ messageId, userId, principalName
             const systemPrompt = await getAnalystSystemPrompt({ userId, principalName, maxCalls: MAX_REITERATIONS, remainingCalls: MAX_REITERATIONS - reRunCount })
             const chatHistory = await getChatHistoryForMessage(messageId);
             const TOOL_SCHEMAS = MAX_REITERATIONS > reRunCount ? ANALYST_TOOLS : undefined
-            const stream = await createStreamWithRetry(systemPrompt, chatHistory, AnalysisSchema, TOOL_SCHEMAS)
+            const stream = await createStreamWithRetry({ systemPrompt, chatHistory, schema, TOOL_SCHEMAS, ...generateConfig })
 
             for await (const event of stream) {
                 console.log(`[stream event] type=${event.event_type} index=${(event as any).index ?? "-"}`);
@@ -221,6 +229,20 @@ export async function generateAnalystResponse({ messageId, userId, principalName
                         break;
 
                     case "step.stop":
+                        const usage = event.step_usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         const state = stepStates[event.index]
                         console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;
