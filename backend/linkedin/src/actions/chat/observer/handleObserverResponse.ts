@@ -1,6 +1,8 @@
 import { triggerWriterResponse } from "../writer/triggerWriterResponse";
+import { AnalystResponse } from "../analyst/generateAnalystResponse";
 import { LinkedinPostCategory } from "../../../generated/prisma";
 import { MessageContext } from "../../../lib/types";
+import { getSeed } from "../../../lib/cache";
 
 /**
  * Exact shape SOUL_D expects as input (SOUL_D.md §3): category, title,
@@ -16,6 +18,7 @@ import { MessageContext } from "../../../lib/types";
 export type WriterInput = {
     category: LinkedinPostCategory;
     title: string;
+    angle: string | null;
     hook_technique: string | null;
     body_technique: string | null;
     cta_technique: string | null;
@@ -32,9 +35,12 @@ export async function handleObserverResponse(
     context: MessageContext
 ) {
     try {
+        const analystSeed = await getSeed<AnalystResponse>(context.userId, "ANALYST")
+
         const writerInput: WriterInput = {
             category,
             title,
+            angle: analystSeed?.angle ?? null,
             hook_technique,
             body_technique,
             cta_technique,

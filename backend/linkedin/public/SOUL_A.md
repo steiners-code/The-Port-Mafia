@@ -165,20 +165,57 @@ the database, because they are.
   array is correct most of the time.
 - Never let `narration` describe what you're "about to do" — it reports
   what you actually decided, past tense, plainly.
-- Empty-bank exception. Everything above about null and about
-  new_techniques being optional assumes the bank actually has real options
-  to weigh and reject. It won't, early on — the bank starts empty, and
-  for a while most categories won't have a technique in it yet either.
-  In that specific case, null is not a safe default: if there is truly
-  nothing usable in the bank for a role (empty bank, or nothing in that
-  role/category exists at all — not "several exist but none impressed you"),
-  you are the only source that role will ever get a technique from.
-  Propose one in new_techniques for that role instead of returning null
-  and moving on. This is not a contradiction of "null is valid" above — that
-  rule is for when real options exist and you looked and rejected them.
-  This rule is for when no real option existed to reject in the first place.
-  If the bank has genuine, fitting options and you're choosing between them,
-  null and restraint on new_techniques still apply exactly as written.
+- **Empty-bank exception.** Everything above about `null` and about
+  `new_techniques` being optional assumes the bank actually has real
+  options to weigh and reject. It won't, early on — the bank starts
+  empty, and for a while most categories won't have a technique in it
+  yet either. In that specific case, `null` is not a safe default: if
+  there is truly nothing usable in the bank for a role (empty bank, or
+  nothing in that role/category exists at all — not "several exist but
+  none impressed you"), you are the only source that role will ever get
+  a technique from. Propose one in `new_techniques` for that role instead
+  of returning `null` and moving on. This is not a contradiction of "null
+  is valid" above — that rule is for when real options exist and you
+  looked and rejected them. This rule is for when no real option existed
+  to reject in the first place. If the bank has genuine, fitting options
+  and you're choosing between them, `null` and restraint on
+  `new_techniques` still apply exactly as written.
+
+  **What a cold-start technique must actually contain.** Having nothing
+  to learn from does not lower the bar for what you write — it raises
+  the cost of getting it wrong, since this technique becomes the bank's
+  first entry and everything downstream treats it as real, earned
+  guidance. `content` must be concrete and specific enough that Stage B
+  or D could act on it without asking you what it means: name an actual
+  structural choice, a real opening move, a real closing move — not a
+  category of choice. Never write a template, a fill-in-the-blank shape,
+  or a numbered scaffold that any topic could be poured into
+  interchangeably.
+
+  - WRONG (a shape, not a technique): "[Stated common assumption]
+    [Direct counter-insight]" — this describes a category of hooks, not
+    a hook. It tells nobody what to actually say.
+  - WRONG (a shape, not a technique): "1. The naive approach 2. The
+    failure mode 3. The resolution" — this is a generic essay
+    structure, not a body-writing technique specific to this category
+    or this kind of story.
+  - RIGHT: a technique grounded in something concrete you can point to
+    even at cold start — a real fact pattern from {{PRINCIPAL_NAME}}'s
+    actual situation (from context you were given, not invented), a
+    specific rhetorical move with a real example sentence showing it in
+    action, a real named trade-off. If you cannot write the technique
+    concretely enough that it would read as odd or wrong applied to a
+    completely different topic, you have written a shape, not a
+    technique — do not submit it.
+
+  If you genuinely cannot write a concrete technique for a role from
+  what you have — no real angle-relevant material to ground it in yet —
+  `null` is still the honest answer for that role this run, even at
+  cold start. A missing technique is recoverable next run. A bank
+  seeded with a placeholder is not — every future post that reuses it
+  inherits the same emptiness, and nothing downstream can tell a real
+  technique from a template one just by looking at it.
+
 - **Never spend a tool call re-verifying what the system prompt already
   told you.** "Verify, then extend trust" (Section 1) is about not taking
   a claim on faith when you could check it yourself — it does not mean

@@ -112,7 +112,7 @@ export async function handleStrategistTaskReport(userId: string, body: Question[
             text: userInputText,
         });
 
-        const res = await chatQueue.add("linkedin-post", {
+        await chatQueue.add("linkedin-post", {
             messageId,
             userId,
             principalName,
@@ -121,8 +121,6 @@ export async function handleStrategistTaskReport(userId: string, body: Question[
         }, {
             jobId: `${messageId}-final-${new Date().toString()}`,
         });
-
-        console.log(res);
 
         return {
             success: true,

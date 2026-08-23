@@ -39,6 +39,7 @@ export async function triggerWriterResponse(input: WriterInput, context: Message
             "",
             `category: ${input.category}`,
             `title: ${input.title}`,
+            `angle: ${input.angle}`,
             "",
             formatTechnique(input.hook_technique, "hook_technique"),
             formatTechnique(input.body_technique, "body_technique"),
@@ -68,6 +69,7 @@ export async function triggerWriterResponse(input: WriterInput, context: Message
             hook_technique: input.hook_technique,
             body_technique: input.body_technique,
             cta_technique: input.cta_technique,
+            angle: input.angle,
             facts: input.facts,
         }, {
             jobId: jobId ?? messageId,

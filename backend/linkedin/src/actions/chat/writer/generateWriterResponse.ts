@@ -39,6 +39,7 @@ type GenerateWriterResponse = {
     principalName: string;
     category: LinkedinPostCategory;
     title: string;
+    angle: string | null;
     hook_technique: string | null;
     body_technique: string | null;
     cta_technique: string | null;
@@ -102,7 +103,7 @@ const WriterSchema = {
     ],
 }
 
-export async function generateWriterResponse({ messageId, userId, principalName, category, title, hook_technique, body_technique, cta_technique, facts }: GenerateWriterResponse) {
+export async function generateWriterResponse({ messageId, userId, principalName, category, title, hook_technique, body_technique, cta_technique, facts, angle }: GenerateWriterResponse) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
     let activeIndex: number | null = null;
@@ -265,7 +266,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         // once real parsed content with the required
                         // fields actually came back.
                         if (parsed && "hook" in parsed) {
-                            await handleWriterResponse(parsed, category, title, {
+                            await handleWriterResponse(parsed, category, title, angle, {
                                 cta_technique,
                                 body_technique,
                                 hook_technique

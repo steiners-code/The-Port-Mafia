@@ -1,6 +1,7 @@
 import { LinkedinPostCategory, LinkedinPostStatus, LinkedinTechniqueRole } from "../../../generated/prisma";
 import { clearHistory, clearSeed, getSeed } from "../../../lib/cache";
 import { AnalystResponse } from "../analyst/generateAnalystResponse";
+import { displayLinkedinPost } from "../helpers/displayLinkedinPost";
 import { WriterResponse } from "./generateWriterResponse";
 import { MessageContext } from "../../../lib/types";
 import { prisma } from "../../../lib/db";
@@ -52,6 +53,7 @@ export async function handleWriterResponse(
     args: WriterResponse,
     category: LinkedinPostCategory,
     title: string,
+    angle: string | null,
     technique: TechniqueResponse,
     context: MessageContext
 ) {
@@ -88,6 +90,7 @@ export async function handleWriterResponse(
                 weekStartDate: latestAllocation.weekStartDate,
                 category,
                 title,
+                angle,
                 hook: args.hook,
                 body: args.body,
                 cta: args.cta,
@@ -104,6 +107,8 @@ export async function handleWriterResponse(
             },
             select: { id: true },
         });
+
+        await displayLinkedinPost({ postId: post.id, messageId: context.messageId })
 
         const techniqueLinks = Object.entries(resolvedSlugs)
             .filter((entry): entry is [string, string] => entry[1] !== null)
