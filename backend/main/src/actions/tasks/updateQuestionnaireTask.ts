@@ -163,18 +163,34 @@ export async function updateQuestionnaireTask(userId: string, body: UpdateQuesti
                 };
             }
 
-            const updated = await prisma.mainTask.update({
+            const ok = await reportTaskCompletionToSubAgent(userId, {
+                ...task,
+                content: mergedContent,
+            } as MainTask);
+
+            if (!ok) {
+                await prisma.mainTask.update({
+                    where: { id: task.id },
+                    data: {
+                        content: mergedContent,
+                        status: MainTaskStatus.INPROGRESS
+                    }
+                });
+
+                return {
+                    status: 500,
+                    success: false,
+                    message: "Task Saved! Couldn't forward to Maha.",
+                };
+            }
+
+            await prisma.mainTask.update({
                 where: { id: task.id },
                 data: {
                     content: mergedContent,
                     status: MainTaskStatus.COMPLETED,
                 },
             });
-
-            await reportTaskCompletionToSubAgent(userId, {
-                ...updated,
-                content: mergedContent,
-            } as MainTask);
 
             return {
                 status: 200,

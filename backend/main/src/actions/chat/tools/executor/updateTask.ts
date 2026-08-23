@@ -129,9 +129,7 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
 
                 const isFullyAnswered = newContent.every((q) => q.answer !== null);
                 if (isFullyAnswered) {
-                    nextStatus = task.status === MainTaskStatus.INREVIEW
-                        ? MainTaskStatus.COMPLETED
-                        : MainTaskStatus.INPROGRESS;
+                    nextStatus = MainTaskStatus.COMPLETED
                 }
 
                 const answeredCount = args.questionnaireAnswers.length;

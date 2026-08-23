@@ -8,13 +8,12 @@ export async function triggerPostPerformanceRequest(userId: string) {
     const posts = await prisma.linkedinPost.findMany({
         where: { userId, createdAt: { gte: past7days } },
         select: { id: true, title: true },
-        take: 7,
         orderBy: { createdAt: 'desc' }
     })
 
     const mappedPosts = posts.map(p => ({ postId: p.id, title: p.title }))
 
-    if (!mappedPosts) return;
+    if (mappedPosts.length === 0) return;
 
     await requestPostPerformance(userId, mappedPosts)
 }

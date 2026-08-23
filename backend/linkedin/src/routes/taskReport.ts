@@ -8,15 +8,15 @@ const userId = t.Object({
     "x-user-id": t.String({ error: "Missing API-Gateway ID: userId" })
 });
 
-const questionnaireBody = t.Array(
-    t.Object({
+const questionnaireBody = t.Object({
+    type: t.Literal("QUESTIONNAIRE"),
+    content: t.Array(t.Object({
         index: t.Number(),
         question: t.String({ minLength: 1 }),
         answer: t.Nullable(t.String()),
         answeredBy: t.Nullable(t.Union([t.Literal("USER"), t.Literal("DAZAI")])),
-    }),
-    { minItems: 1 }
-);
+    }), { minItems: 1 })
+});
 
 const postPerformanceBody = t.Object({
     type: t.Literal("POST_PERFORMANCE"),
@@ -26,7 +26,7 @@ const postPerformanceBody = t.Object({
         comments: t.Number(),
         reposts: t.Number(),
         impressions: t.Optional(t.Number()),
-    }))
+    }), { minItems: 1 })
 });
 
 const accountSnapshotBody = t.Object({
@@ -42,7 +42,7 @@ const handlerBody = t.Union([postPerformanceBody, accountSnapshotBody])
 
 export const taskReportRoutes = new Elysia({ prefix: '/task-report' })
     .post('/strategist', async ({ status, headers, body }) => {
-        const result = await handleStrategistTaskReport(headers["x-user-id"], body);
+        const result = await handleStrategistTaskReport(headers["x-user-id"], body.content);
         return status(result.status, result);
     }, {
         headers: userId,
@@ -50,7 +50,7 @@ export const taskReportRoutes = new Elysia({ prefix: '/task-report' })
     })
 
     .post('/observer', async ({ status, headers, body }) => {
-        const result = await handleObserverTaskReport(headers["x-user-id"], body);
+        const result = await handleObserverTaskReport(headers["x-user-id"], body.content);
         return status(result.status, result);
     }, {
         headers: userId,
