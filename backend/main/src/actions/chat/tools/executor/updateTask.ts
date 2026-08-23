@@ -148,6 +148,28 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
         }
     }
 
+    /**
+     * This tool runs as the AI, so the outbound call needs the actual
+     * user's id carried explicitly — it's not implicit the way an
+     * in-browser fetch would have a session cookie. userId here comes
+     * from ToolContext, tied to the real authenticated conversation.
+     */
+    if (nextStatus === MainTaskStatus.COMPLETED) {
+        const success = await reportTaskCompletionToSubAgent(userId, {
+            ...task,
+            content: newContent,
+            subAgent: task.subAgent,
+            subAgentRole: task.subAgentRole,
+            subAgentPlatform: task.subAgentPlatform,
+        } as MainTask);
+        if (success)
+            changes.push(`Task completed and reported back to ${task.subAgent}.`);
+        else {
+            nextStatus = MainTaskStatus.INPROGRESS;
+            changes.push(`Task completed but failed to report back to ${task.subAgent}. Ask user to report back to agent.`);
+        }
+    }
+
     const updated = await prisma.mainTask.update({
         where: { id: task.id },
         data: {
@@ -166,25 +188,6 @@ export async function updateTask(args: UpdateTaskArgs, { userId }: ToolContext) 
 
     if (nextStatus === MainTaskStatus.INPROGRESS) {
         changes.push(`Task moved to INPROGRESS — every question now has an answer.`);
-    }
-
-    /**
-     * This tool runs as the AI, so the outbound call needs the actual
-     * user's id carried explicitly — it's not implicit the way an
-     * in-browser fetch would have a session cookie. userId here comes
-     * from ToolContext, tied to the real authenticated conversation.
-     */
-    if (nextStatus === MainTaskStatus.COMPLETED) {
-        const success = await reportTaskCompletionToSubAgent(userId, {
-            ...updated,
-            subAgent: task.subAgent,
-            subAgentRole: task.subAgentRole,
-            subAgentPlatform: task.subAgentPlatform,
-        } as MainTask);
-        if (success)
-            changes.push(`Task completed and reported back to ${task.subAgent}.`);
-        else
-            changes.push(`Task completed but failed to report back to ${task.subAgent}. Ask user to report back to agent.`);
     }
 
     return {
