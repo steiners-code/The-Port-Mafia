@@ -1,6 +1,7 @@
 import LinkedInContinueButton from "./component/LinkedInContinueButton";
 import LinkedInConnectButton from "./component/LinkedInConnectButton";
 import { Action, ComponentAction } from "@/lib/types/media"
+import LinkedInPost from "./component/LinkedInPost";
 
 const renderComponent = (id: string, data: ComponentAction, messageId: string) => {
     switch (data.name) {
@@ -8,6 +9,8 @@ const renderComponent = (id: string, data: ComponentAction, messageId: string) =
             return <LinkedInConnectButton id={id} message={data.message} />
         case "LinkedinContinueButton":
             return <LinkedInContinueButton id={id} message={data.message} role={data.role} messageId={messageId} />
+        case "LinkedinPost":
+            return <LinkedInPost id={id} postId={data.postId} />
     }
 }
 

@@ -13,7 +13,7 @@ const LinkedInContinueButton = ({
     role,
     messageId
 }: {
-    message?: string;
+    message: string;
     id: string;
     role: SubAgents["subAgentRole"];
     messageId: string;

@@ -38,9 +38,5 @@ export async function reportTaskCompletionToSubAgent(userId: string, task: MainT
         }),
     });
 
-    console.log(JSON.stringify(res, null, 4))
-    const blob = res.blob
-    console.log(blob.toString())
-
     return res.ok
 }

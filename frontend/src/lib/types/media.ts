@@ -95,7 +95,7 @@ export type TaskMetadata = BaseMetadata & {
 export type Action = { category: "ACTION" } & ComponentAction
 
 // ---------- COMPONENT ---------- 
-export type ComponentAction = { actionType: "COMPONENT" } & (LinkedinConnectComponent | LinkedinContinueComponent)
+export type ComponentAction = { actionType: "COMPONENT" } & (LinkedinConnectComponent | LinkedinContinueComponent | LinkedinPostComponent)
 
 export type LinkedinConnectComponent = {
     name: "LinkedinConnectButton"
@@ -104,8 +104,13 @@ export type LinkedinConnectComponent = {
 
 export type LinkedinContinueComponent = {
     name: "LinkedinContinueButton"
-    message?: string
+    message: string
     role: SubAgents["subAgentRole"]
+}
+
+export type LinkedinPostComponent = {
+    name: "LinkedinPost"
+    postId: string
 }
 
 // ---------- MEDIA ---------- 
