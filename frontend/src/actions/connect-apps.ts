@@ -15,7 +15,7 @@ type ExchangeResult = {
  * Always resolves — never throws — so the caller only has to branch on
  * `success`, matching the pattern in actions/authorize-with-home.ts.
  */
-export async function exchangeLinkedInCode(code: string, state: string): Promise<ExchangeResult> {
+export async function exchangeLinkedInCode(code: string, state: string, timezone: string): Promise<ExchangeResult> {
     try {
         const cookieStore = await cookies()
         const storedState = cookieStore.get("state")?.value;
@@ -29,7 +29,7 @@ export async function exchangeLinkedInCode(code: string, state: string): Promise
 
         const redirect_uri = getUrl("/linkedin/callback", "frontend");
 
-        const res = await api.post(getUrl("/linkedin/auth/exchange"), { code, redirect_uri });
+        const res = await api.post(getUrl("/linkedin/auth/exchange"), { code, redirect_uri, timezone });
 
         if (res.status !== 200)
             return {

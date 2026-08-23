@@ -45,7 +45,7 @@ function LinkedInCallbackHandler() {
         isError: hasThrown,
         data: result,
     } = useMutation({
-        mutationFn: async ({ code, state }: { code: string; state: string }) => await exchangeLinkedInCode(code, state),
+        mutationFn: async ({ code, state, timezone }: { code: string; state: string, timezone: string }) => await exchangeLinkedInCode(code, state, timezone),
         onSuccess: (res) => {
             if (!res.success) {
                 toast.error("Couldn't connect LinkedIn", { description: res.message });
@@ -65,7 +65,8 @@ function LinkedInCallbackHandler() {
     useEffect(() => {
         if (hasFiredRef.current || oauthError || !code || !state) return;
         hasFiredRef.current = true;
-        runExchange({ code, state });
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        runExchange({ code, state, timezone });
     }, [code, oauthError, state]);
 
     if (oauthError) {
