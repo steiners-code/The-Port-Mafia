@@ -37,6 +37,7 @@ function isObserverNeedsResponse(parsed: ObserverResponse): parsed is ObserverNe
 type GenerateObserverResponse = {
     messageId: string;
     userId: string;
+    timeZone: string;
     principalName: string;
     schema: object;
     category: LinkedinPostCategory;
@@ -63,7 +64,7 @@ const generateConfig: GenerateConfig = {
     thinking_summaries: "auto",
 }
 
-export async function generateObserverResponse({ messageId, userId, principalName, schema, category, title, hook_technique, body_technique, cta_technique, facts }: GenerateObserverResponse) {
+export async function generateObserverResponse({ messageId, userId, principalName, timeZone, schema, category, title, hook_technique, body_technique, cta_technique, facts }: GenerateObserverResponse) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
     let activeIndex: number | null = null;
@@ -76,7 +77,7 @@ export async function generateObserverResponse({ messageId, userId, principalNam
             reRun = false;
 
             const stepStates: Record<number, StepState> = {}
-            const systemPrompt = await getObserverSystemPrompt({ userId, principalName })
+            const systemPrompt = await getObserverSystemPrompt({ userId, principalName, timeZone })
             const chatHistory = await getChatHistoryForRole("OBSERVER", userId);
             const stream = await createStreamWithRetry({ systemPrompt, chatHistory, schema, ...generateConfig })
 
@@ -177,20 +178,6 @@ export async function generateObserverResponse({ messageId, userId, principalNam
                         break;
 
                     case "step.stop":
-                        const usage = event.step_usage;
-                        await recordMessageUsage({
-                            userId,
-                            messageId,
-                            inputTokens: usage?.total_input_tokens ?? 0,
-                            outputTokens: usage?.total_output_tokens ?? 0,
-                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
-                            reasoningTokens: usage?.total_thought_tokens ?? 0,
-                            cachedTokens: usage?.total_cached_tokens ?? 0,
-                            totalTokens: usage?.total_tokens ?? 0,
-                            provider: "GOOGLE",
-                            ...generateConfig,
-                        });
-
                         const state = stepStates[event.index]
                         console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;
@@ -257,6 +244,20 @@ export async function generateObserverResponse({ messageId, userId, principalNam
                         break;
 
                     case "interaction.completed":
+                        const usage = event.interaction.usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         if (event.interaction.status === "requires_action") {
                             reRun = true;
                             break;

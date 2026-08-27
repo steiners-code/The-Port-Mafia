@@ -1,4 +1,4 @@
-import { getMahaContextFiles } from "../helpers/getContext";
+import { buildCurrentTimeBlock, getMahaContextFiles } from "../helpers/getContext";
 import { getAnalystContextData } from "./getContext";
 import path from "path";
 
@@ -70,6 +70,7 @@ function buildIterationBudgetBlock(remaining: number, max: number): string {
 type GetAnalystSystemPromptArgs = {
     userId: string;
     principalName: string;
+    timeZone: string;
     remainingCalls: number;
     maxCalls: number;
 };
@@ -77,6 +78,7 @@ type GetAnalystSystemPromptArgs = {
 export async function getAnalystSystemPrompt({
     userId,
     principalName,
+    timeZone,
     remainingCalls,
     maxCalls,
 }: GetAnalystSystemPromptArgs) {
@@ -84,6 +86,7 @@ export async function getAnalystSystemPrompt({
     const strategyBlock = (await loadStrategy()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
     const { experience } = await getMahaContextFiles(userId)
 
+    const timeBlock = buildCurrentTimeBlock(principalName, timeZone);
     const analystContext = await getAnalystContextData(userId);
     const iterationBudgetBlock = buildIterationBudgetBlock(remainingCalls, maxCalls);
 
@@ -96,6 +99,8 @@ export async function getAnalystSystemPrompt({
         experience || "(empty)",
         "---",
         analystContext,
+        "---",
+        timeBlock,
         "---",
         iterationBudgetBlock,
     ].join("\n");

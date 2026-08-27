@@ -4,7 +4,7 @@ export async function getChatId(userId: string) {
     const [linkedinProfile, chat] = await prisma.$transaction([
         prisma.linkedinProfile.findUnique({
             where: { userId },
-            select: { given_name: true, family_name: true }
+            select: { given_name: true, family_name: true, timezone: true }
         }),
         prisma.linkedinChat.upsert({
             where: { userId },
@@ -18,5 +18,5 @@ export async function getChatId(userId: string) {
         .filter(Boolean)
         .join(' ');
 
-    return { chatId: chat.id, principalName, linkedinConnected: Boolean(linkedinProfile) };
+    return { chatId: chat.id, principalName, linkedinConnected: Boolean(linkedinProfile), timeZone: linkedinProfile?.timezone ?? "Asia/Karachi" };
 }

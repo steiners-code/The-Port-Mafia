@@ -103,6 +103,7 @@ type GenerateAnalystResponse = {
     messageId: string,
     userId: string,
     principalName: string,
+    timeZone: string,
 }
 
 const generateConfig: GenerateConfig = {
@@ -114,7 +115,7 @@ const generateConfig: GenerateConfig = {
 
 const ANALYST_TOOLS = getToolSchemasForRole("ANALYST")
 
-export async function generateAnalystResponse({ messageId, userId, principalName }: GenerateAnalystResponse) {
+export async function generateAnalystResponse({ messageId, userId, timeZone, principalName }: GenerateAnalystResponse) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
     let activeIndex: number | null = null;
@@ -127,7 +128,7 @@ export async function generateAnalystResponse({ messageId, userId, principalName
             reRun = false;
 
             const stepStates: Record<number, StepState> = {}
-            const systemPrompt = await getAnalystSystemPrompt({ userId, principalName, maxCalls: MAX_REITERATIONS, remainingCalls: MAX_REITERATIONS - reRunCount })
+            const systemPrompt = await getAnalystSystemPrompt({ userId, timeZone, principalName, maxCalls: MAX_REITERATIONS, remainingCalls: MAX_REITERATIONS - reRunCount })
             const chatHistory = await getChatHistoryForMessage(messageId);
             const TOOL_SCHEMAS = MAX_REITERATIONS > reRunCount ? ANALYST_TOOLS : undefined
             const stream = await createStreamWithRetry({ systemPrompt, chatHistory, schema, TOOL_SCHEMAS, ...generateConfig })
@@ -229,20 +230,6 @@ export async function generateAnalystResponse({ messageId, userId, principalName
                         break;
 
                     case "step.stop":
-                        const usage = event.step_usage;
-                        await recordMessageUsage({
-                            userId,
-                            messageId,
-                            inputTokens: usage?.total_input_tokens ?? 0,
-                            outputTokens: usage?.total_output_tokens ?? 0,
-                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
-                            reasoningTokens: usage?.total_thought_tokens ?? 0,
-                            cachedTokens: usage?.total_cached_tokens ?? 0,
-                            totalTokens: usage?.total_tokens ?? 0,
-                            provider: "GOOGLE",
-                            ...generateConfig,
-                        });
-
                         const state = stepStates[event.index]
                         console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;
@@ -286,6 +273,20 @@ export async function generateAnalystResponse({ messageId, userId, principalName
                         break;
 
                     case "interaction.completed":
+                        const usage = event.interaction.usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         if (event.interaction.status === "requires_action") {
                             reRun = true;
                             break;

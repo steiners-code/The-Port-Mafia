@@ -15,7 +15,7 @@ const chatQueue = new Queue("analyst-maha-balor", { connection });
 
 export async function triggerAnalystResponse(userId: string) {
     try {
-        const { chatId, principalName } = await getChatId(userId);
+        const { chatId, principalName, timeZone } = await getChatId(userId);
 
         const data = await prisma.linkedinChatMessage.create({
             data: {
@@ -66,6 +66,7 @@ export async function triggerAnalystResponse(userId: string) {
             messageId,
             userId,
             principalName,
+            timeZone,
         }, {
             jobId: messageId,
         });

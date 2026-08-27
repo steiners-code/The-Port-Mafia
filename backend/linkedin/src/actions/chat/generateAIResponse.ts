@@ -32,6 +32,7 @@ type GenerateAIResponseData = {
     messageId: string,
     userId: string,
     principalName: string,
+    timeZone: string,
     linkedinConnected: boolean,
     contents: UserMessageData["contents"],
 }
@@ -43,7 +44,7 @@ const generateConfig: GenerateConfig = {
     thinking_summaries: "auto",
 }
 
-export async function generateAIResponse({ messageId, userId, principalName, linkedinConnected, contents }: GenerateAIResponseData) {
+export async function generateAIResponse({ messageId, userId, principalName, linkedinConnected, contents, timeZone }: GenerateAIResponseData) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
     let activeIndex: number | null = null;
@@ -70,7 +71,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
 
             reRunCount++;
             reRun = false;
-            const systemPrompt = await getSystemPrompt(userId, principalName, linkedinConnected)
+            const systemPrompt = await getSystemPrompt(userId, timeZone, principalName, linkedinConnected)
             const chatHistory = await getChatHistory(userId, contents);
             if (!chatHistory) throw new Error("Unable to retrieve chat history!")
 
@@ -173,20 +174,6 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                         break;
 
                     case "step.stop":
-                        const usage = event.step_usage;
-                        await recordMessageUsage({
-                            userId,
-                            messageId,
-                            inputTokens: usage?.total_input_tokens ?? 0,
-                            outputTokens: usage?.total_output_tokens ?? 0,
-                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
-                            reasoningTokens: usage?.total_thought_tokens ?? 0,
-                            cachedTokens: usage?.total_cached_tokens ?? 0,
-                            totalTokens: usage?.total_tokens ?? 0,
-                            provider: "GOOGLE",
-                            ...generateConfig,
-                        });
-
                         const state = stepStates[event.index]
                         console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;
@@ -224,6 +211,20 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                         break;
 
                     case "interaction.completed":
+                        const usage = event.interaction.usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         if (event.interaction.status === "requires_action") {
                             reRun = true;
                             break;

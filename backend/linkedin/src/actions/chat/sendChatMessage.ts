@@ -1,4 +1,4 @@
-import { LinkedinContentStatus, LinkedinLogLevel, LinkedinMainAgent, LinkedinMessageStatus, LinkedinTriggerType } from "../../generated/prisma";
+import { LinkedinContentStatus, LinkedinContentType, LinkedinLogLevel, LinkedinMainAgent, LinkedinMessageStatus, LinkedinTriggerType } from "../../generated/prisma";
 import { getAutomatedLog } from "./helpers/automatedMessages";
 import { createAIChatMessage } from "./helpers/chatMessage";
 import { UserMessageData } from "../../lib/types";
@@ -16,7 +16,7 @@ const chatQueue = new Queue("chat-maha-balor", { connection });
 
 export async function sendChatMessage(userId: string, contents: UserMessageData["contents"], triggerType: LinkedinTriggerType = LinkedinTriggerType.USER, agent?: LinkedinMainAgent) {
     try {
-        const { chatId, principalName, linkedinConnected } = await getChatId(userId)
+        const { chatId, principalName, linkedinConnected, timeZone } = await getChatId(userId)
 
         const data = await prisma.linkedinChatMessage.create({
             data: {
@@ -72,6 +72,7 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
             principalName,
             linkedinConnected,
             contents,
+            timeZone
         }, {
             jobId: messageId,
         });

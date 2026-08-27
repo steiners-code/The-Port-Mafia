@@ -19,6 +19,14 @@ import { Type } from "@google/genai";
  * principal" shape defined in SOUL_D.md at all; every completed turn IS
  * the final output.
  */
+type ContentSlot = {
+    page: number;
+    textHeading: string | null;
+    textSubheading: string | null;
+    textCredit: string | null;
+    textParagraph: string | null;
+}
+
 export type WriterResponse = {
     hook: string;
     body: string;
@@ -27,7 +35,7 @@ export type WriterResponse = {
     media: {
         type: LinkedinMediaType;
         template_id: string | null;
-        content_slots: string[];
+        content_slots: ContentSlot[];
     };
     scheduled_day: string;
     scheduled_window: string;
@@ -37,6 +45,7 @@ export type WriterResponse = {
 type GenerateWriterResponse = {
     messageId: string;
     userId: string;
+    timeZone: string;
     principalName: string;
     category: LinkedinPostCategory;
     title: string;
@@ -76,8 +85,31 @@ const schema = {
                 content_slots: {
                     type: Type.ARRAY,
                     items: {
-                        type: Type.STRING,
+                        type: Type.OBJECT,
+                        properties: {
+                            page: {
+                                type: Type.NUMBER,
+                            },
+                            textHeading: {
+                                type: Type.STRING,
+                                nullable: true
+                            },
+                            textSubheading: {
+                                type: Type.STRING,
+                                nullable: true
+                            },
+                            textCredit: {
+                                type: Type.STRING,
+                                nullable: true
+                            },
+                            textParagraph: {
+                                type: Type.STRING,
+                                nullable: true
+                            }
+                        },
+                        required: ["page", "textHeading", "textSubheading", "textCredit", "textParagraph"]
                     },
+                    empty: true,
                 },
             },
             required: ["type", "template_id", "content_slots"],
@@ -111,7 +143,7 @@ const generateConfig: GenerateConfig = {
     thinking_summaries: "auto",
 }
 
-export async function generateWriterResponse({ messageId, userId, principalName, category, title, hook_technique, body_technique, cta_technique, facts, angle }: GenerateWriterResponse) {
+export async function generateWriterResponse({ messageId, userId, principalName, timeZone, category, title, hook_technique, body_technique, cta_technique, facts, angle }: GenerateWriterResponse) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
     let activeIndex: number | null = null;
@@ -124,7 +156,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
             reRun = false;
 
             const stepStates: Record<number, StepState> = {}
-            const systemPrompt = await getWriterSystemPrompt({ userId, principalName })
+            const systemPrompt = await getWriterSystemPrompt({ userId, principalName, timeZone })
             const chatHistory = await getChatHistoryForRole("WRITER", userId);
             const stream = await createStreamWithRetry({ systemPrompt, chatHistory, schema, ...generateConfig })
 
@@ -225,20 +257,6 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         break;
 
                     case "step.stop":
-                        const usage = event.step_usage;
-                        await recordMessageUsage({
-                            userId,
-                            messageId,
-                            inputTokens: usage?.total_input_tokens ?? 0,
-                            outputTokens: usage?.total_output_tokens ?? 0,
-                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
-                            reasoningTokens: usage?.total_thought_tokens ?? 0,
-                            cachedTokens: usage?.total_cached_tokens ?? 0,
-                            totalTokens: usage?.total_tokens ?? 0,
-                            provider: "GOOGLE",
-                            ...generateConfig,
-                        });
-
                         const state = stepStates[event.index]
                         console.log(`[step.stop] index=${event.index} state.type=${state.type} state=${state}`);
                         if (!state) break;
@@ -288,6 +306,12 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         // once real parsed content with the required
                         // fields actually came back.
                         if (parsed && "hook" in parsed) {
+                            if (parsed.media.type !== "NONE" && parsed.media.content_slots.length === 0) {
+                                throw new Error(
+                                    `Writer declared media.type="${parsed.media.type}" but content_slots was empty. A non-NONE media type requires at least one content slot.`
+                                );
+                            }
+
                             await handleWriterResponse(parsed, category, title, angle, {
                                 cta_technique,
                                 body_technique,
@@ -297,6 +321,20 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         break;
 
                     case "interaction.completed":
+                        const usage = event.interaction.usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         if (event.interaction.status === "requires_action") {
                             reRun = true;
                             break;

@@ -46,7 +46,7 @@ const ObserverNeedsSchema = {
  */
 export async function triggerObserverResponse(input: ObserverInput, context: MessageContext, jobId?: string) {
     try {
-        const { principalName } = await getChatId(context.userId);
+        const { principalName, timeZone } = await getChatId(context.userId);
         const { messageId } = context;
 
         const userInputText = [
@@ -79,6 +79,7 @@ export async function triggerObserverResponse(input: ObserverInput, context: Mes
         await chatQueue.add("linkedin-post", {
             messageId,
             userId: context.userId,
+            timeZone,
             principalName,
             schema: ObserverNeedsSchema,
             category: input.category,

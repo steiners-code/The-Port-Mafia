@@ -2,7 +2,7 @@ import { prisma } from "../../lib/db";
 
 export async function getMessageLogs(messageId: string) {
     try {
-        const data = await prisma.linkedinMessageContent.findMany({
+        const messageLogs = await prisma.linkedinMessageContent.findMany({
             where: { chatMessageId: messageId },
             select: {
                 id: true,
@@ -27,7 +27,17 @@ export async function getMessageLogs(messageId: string) {
             ]
         });
 
-        if (!data)
+        const usageLogs = await prisma.linkedinMessageUsage.findMany({
+            where: { messageId },
+            select: {
+                id: true,
+                inputTokens: true,
+                outputTokens: true,
+                totalTokens: true,
+            }
+        })
+
+        if (messageLogs.length === 0)
             return {
                 status: 404,
                 message: "Message contents not found!",
@@ -38,7 +48,7 @@ export async function getMessageLogs(messageId: string) {
             status: 200,
             success: true,
             message: "Successfully grabbed Maha's log book.",
-            data,
+            data: { messageLogs, usageLogs },
         }
     } catch (error) {
         return {

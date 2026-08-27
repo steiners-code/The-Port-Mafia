@@ -31,7 +31,7 @@ function formatFacts(facts: WriterInput["facts"]): string {
  */
 export async function triggerWriterResponse(input: WriterInput, context: MessageContext, jobId?: string) {
     try {
-        const { principalName } = await getChatId(context.userId);
+        const { principalName, timeZone } = await getChatId(context.userId);
         const { messageId } = context;
 
         const userInputText = [
@@ -63,6 +63,7 @@ export async function triggerWriterResponse(input: WriterInput, context: Message
         await chatQueue.add("linkedin-post", {
             messageId,
             userId: context.userId,
+            timeZone,
             principalName,
             category: input.category,
             title: input.title,

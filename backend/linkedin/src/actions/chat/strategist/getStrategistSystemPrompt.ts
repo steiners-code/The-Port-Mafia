@@ -1,4 +1,4 @@
-import { getMahaContextFiles } from "../helpers/getContext";
+import { buildCurrentTimeBlock, getMahaContextFiles } from "../helpers/getContext";
 import path from "path";
 
 let soulContent: string | null = null;
@@ -26,15 +26,18 @@ async function loadStrategy(): Promise<string> {
 
 type GetStrategistSystemPromptArgs = {
     userId: string;
+    timeZone: string;
     principalName: string;
 };
 
 export async function getStrategistSystemPrompt({
     userId,
+    timeZone,
     principalName,
 }: GetStrategistSystemPromptArgs) {
     const soulBlock = (await loadSoul()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
     const strategyBlock = (await loadStrategy()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
+    const timeBlock = buildCurrentTimeBlock(principalName, timeZone);
     const { experience } = await getMahaContextFiles(userId)
 
     return [
@@ -44,5 +47,7 @@ export async function getStrategistSystemPrompt({
         "---",
         "## EXPERIENCE",
         experience || "(empty)",
+        "---",
+        timeBlock,
     ].join("\n");
 }

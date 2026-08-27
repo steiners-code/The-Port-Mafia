@@ -40,7 +40,7 @@ const StrategistNeedsSchema = {
 
 export async function triggerStrategistResponse(input: StrategistInput, context: MessageContext, jobId?: string) {
     try {
-        const { principalName } = await getChatId(context.userId);
+        const { principalName, timeZone } = await getChatId(context.userId);
         const messageId = context.messageId;
 
         const userInputText = [
@@ -75,6 +75,7 @@ export async function triggerStrategistResponse(input: StrategistInput, context:
             messageId,
             userId: context.userId,
             principalName,
+            timeZone,
             schema: StrategistNeedsSchema,
             angle: input.angle,
             category: input.category
