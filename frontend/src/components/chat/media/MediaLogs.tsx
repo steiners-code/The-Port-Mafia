@@ -44,9 +44,9 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
     const { data, isLoading } = useQuery({
         queryKey: [messageId, "logs"],
         queryFn: async () => {
-            const { success, data, message } = await getMessageLogs(messageId, agent?.route || "/main")
+            const { success, messageLogs, usageLogs, message } = await getMessageLogs(messageId, agent?.route || "/main")
             if (!success) toast.error(message);
-            return data;
+            return { messageLogs, usageLogs };
         },
     })
 
@@ -63,7 +63,7 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
         )
     }
 
-    if (!data) {
+    if (!data || !data.messageLogs || (!data.messageLogs && !data.usageLogs)) {
         return (
             <MediaWrapper metadata={{
                 name: "LOGS",
@@ -77,14 +77,17 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
         )
     }
 
+    const messageLogs = data.messageLogs;
+    const usageLogs = data.usageLogs;
+
     return (
         <MediaWrapper metadata={{
             name: "LOGS",
             category: "LOGS",
-            extension: formatDate(data[0]?.createdAt || new Date(), "EEEE, dd MMMM yyyy")
+            extension: formatDate(messageLogs[0]?.createdAt || new Date(), "EEEE, dd MMMM yyyy")
         }}>
             <div className="space-y-8 animate-in">
-                {data.map(content => (
+                {messageLogs.map(content => (
                     <div key={content.id} className="group space-y-4">
                         <div className="flex item-center justify-between">
                             <h3 className="font-serif text-lg text-foreground font-medium!">
@@ -141,6 +144,37 @@ const MediaLogs = ({ messageId }: { messageId: string }) => {
                         </Table>
                     </div>
                 ))}
+
+                <Table className="w-full border-separate border! rounded-sm!">
+                    <TableHeader className="font-serif font-medium! uppercase text-xs! tracking-wider">
+                        <TableRow className="font-serif font-medium! uppercase text-xs! tracking-wider">
+                            <TableCell className="max-w-1/3 w-full flex-1">Input Tokens</TableCell>
+                            <TableCell className="max-w-1/3 w-full flex-1">Output Tokens</TableCell>
+                            <TableCell className="max-w-1/3 w-full flex-1">Total Tokens</TableCell>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {usageLogs?.length !== 0 ? usageLogs?.map(log => (
+                            <TableRow key={log.id} className="text-foreground">
+                                <TableCell>
+                                    {log.inputTokens}
+                                </TableCell>
+                                <TableCell>
+                                    {log.outputTokens}
+                                </TableCell>
+                                <TableCell>
+                                    {log.totalTokens}
+                                </TableCell>
+                            </TableRow>
+                        )) : (
+                            <TableRow className="text-destructive italic text-xs">
+                                <TableCell>No Data</TableCell>
+                                <TableCell>No Data</TableCell>
+                                <TableCell>No Data</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </div>
         </MediaWrapper>
     )

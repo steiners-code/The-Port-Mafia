@@ -36,6 +36,13 @@ export type MessageContent = {
     createdAt: Date,
 }
 
+export type UsageLog = {
+    id: string,
+    inputTokens: string,
+    outputTokens: string,
+    totalTokens: string
+}
+
 export type ContentLog = {
     id: string,
     level: LOGLEVEL, // "ERROR" | "SUCCESS" | "INFO"
