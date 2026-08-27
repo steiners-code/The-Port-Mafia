@@ -41,7 +41,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
                     },
                     orderBy: {
                         createdAt: 'asc'
-                    }
+                    },
                 }
             }
         });

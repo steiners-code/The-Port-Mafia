@@ -16,6 +16,23 @@ export type MainLog = {
     createdAt: Date,
 }
 
+export type StepState = {
+    type: "thought" | "model_output" | "function_call";
+    contentId: string;
+    logs: MainLog[];
+
+    thoughtSignature?: string;
+    thoughtSummary: string;
+    annotations: Annotation[];
+    startedAt: Date;
+
+    text: string;
+
+    funcCallId: string,
+    funcCallName: string,
+    funcArgsAccumulate: string,
+};
+
 type BaseMetadata = {
     name: string;
     description?: string;

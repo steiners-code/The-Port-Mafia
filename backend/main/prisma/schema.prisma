@@ -13,6 +13,7 @@ model UserProfile {
   firstName String
   lastName  String?
   email     String
+  timezone  String?
 
   connectedApps ConnectedApps[]
   mainTasks     MainTask[]
@@ -155,11 +156,34 @@ model MainChatMessage {
   triggerType MainTriggerType
   status      MainMessageStatus @default(QUEUED)
 
-  contents MainMessageContent[]
+  contents              MainMessageContent[]
+  linkedinMessageUsages MainMessageUsage[]
 
   createdAt DateTime @default(now())
 
   @@index([chatId, createdAt])
+  @@schema("main")
+}
+
+model MainMessageUsage {
+  id String @id @default(cuid())
+
+  userId   String
+  provider String
+  model    String
+
+  inputTokens     Int
+  outputTokens    Int
+  reasoningTokens Int @default(0)
+  cachedTokens    Int @default(0)
+  toolUseTokens   Int @default(0)
+  totalTokens     Int
+
+  messageId String
+  message   MainChatMessage @relation(fields: [messageId], references: [id])
+
+  createdAt DateTime @default(now())
+
   @@schema("main")
 }
 

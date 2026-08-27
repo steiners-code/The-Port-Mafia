@@ -16,7 +16,7 @@ const chatQueue = new Queue("chat-osamu-dazai", { connection });
 
 export async function sendChatMessage(userId: string, contents: UserMessageData["contents"], triggerType: MainTriggerType = MainTriggerType.USER, agent?: SubAgent) {
     try {
-        const { chatId, principalName, connections } = await getChatId(userId)
+        const { chatId, principalName, connections, timeZone } = await getChatId(userId)
 
         const data = await prisma.mainChatMessage.create({
             data: {
@@ -72,6 +72,7 @@ export async function sendChatMessage(userId: string, contents: UserMessageData[
             principalName,
             connections,
             contents,
+            timeZone
         }, {
             jobId: messageId,
         });

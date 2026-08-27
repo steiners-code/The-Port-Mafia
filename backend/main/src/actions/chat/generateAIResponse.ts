@@ -1,13 +1,16 @@
 import { MainContentStatus, MainContentType, MainLogLevel, MainMessageStatus } from "../../generated/prisma";
-import { createStreamWithRetry, StreamInitError } from "./helpers/createStreamWithRetry";
-import { Annotation, MainLog, UserMessageData } from "../../lib/types";
+import { createStreamWithRetry, GenerateConfig, StreamInitError } from "./helpers/createStreamWithRetry";
+import { MainLog, StepState, UserMessageData } from "../../lib/types";
 import { updateMessageContent } from "./helpers/updateMessageContent";
 import { createMessageContent } from "./helpers/createMessageContent";
 import { getAutomatedLog } from "./helpers/automatedMessages";
 import { updateAIChatMessage } from "./helpers/chatMessage";
 import { getSystemPrompt } from "./helpers/getSystemPrompt";
+import { recordMessageUsage } from "./recordMessageUsage";
 import { getChatHistory } from "./helpers/getChatHistory";
 import { Connections } from "./helpers/subAgents";
+import { TOOL_SCHEMAS } from "./tools"
+import { Type } from "@google/genai";
 
 const MAX_REITERATIONS = 5;
 
@@ -15,28 +18,30 @@ type GenerateAIResponseData = {
     messageId: string,
     userId: string,
     principalName: string,
+    timeZone: string,
     connections: Connections,
     contents: UserMessageData["contents"],
 }
 
-type StepState = {
-    type: "thought" | "model_output" | "function_call";
-    contentId: string;
-    logs: MainLog[];
+const generateConfig: GenerateConfig = {
+    model: process.env.MAIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
+    apiKey: process.env.MAIN_GEMINI_API_KEY!,
+    thinking_level: "high",
+    thinking_summaries: "auto",
+}
 
-    thoughtSignature?: string;
-    thoughtSummary: string;
-    annotations: Annotation[];
-    startedAt: Date;
+const schema = {
+    type: Type.OBJECT,
+    properties: {
+        message: {
+            type: Type.STRING,
+            nullable: true,
+        },
+    },
+    required: ["message"],
+}
 
-    text: string;
-
-    funcCallId: string,
-    funcCallName: string,
-    funcArgsAccumulate: string,
-};
-
-export async function generateAIResponse({ messageId, userId, principalName, connections, contents }: GenerateAIResponseData) {
+export async function generateAIResponse({ messageId, userId, principalName, connections, contents, timeZone }: GenerateAIResponseData) {
     let reRun: boolean = false;
     let reRunCount: number = 0;
     let activeIndex: number | null = null;
@@ -63,11 +68,11 @@ export async function generateAIResponse({ messageId, userId, principalName, con
 
             reRunCount++;
             reRun = false;
-            const systemPrompt = await getSystemPrompt(userId, principalName, connections)
+            const systemPrompt = await getSystemPrompt(userId, timeZone, principalName, connections)
             const chatHistory = await getChatHistory(userId, contents);
             if (!chatHistory) throw new Error("Unable to retrieve chat history!")
 
-            const stream = await createStreamWithRetry(systemPrompt, chatHistory);
+            const stream = await createStreamWithRetry({ systemPrompt, chatHistory, schema, TOOL_SCHEMAS, ...generateConfig });
 
             for await (const event of stream) {
                 console.log(`[stream event] type=${event.event_type} index=${(event as any).index ?? "-"}`);
@@ -197,6 +202,20 @@ export async function generateAIResponse({ messageId, userId, principalName, con
                         break;
 
                     case "interaction.completed":
+                        const usage = event.interaction.usage;
+                        await recordMessageUsage({
+                            userId,
+                            messageId,
+                            inputTokens: usage?.total_input_tokens ?? 0,
+                            outputTokens: usage?.total_output_tokens ?? 0,
+                            toolUseTokens: usage?.total_tool_use_tokens ?? 0,
+                            reasoningTokens: usage?.total_thought_tokens ?? 0,
+                            cachedTokens: usage?.total_cached_tokens ?? 0,
+                            totalTokens: usage?.total_tokens ?? 0,
+                            provider: "GOOGLE",
+                            ...generateConfig,
+                        });
+
                         if (event.interaction.status === "requires_action") {
                             reRun = true;
                             break;

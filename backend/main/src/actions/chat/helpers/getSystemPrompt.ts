@@ -1,4 +1,4 @@
-import { buildContextBlock, getDazaiContextFiles } from "./getContext";
+import { buildContextBlock, buildCurrentTimeBlock, getDazaiContextFiles } from "./getContext";
 import { Connections, getAgentRoster } from "./subAgents";
 import path from "path";
 
@@ -14,10 +14,11 @@ async function loadSoul(): Promise<string> {
     return soulContent;
 }
 
-export async function getSystemPrompt(userId: string, principalName: string, connections: Connections) {
+export async function getSystemPrompt(userId: string, timeZone: string, principalName: string, connections: Connections) {
     const soulBlock = (await loadSoul()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
     const rosterBlock = await getAgentRoster(connections)
 
+    const timeBlock = buildCurrentTimeBlock(principalName, timeZone)
     const dazaiContext = await getDazaiContextFiles(userId)
     const contextBlock = buildContextBlock(dazaiContext)
 
@@ -27,5 +28,7 @@ export async function getSystemPrompt(userId: string, principalName: string, con
         rosterBlock,
         "---",
         contextBlock,
+        "---",
+        timeBlock,
     ].join("\n")
 }
