@@ -5,6 +5,7 @@ import { displayContinueButton } from "../helpers/displayContinueButton";
 import { createMessageContent } from "../helpers/createMessageContent";
 import { updateMessageContent } from "../helpers/updateMessageContent";
 import { getWriterSystemPrompt } from "./getWriterSystemPrompt";
+import { validateTemplateUsage } from "./validateTemplateUsage";
 import { getAutomatedLog } from "../helpers/automatedMessages";
 import { handleWriterResponse } from "./handleWriterResponse";
 import { updateAIChatMessage } from "../helpers/chatMessage";
@@ -35,7 +36,8 @@ export type WriterResponse = {
     media: {
         type: LinkedinMediaType;
         template_id: string | null;
-        content_slots: ContentSlot[];
+        direction: string | null
+        // content_slots: ContentSlot[];
     };
     scheduled_day: string;
     scheduled_window: string;
@@ -82,37 +84,41 @@ const schema = {
                     type: Type.STRING,
                     nullable: true,
                 },
-                content_slots: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            page: {
-                                type: Type.NUMBER,
-                            },
-                            textHeading: {
-                                type: Type.STRING,
-                                nullable: true
-                            },
-                            textSubheading: {
-                                type: Type.STRING,
-                                nullable: true
-                            },
-                            textCredit: {
-                                type: Type.STRING,
-                                nullable: true
-                            },
-                            textParagraph: {
-                                type: Type.STRING,
-                                nullable: true
-                            }
-                        },
-                        required: ["page", "textHeading", "textSubheading", "textCredit", "textParagraph"]
-                    },
-                    empty: true,
-                },
+                direction: {
+                    type: Type.STRING,
+                    nullable: true,
+                }
+                // content_slots: {
+                //     type: Type.ARRAY,
+                //     items: {
+                //         type: Type.OBJECT,
+                //         properties: {
+                //             page: {
+                //                 type: Type.NUMBER,
+                //             },
+                //             textHeading: {
+                //                 type: Type.STRING,
+                //                 nullable: true
+                //             },
+                //             textSubheading: {
+                //                 type: Type.STRING,
+                //                 nullable: true
+                //             },
+                //             textCredit: {
+                //                 type: Type.STRING,
+                //                 nullable: true
+                //             },
+                //             textParagraph: {
+                //                 type: Type.STRING,
+                //                 nullable: true
+                //             }
+                //         },
+                //         required: ["page", "textHeading", "textSubheading", "textCredit", "textParagraph"]
+                //     },
+                //     empty: true,
+                // },
             },
-            required: ["type", "template_id", "content_slots"],
+            required: ["type", "template_id", "direction"],
         },
         scheduled_day: {
             type: Type.STRING,
@@ -306,11 +312,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         // once real parsed content with the required
                         // fields actually came back.
                         if (parsed && "hook" in parsed) {
-                            if (parsed.media.type !== "NONE" && parsed.media.content_slots.length === 0) {
-                                throw new Error(
-                                    `Writer declared media.type="${parsed.media.type}" but content_slots was empty. A non-NONE media type requires at least one content slot.`
-                                );
-                            }
+                            validateTemplateUsage(parsed.media);
 
                             await handleWriterResponse(parsed, category, title, angle, {
                                 cta_technique,

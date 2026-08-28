@@ -100,7 +100,7 @@ export async function handleWriterResponse(
                 comment: args.comment,
                 mediaType: args.media.type,
                 templateId: args.media.template_id,
-                contentSlots: args.media.content_slots,
+                contentSlots: { direction: args.media.direction },
                 status: LinkedinPostStatus.DRAFT,
                 scheduledDay: args.scheduled_day,
                 scheduledWindow: args.scheduled_window,

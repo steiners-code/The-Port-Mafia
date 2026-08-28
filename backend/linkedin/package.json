@@ -14,8 +14,10 @@
     "bullmq": "^6.1.1",
     "date-fns": "^4.4.0",
     "elysia": "latest",
+    "imagekit": "^6.0.0",
     "ioredis": "^6.0.0",
-    "pg": "^8.22.0"
+    "pg": "^8.22.0",
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@types/pg": "^8.20.0",

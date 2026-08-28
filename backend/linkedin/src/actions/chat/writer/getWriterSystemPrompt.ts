@@ -1,4 +1,5 @@
 import { buildCurrentTimeBlock, getMahaContextFiles } from "../helpers/getContext";
+import { formatTemplateManifest } from "./templateBank";
 import path from "path";
 
 let soulContent: string | null = null;
@@ -37,6 +38,7 @@ export async function getWriterSystemPrompt({
 }: GetWriterSystemPromptArgs) {
     const soulBlock = (await loadSoul()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
     const strategyBlock = (await loadStrategy()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
+    const templateBlock = formatTemplateManifest()
     const timeBlock = buildCurrentTimeBlock(principalName, timeZone);
     const { experience } = await getMahaContextFiles(userId)
 
@@ -44,6 +46,8 @@ export async function getWriterSystemPrompt({
         soulBlock,
         "---",
         strategyBlock,
+        "---",
+        templateBlock,
         "---",
         "## EXPERIENCE",
         experience || "(empty)",

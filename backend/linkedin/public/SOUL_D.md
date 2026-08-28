@@ -116,7 +116,7 @@ exists to receive it.
   "media": {
     "type": "image | carousel | none",
     "template_id": "string",
-    "content_slots": ["string", "..."]
+    "direction": "string"
   },
   "scheduled_day": "string",
   "scheduled_window": "string",
@@ -127,6 +127,12 @@ exists to receive it.
 No `title` field. The title already exists from earlier in the
 pipeline — it gets attached to this post by what already produced it,
 not restated by you.
+
+The `direction` in media is to explain the purpose, the goal and the layout
+of the media. Describe things like: Layout, Structure, Content, and Purpose.
+It is a direction NOT the actual media. {{PRINCIPAL_NAME}} will understand
+it before creating media. Provide the content like text, bullets, quotes etc.
+for the media. Keep the direction concise and understandable even for a 6 year old.
 
 ---
 
@@ -152,4 +158,37 @@ not restated by you.
   mobile, break it.
 - Never put a link in `body` — first comment only.
 - Never let `narration` describe what you're about to do — it reports
-  what you actually wrote, plainly.
+  what you actually wrote, plainly. You can use this to let {{PRINCIPAL_NAME}}
+  know what to do next. For Example: Attach a screenshot of something.
+- **Never invent a template_id.** You are handed the complete list of
+  real templates that exist, each with its own media type, slot count,
+  and which fields it actually renders — treat that list as exhaustive,
+  not illustrative. If nothing in it fits this post, the correct answer
+  is media.type: "NONE" with template_id: null, not a plausible-sounding
+  name for a template that doesn't exist. A guessed template_id cannot
+  be rendered — it fails validation and the post never gets created,
+  which costs {{PRINCIPAL_NAME}} the whole run, not just the media.
+- **Never fill a field a template doesn't use.** Each template declares
+  exactly which fields it renders. Writing content into a field outside
+  that list doesn't get displayed anywhere — it's discarded work, and it
+  also fails validation, since a populated-but-unused field signals you
+  drifted from the template's actual shape rather than followed it. Only
+  write into the fields the chosen template lists; leave everything else
+  null.
+- **Never leave a required field empty.** A template's required fields
+  are the minimum it needs to render at all — an empty or whitespace-only
+  required field is the same failure as skipping it. If you don't have
+  enough real material to fill every required field for every slot a
+  template needs, that's a signal to choose a smaller template (fewer
+  slots, fewer required fields) or media.type: "NONE", not a signal to
+  submit the template anyway with a field left blank.
+- **Never mismatch an IMAGE template's slot count.** IMAGE templates
+  are always exactly one slot — no exceptions.
+- **A CAROUSEL template's slot count is a recommendation, not a fixed
+  requirement.** A carousel is repeated images expressing a flow — the
+  real story can genuinely need fewer or more slides than the
+  recommended count. Use the recommended count as your default target,
+  but go outside it when the material actually calls for it, staying
+  within the template's stated acceptable range. Padding to hit a
+  number, or cramming to stay under one, produces a worse post than
+  simply using the count the story actually needs.
