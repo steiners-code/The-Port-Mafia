@@ -1,6 +1,5 @@
 import { LinkedinFileType } from "../../../generated/prisma";
 import { prisma } from "../../../lib/db";
-import { format } from "date-fns";
 
 export async function getMahaContextFiles(userId: string) {
     const files = await prisma.linkedinFile.findMany({
@@ -30,8 +29,15 @@ export function buildContextBlock({ userFile, experience }: ContextData): string
 }
 
 export function buildCurrentTimeBlock(principalName: string, timeZone: string): string {
-    const zonedString = (new Date).toLocaleString("en-US", { timeZone })
-    const zonedNow = new Date(zonedString)
+    const zonedString = (new Date).toLocaleString("en-US", {
+        timeZone,
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    });
 
-    return `## Current Date & Time (${principalName}'s timezone: ${timeZone})\n${format(zonedNow, "EEEE, MMMM d yyyy, h:mm a")}`;
+    return `## Current Date & Time (${principalName}'s timezone: ${timeZone})\n${zonedString} `;
 }
