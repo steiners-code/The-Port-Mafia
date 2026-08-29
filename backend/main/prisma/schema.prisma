@@ -156,8 +156,8 @@ model MainChatMessage {
   triggerType MainTriggerType
   status      MainMessageStatus @default(QUEUED)
 
-  contents              MainMessageContent[]
-  linkedinMessageUsages MainMessageUsage[]
+  contents MainMessageContent[]
+  usages   MainMessageUsage[]
 
   createdAt DateTime @default(now())
 
@@ -180,7 +180,7 @@ model MainMessageUsage {
   totalTokens     Int
 
   messageId String
-  message   MainChatMessage @relation(fields: [messageId], references: [id])
+  message   MainChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 

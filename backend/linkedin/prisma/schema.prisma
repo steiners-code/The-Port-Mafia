@@ -107,10 +107,10 @@ model LinkedinPost {
 
 model LinkedinPostTechnique {
   postId String
-  post   LinkedinPost @relation(fields: [postId], references: [id])
+  post   LinkedinPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   techniqueSlug String
-  technique     LinkedinTechnique @relation(fields: [techniqueSlug], references: [slug])
+  technique     LinkedinTechnique @relation(fields: [techniqueSlug], references: [slug], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -144,7 +144,7 @@ model LinkedinPostPerformance {
   id String @id @default(cuid())
 
   postId String
-  post   LinkedinPost @relation(fields: [postId], references: [id])
+  post   LinkedinPost @relation(fields: [postId], references: [id], onDelete: Cascade)
 
   day         Int // 1–7, days since this post's postedAt
   reactions   Int
@@ -185,7 +185,7 @@ model LinkedinWeekSlotAllocation {
 model LinkedinSlotUsage {
   id            String               @id @default(cuid())
   postId        String               @unique
-  post          LinkedinPost         @relation(fields: [postId], references: [id])
+  post          LinkedinPost         @relation(fields: [postId], references: [id], onDelete: Cascade)
   weekStartDate DateTime
   category      LinkedinPostCategory
   consumedAt    DateTime             @default(now())
@@ -305,7 +305,7 @@ model linkedinMessageUsage {
   totalTokens     Int
 
   messageId String
-  message   LinkedinChatMessage @relation(fields: [messageId], references: [id])
+  message   LinkedinChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
