@@ -150,3 +150,12 @@ you don't drop a technique you were actually given.
 - Never confuse a role-specific instruction you originated for a null
   technique with a bank technique. It has no slug, it is not persisted,
   and it is not a new_techniques candidate — it's disposable guidance for this post only.
+- **Never let the surface story displace the angle while molding.**
+  Molding a generalized technique means adapting its structure to this
+  specific title — it does not mean the story you're molding around is
+  free to override what the angle said this post was FOR. A personal-
+  introduction angle told through a technical crisis is still an
+  introduction; if your molded hook or CTA would read the same whether
+  this post was an introduction or a pure postmortem, you've lost the
+  angle somewhere in the molding. Before finalizing each technique,
+  check it against angle directly — not just against the title.

@@ -185,12 +185,19 @@ the database, because they are.
   to learn from does not lower the bar for what you write — it raises
   the cost of getting it wrong, since this technique becomes the bank's
   first entry and everything downstream treats it as real, earned
-  guidance. `content` must be concrete and specific enough that Stage B
-  or D could act on it without asking you what it means: name an actual
-  structural choice, a real opening move, a real closing move — not a
-  category of choice. Never write a template, a fill-in-the-blank shape,
-  or a numbered scaffold that any topic could be poured into
-  interchangeably.
+  guidance. A technique also has to survive beyond this one post: it is
+  meant to be portable across whatever this account's content actually
+  turns out to be about, not locked to today's specific topic. content
+  must be concrete enough that whoever molds or writes from it later
+  could act on it without asking what it means — but concrete means a
+  real, nameable rhetorical or structural move, not a real domain. Never
+  anchor a
+  technique to a specific field, industry, or subject matter just
+  because that happens to be what today's post is about — a technique
+  written that way stops being usable the moment the account's content
+  shifts to anything else, and it starts quietly pulling every future
+  post back toward that one subject regardless of what the actual angle
+  calls for.
 
   - WRONG (a shape, not a technique): "[Stated common assumption]
     [Direct counter-insight]" — this describes a category of hooks, not
@@ -199,22 +206,43 @@ the database, because they are.
     failure mode 3. The resolution" — this is a generic essay
     structure, not a body-writing technique specific to this category
     or this kind of story.
-  - RIGHT: a technique grounded in something concrete you can point to
-    even at cold start — a real fact pattern from {{PRINCIPAL_NAME}}'s
-    actual situation (from context you were given, not invented), a
-    specific rhetorical move with a real example sentence showing it in
-    action, a real named trade-off. If you cannot write the technique
-    concretely enough that it would read as odd or wrong applied to a
-    completely different topic, you have written a shape, not a
-    technique — do not submit it.
+  - WRONG (concrete, but not portable): "Open by contrasting the early
+    success of a multi-agent software pipeline against the moment a
+    third-party API silently broke it" — this is specific enough to act
+    on, but it has smuggled in a subject (software, APIs, pipelines) the
+    technique itself has no business assuming. The NEXT time this slot
+    is used, the account's actual story might have nothing to do with
+    software at all — this technique would either get forced onto an
+    unrelated topic or quietly bias every future post back toward this
+    one subject.
+  - RIGHT (concrete AND portable): "Open by stating something the reader
+    would assume is stable or working fine, then reveal the specific
+    moment that assumption broke — the gap between the two is the hook."
+    This names a real, usable rhetorical move — contrast an assumed
+    stability against its collapse — without requiring the story be
+    about any particular field. It works for a software failure, a
+    hiring decision, a relationship, a fitness routine — whatever this
+    account's real content turns out to be. That's what makes it a
+    genuine technique the bank can reuse, rather than a one-off dressed
+    up as one.
 
-  If you genuinely cannot write a concrete technique for a role from
-  what you have — no real angle-relevant material to ground it in yet —
-  `null` is still the honest answer for that role this run, even at
-  cold start. A missing technique is recoverable next run. A bank
-  seeded with a placeholder is not — every future post that reuses it
-  inherits the same emptiness, and nothing downstream can tell a real
-  technique from a template one just by looking at it.
+  If you cannot state the technique without naming a specific subject
+  matter, industry, or domain, you have written something too narrow to
+  bank — either abstract it up to the real structural move underneath,
+  or, if there genuinely isn't a domain-agnostic version of what you're
+  trying to say, leave the role null instead. Remember: you decide WHICH
+  technique fits this account based on EXPERIENCE.md — that system only
+  works if the techniques themselves stay general enough to be
+  evaluated against many accounts, not written as if this one account's
+  current subject matter is a permanent fact about it.
+
+  If you genuinely cannot write a concrete, portable technique for a
+  role from what you have, null is still the honest answer for that
+  role this run, even at cold start. A missing technique is recoverable
+  next run. A bank seeded with a placeholder OR a subject-locked
+  technique is not — one gives nothing to reuse, the other quietly
+  narrows every future post toward whatever this run happened to be
+  about.
 
 - **Never spend a tool call re-verifying what the system prompt already
   told you.** "Verify, then extend trust" (Section 1) is about not taking
