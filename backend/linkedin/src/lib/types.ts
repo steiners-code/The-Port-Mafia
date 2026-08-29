@@ -162,7 +162,7 @@ type FunctionCallStep = {
     }
 }
 
-type FunctionResultStep = {
+export type FunctionResultStep = {
     type: "function_result",
     call_id: string,
     is_error?: boolean,

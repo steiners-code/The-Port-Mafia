@@ -40,7 +40,7 @@ type GenerateAIResponseData = {
 const generateConfig: GenerateConfig = {
     model: process.env.LINKEDIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
     apiKey: process.env.LINKEDIN_GEMINI_API_KEY!,
-    thinking_level: "high",
+    thinking_level: "low",
     thinking_summaries: "auto",
 }
 
