@@ -40,7 +40,7 @@ const LinkedInPost = ({ id, postId }: { id: string, postId: string }) => {
                     <span className="text-muted-foreground text-[0.65rem]">{data.category}</span>
                 </div>
 
-                <div className={cn("bg-muted space-y-4 whitespace-pre-wrap", !showMore && "line-clamp-2")}>
+                <div className={cn("bg-muted space-y-4 whitespace-pre-wrap", !showMore && "line-clamp-6")}>
                     <div>
                         <Accordion className="text-muted-foreground! group/technique">
                             <AccordionItem className="gap-0! mb-2">
