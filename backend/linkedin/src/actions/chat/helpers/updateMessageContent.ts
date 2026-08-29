@@ -111,7 +111,7 @@ export async function updateMessageContent({
             data = await prisma.linkedinMessageContent.update({
                 where: { id: contentId },
                 data: {
-                    status,
+                    status: funcCallIsError ? LinkedinContentStatus.FAILED : LinkedinContentStatus.COMPLETED,
                     message: getAutomatedMessage({
                         event: "MESSAGE.COMPLETED",
                         contentType: "TOOL",
