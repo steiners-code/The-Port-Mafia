@@ -55,7 +55,7 @@ export async function triggerStrategistResponse(input: StrategistInput, context:
             "",
             formatTechnique(input.cta_technique, "cta_technique"),
             "",
-            "Field guide: `category` and `angle` are the direction for this week's next post — not a title, not final wording. Each technique above is either a real technique pulled from the bank, or null if nothing in the bank fit that role.",
+            `Field guide: category and angle are the direction for this week's next post — not a title, not final wording. Each technique above is either a real technique pulled from the bank, or null if nothing in the bank fit that role. Molding a technique means adapting its STRUCTURE to this specific title — it does not mean replacing the angle's intent with whatever the facts of the story happen to suggest. If the angle says this post exists to introduce ${principalName} personally, the molded hook and CTA must still read as an introduction once you're done — not as a technical postmortem that happens to be about him. Before finalizing each molded technique, check it against the angle directly: does this still serve what the angle said this post was for, or has it drifted toward whatever the surface story is about instead?`,
             "",
             `Your job now: figure out exactly what you need to ask ${principalName} to turn this angle into a real, specific title — then either ask for it in one batch, or, if the angle already gives you enough, go straight to finalizing the title and personalizing each technique to it. A \`null\` technique doesn't mean skip that role — if the story calls for it, you may write your own one-off guidance for that role instead of leaving it empty.`,
         ].join("\n");

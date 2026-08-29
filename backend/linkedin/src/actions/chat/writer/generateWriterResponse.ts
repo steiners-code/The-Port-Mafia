@@ -312,7 +312,17 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         // once real parsed content with the required
                         // fields actually came back.
                         if (parsed && "hook" in parsed) {
-                            validateTemplateUsage(parsed.media);
+                            try {
+                                validateTemplateUsage(parsed.media);
+                            } catch (error) {
+                                const errMessage = (error as Error).message
+                                appendHistoryEntry(userId, "WRITER", messageId, {
+                                    type: "user_input",
+                                    text: errMessage
+                                })
+                                reRun = true;
+                                break;
+                            }
 
                             await handleWriterResponse(parsed, category, title, angle, {
                                 cta_technique,

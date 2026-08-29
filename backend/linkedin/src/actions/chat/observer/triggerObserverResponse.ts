@@ -60,7 +60,7 @@ export async function triggerObserverResponse(input: ObserverInput, context: Mes
             formatTechnique(input.body_technique, "body_technique"),
             formatTechnique(input.cta_technique, "cta_technique"),
             "",
-            "Field guide: `title` is what this post is actually about — work out everything a full telling of it would need, not just the obvious surface question. Each technique line tells you what this particular telling is supposed to lean into, which tells you what's actually worth asking about.",
+            `Field guide: title is what this post is actually about — work out everything a full telling of it would need, not just the obvious surface question. Each technique line tells you what this particular telling is supposed to lean into, which tells you what's actually worth asking about. angle is WHY this post exists — if it says this is meant to introduce ${principalName} personally, your questions should pull out what makes him and his approach worth knowing, not just the mechanical details of what broke and how it was fixed. A technical crisis can be the VEHICLE for an introduction; don't let your questions treat it as the whole destination.`,
             "",
             `Your job now: figure out everything a real telling of this title needs, and ask ${principalName} for all of it in one batch — no trickling, no follow-up round. Once you have real answers, hand them forward as-is; you don't shape or judge them.`,
         ].join("\n");

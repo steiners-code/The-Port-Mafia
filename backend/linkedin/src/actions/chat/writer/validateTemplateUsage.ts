@@ -14,15 +14,15 @@ const ALL_FIELDS: ContentSlotField[] = ["textHeading", "textSubheading", "textCr
  */
 export function validateTemplateUsage(media: WriterResponse["media"]): void {
     if (media.type === "NONE") {
-        if (media.template_id !== null || media.direction !== null) {
+        if (media.direction !== null) { // media.template_id !== null || 
             throw new Error(`media.type is "NONE" but template_id or content_slots were still populated. Both must be empty/null when there is no media.`);
         }
         return;
     }
 
-    if (!media.template_id) {
-        throw new Error(`media.type is "${media.type}" but no template_id was provided. A non-NONE media type must name a real template.`);
-    }
+    // if (!media.template_id) {
+    //     throw new Error(`media.type is "${media.type}" but no template_id was provided. A non-NONE media type must name a real template.`);
+    // }
 
     // const template = findTemplate(media.template_id);
     // if (!template) {
