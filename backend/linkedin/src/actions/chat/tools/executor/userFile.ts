@@ -1,28 +1,43 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinFileType, LinkedinLogLevel } from "../../../../generated/prisma";
 import { getAutomatedLog } from "../../helpers/automatedMessages";
-import { EventType } from "../../../../lib/enums";
+import { sendEvent } from "../../../../lib/send-event";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
 
 const MAX_USER_FILE_LENGTH = 2000;
 
-export async function writeUserFile(args: { content: string }, { userId }: ToolContext) {
+export async function writeUserFile(args: { content: string }, { userId, timeZone }: ToolContext) {
+    const trimmed = args.content.trim();
+    let content: string = trimmed;
+
+    const zonedString = (new Date).toLocaleString("en-US", {
+        timeZone,
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    });
+
     if (args.content.length > MAX_USER_FILE_LENGTH)
         throw new HarnessError(`Content is too long (${args.content.length} characters, max ${MAX_USER_FILE_LENGTH}). Trim it down to the essentials — USER.md is meant to hold durable facts and preferences, not a full transcript.`);
+
+    if (trimmed)
+        content = `${trimmed} (Recorded at ${zonedString})`
 
     await prisma.linkedinFile.upsert({
         where: { userId_fileType: { userId: userId, fileType: LinkedinFileType.USER } },
         create: {
             userId: userId,
-            content: args.content,
+            content,
             fileType: LinkedinFileType.USER
         },
         update: { content: args.content }
     })
 
     return {
-        success: true,
         message: "USER.md has been updated and saved. This change is now permanent — there's no need to write again unless something new comes up that isn't reflected here.",
         fileName: "USER.md",
         contentLength: args.content.length,
@@ -45,7 +60,7 @@ export async function readUserFile(args: { content: string }, { userId }: ToolCo
 }
 
 export async function displayUserFile(args: {}, { userId, messageId }: ToolContext) {
-    await prisma.linkedinMessageContent.create({
+    const data = await prisma.linkedinMessageContent.create({
         data: {
             chatMessageId: messageId,
             contentType: LinkedinContentType.MEDIA,
@@ -77,10 +92,9 @@ export async function displayUserFile(args: {}, { userId, messageId }: ToolConte
         },
     });
 
-    // await sendEvent({ event_type: EventType.CONTENTCREATED, message: { ...data } })
+    await sendEvent({ event_type: "content.created", content: { ...data, messageId, status: LinkedinContentStatus.COMPLETED } })
 
     return {
-        success: true,
         message: "USER.md has been surfaced to the user's screen and is now visible to them.",
         fileName: "USER.md",
     };

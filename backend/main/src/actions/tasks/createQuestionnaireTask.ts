@@ -1,6 +1,6 @@
 import { Question, QuestionnaireTaskBody } from "../../lib/types";
 
-export async function createQuestionnaireTask(questions: QuestionnaireTaskBody["questions"]): Promise<Question[]> {
+export function createQuestionnaireTask(questions: QuestionnaireTaskBody["questions"]): Question[] {
     try {
         const content: Question[] = questions.map((question, index) => ({
             index: index + 1,

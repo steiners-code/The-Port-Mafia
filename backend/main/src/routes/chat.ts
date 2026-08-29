@@ -56,7 +56,7 @@ export const chatRoutes = new Elysia({ prefix: '/chat' })
         const userId = headers["x-user-id"];
         const { fileType } = query;
         const { success, data, ...res } = await getFileContent(userId, fileType);
-        if (!success || !data) return status(res.status, { message: res.message, details: res.details })
+        if (!success || typeof data === "undefined") return status(res.status, { message: res.message, details: res.details })
 
         return status(200, data)
     }, {

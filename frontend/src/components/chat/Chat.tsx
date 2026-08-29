@@ -1,6 +1,5 @@
 "use client"
 
-import { MESSAGESTATUS, STATUS, TRIGGER, TYPE } from "@/lib/enums";
 import { useScrollContainerStore } from "@/hooks/use-scroll";
 import { Fragment, useEffect, useRef } from "react";
 import { getAgentByPathname } from "@/data/agents";
@@ -67,25 +66,8 @@ const Chat = () => {
 
     if (!chat || !messages || messages.length === 0) {
         return (
-            <div className="max-w-3xl px-0 sm:px-2 h-full mx-auto flex flex-col items-center justify-start space-y-6">
-                <Message
-                    actionsDisabled={true}
-                    data={{
-                        id: "no-chat-history-exist-or-loaded",
-                        triggerType: TRIGGER.CRON,
-                        status: MESSAGESTATUS.SUCCESS,
-                        createdAt: new Date(),
-                        agent: null,
-                        contents: [{
-                            id: "no-chat-history-text-message",
-                            contentType: TYPE.TEXT,
-                            status: STATUS.COMPLETED,
-                            message: `No Chat History with ${agent?.name || "AI"} yet. Send a message to begin!`,
-                            output: null,
-                            logs: null,
-                            createdAt: new Date(),
-                        }]
-                    }} />
+            <div className="max-w-3xl px-0 sm:px-2 h-full mx-auto flex flex-col items-center justify-start space-y-6 text-xs text-muted-foreground">
+                Not chat history with {agent?.name} yet.
             </div>
         )
     }

@@ -10,28 +10,16 @@ import { MainTriggerType } from "../../generated/prisma";
  * not full ghostwriting, just enough that the attribution reads true.
  */
 export async function triggerDazaiForTask(userId: string, principalName: string, data: MainTask) {
-    const questionList = data.content
-        .map((q) => `${q.index + 1}. ${q.question}`)
-        .join("\n");
-
     const contents: UserMessageData["contents"] = [{
         contentType: "TEXT",
-        message: `I've raised a new ${data.type} task as ${data.subAgentRole} for ${data.subAgentPlatform} — something I couldn't finish on my own. Use 'updateTask' to set a level on it, and answer what you actually know before leaving the rest to ${principalName}. Once this is resolved, if anything here is worth remembering for next time a similar task comes up, write it into MEMORY.md or USER.md — whichever actually fits — so you're not starting from nothing the next time this happens.`
+        message: `I, ${data.subAgentRole}, have raised a new task — something I couldn't finish on my own. Set a level on it, and answer what you actually know before leaving the rest to ${principalName}.`
     }, {
         contentType: "MEDIA",
         output: {
-            name: `${data.status} Task - ${data.title}`,
-            category: "TEXT",
-            extension: "MD",
-            data: [
-                `# Task - ${data.title}`,
-                `**Status:** ${data.status} - **Level:** ${data.level} - **Type:** ${data.type}`,
-                '---',
-                `Raised by ${data.subAgent}, the ${data.subAgentRole} for ${data.subAgentPlatform}`,
-                '---',
-                '# Questions',
-                questionList,
-            ].join('\n')
+            name: data.title,
+            category: "TASK",
+            extension: "TASK",
+            id: data.id
         }
     }];
 

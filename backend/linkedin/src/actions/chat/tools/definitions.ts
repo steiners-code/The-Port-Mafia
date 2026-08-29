@@ -1,3 +1,4 @@
+import { fetchBottomPerformers, fetchPost, fetchTechniquePerformance, fetchTopPerformers } from "./executor/analysisExecutor";
 import { readExperienceFile, writeExperienceFile, displayExperienceFile } from "./executor/experienceFile";
 import { displayUserFile, readUserFile, writeUserFile } from "./executor/userFile";
 import { displayConnectButton } from "./executor/displayConnectButton";
@@ -7,6 +8,7 @@ export type ToolContext = {
     messageId: string;
     userId: string;
     principalName: string,
+    timeZone: string,
 };
 
 type ToolDefinition<Args = any, Result = any> = {
@@ -84,5 +86,65 @@ export const TOOLS: ToolMap = {
             required: ["reason"],
         },
         execute: displayConnectButton
+    },
+
+    fetch_technique_performance: {
+        description: "Fetches every post that used a specific technique (by slug, or by role+category) between two dates, along with each post's day-by-day performance. USE THIS when you already have a specific slug in mind, or want to check how one role/category combination has performed. DO NOT use this for a broad 'what's working' scan across everything — use fetch_top_performers or fetch_bottom_performers for that instead. Requires at least one of techniqueSlug, role, or category — calling with none of these will fail.",
+        parameters: {
+            type: "object",
+            properties: {
+                techniqueSlug: { type: "string", description: "Exact slug of a specific technique, e.g. 'email-grabbing-cta-technique'. Optional if role/category given instead." },
+                role: { type: "string", description: "One of HOOK, BODY, CTA. Optional." },
+                category: { type: "string", description: "One of EDUCATIONAL, PERSONAL, BUILD_IN_PUBLIC, ADAPTIVE. Optional." },
+                startDate: { type: "string", description: "ISO date, e.g. '2026-06-01'." },
+                endDate: { type: "string", description: "ISO date, e.g. '2026-08-19'." },
+            },
+            required: ["startDate", "endDate"],
+        },
+        execute: fetchTechniquePerformance,
+    },
+
+    fetch_post: {
+        description: "Fetches a single post's full content (title, hook, body, cta) and its performance, by postId. USE THIS when you need to actually read what a post said, not just its numbers — for example, confirming why a top performer worked before recommending its technique again. DO NOT use this to search or list posts; you must already have the postId from the pre-fetched last-7-days list, or from a prior fetch_top_performers/fetch_bottom_performers call.",
+        parameters: {
+            type: "object",
+            properties: {
+                postId: { type: "string", description: "The exact post id to fetch." },
+            },
+            required: ["postId"],
+        },
+        execute: fetchPost,
+    },
+
+    fetch_top_performers: {
+        description: "Ranks posts or techniques by a chosen metric over a date range, highest first. USE THIS for a broad 'what's working' scan when you don't already have a specific slug or postId in mind — e.g. 'what technique has driven the most comments this quarter.' DO NOT use this if you already know which technique or post you want to check — use fetch_technique_performance or fetch_post directly instead, it's more precise and cheaper.",
+        parameters: {
+            type: "object",
+            properties: {
+                scope: { type: "string", description: "'post' or 'technique' — what you're ranking." },
+                metric: { type: "string", description: "One of reactions, comments, reposts, impressions." },
+                startDate: { type: "string", description: "ISO date." },
+                endDate: { type: "string", description: "ISO date." },
+                limit: { type: "number", description: "How many results to return, 1-20. Defaults to 5 if omitted." },
+            },
+            required: ["scope", "metric", "startDate", "endDate"],
+        },
+        execute: fetchTopPerformers,
+    },
+
+    fetch_bottom_performers: {
+        description: "Ranks posts or techniques by a chosen metric over a date range, lowest first. USE THIS to find what's actually underperforming before recommending the adaptive slot's direction, or before deciding a technique should be retired. DO NOT use this if you already know which post or technique you're checking — use fetch_technique_performance or fetch_post directly instead.",
+        parameters: {
+            type: "object",
+            properties: {
+                scope: { type: "string", description: "'post' or 'technique' — what you're ranking." },
+                metric: { type: "string", description: "One of reactions, comments, reposts, impressions." },
+                startDate: { type: "string", description: "ISO date." },
+                endDate: { type: "string", description: "ISO date." },
+                limit: { type: "number", description: "How many results to return, 1-20. Defaults to 5 if omitted." },
+            },
+            required: ["scope", "metric", "startDate", "endDate"],
+        },
+        execute: fetchBottomPerformers,
     },
 };

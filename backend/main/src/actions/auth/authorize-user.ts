@@ -9,6 +9,7 @@ type Payload = {
     userId: string,
     firstName: string,
     lastName: string | undefined,
+    timezone: string,
     email: string,
     auth_time: Date,
 }
@@ -117,6 +118,7 @@ export async function getUserPayload({ pid, userId }: { pid?: string, userId?: s
             userId: userData.userId,
             firstName: userData.firstName,
             lastName: userData.lastName ? userData.lastName : undefined,
+            timezone: userData.timezone,
             email: userData.email,
             auth_time: new Date()
         };
@@ -259,11 +261,13 @@ export async function updateUserProfile(payload: Payload) {
             firstName: payload.firstName,
             lastName: payload.lastName,
             email: payload.email,
+            timezone: payload.timezone,
         },
         update: {
             firstName: payload.firstName,
             lastName: payload.lastName,
             email: payload.email,
+            timezone: payload.timezone,
         },
     });
 }

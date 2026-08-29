@@ -36,6 +36,13 @@ export type MessageContent = {
     createdAt: Date,
 }
 
+export type UsageLog = {
+    id: string,
+    inputTokens: string,
+    outputTokens: string,
+    totalTokens: string
+}
+
 export type ContentLog = {
     id: string,
     level: LOGLEVEL, // "ERROR" | "SUCCESS" | "INFO"
@@ -54,7 +61,7 @@ export type Annotation = {
  * the backend's Event union in sendEvent.ts — kept separate here rather
  * than shared, since frontend/backend live in different packages.
  */
-export type SSEEvent = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent | MessageFullEvent
+export type SSEEvent = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | MessageWipedEvent | ContentCreatedEvent | ContentCompletedEvent | ContentWipedEvent | MessageFullEvent
 
 type MessageFullEvent = {
     event_type: "message.full"
@@ -103,6 +110,13 @@ type MessageCompletedEvent = {
     }
 }
 
+type MessageWipedEvent = {
+    event_type: "message.wiped"
+    message: {
+        id: string
+    }
+}
+
 type ContentCreatedEvent = {
     event_type: "content.created"
     content: {
@@ -137,16 +151,24 @@ type ContentCompletedEvent = {
     }
 }
 
-export type Task = {
+type ContentWipedEvent = {
+    event_type: "content.wiped"
+    content: {
+        id: string,
+        messageId: string
+    }
+}
+
+export type Task = SubAgents & {
     id: string
     title: string
     level: TASKLEVEL
     status: TASKSTATUS
     createdAt: Date,
     updatedAt: Date,
-} & QuestionnaireTask
+} & (QuestionnaireTask | PostPerformanceTask | AccountSnapshotTask)
 
-export type QuestionnaireTask = SubAgents & {
+export type QuestionnaireTask = {
     type: "QUESTIONNAIRE",
     content: Question[]
 }
@@ -156,6 +178,31 @@ export type Question = {
     question: string,
     answer: string | null
     answeredBy: "USER" | "DAZAI" | null
+}
+
+export type PostPerformanceTask = {
+    type: "POST_PERFORMANCE",
+    content: PostPerformance[],
+}
+
+export type PostPerformance = {
+    postId: string,
+    title: string,
+    impressions: number,
+    reactions: number,
+    comments: number,
+    reposts: number,
+}
+
+export type AccountSnapshot = {
+    date: string,
+    connectionsTotal: number
+    followersTotal: number
+}
+
+export type AccountSnapshotTask = {
+    type: "ACCOUNT_SNAPSHOT",
+    content: AccountSnapshot,
 }
 
 export type SubAgents = MahaLinkedIn | DazaiLinkedIn

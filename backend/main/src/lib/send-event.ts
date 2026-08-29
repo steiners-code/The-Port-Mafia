@@ -15,7 +15,7 @@ export async function sendEvent(data: Event) {
 }
 
 
-export type Event = MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | ContentCreatedEvent | ContentCompletedEvent | MessageFullEvent
+export type Event = MessageFullEvent | MessageCreatedEvent | MessageDeltaEvent | MessageCompletedEvent | MessageWipedEvent | ContentCreatedEvent | ContentCompletedEvent | ContentWipedEvent
 
 type MessageFullEvent = {
     event_type: "message.full"
@@ -64,6 +64,13 @@ type MessageCompletedEvent = {
     }
 }
 
+type MessageWipedEvent = {
+    event_type: "message.wiped"
+    message: {
+        id: string
+    }
+}
+
 type ContentCreatedEvent = {
     event_type: "content.created",
     content: {
@@ -95,5 +102,13 @@ type ContentCompletedEvent = {
         message: string | null,
         output: JsonValue,
         status: MainContentStatus
+    }
+}
+
+type ContentWipedEvent = {
+    event_type: "content.wiped"
+    content: {
+        id: string,
+        messageId: string
     }
 }

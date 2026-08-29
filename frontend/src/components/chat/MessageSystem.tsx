@@ -11,7 +11,7 @@ import { getAgentByEnum } from "@/data/agents";
 import { MessageContent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-function renderMessage(content: MessageContent) {
+function renderMessage(content: MessageContent, messageId: string) {
     switch (content.contentType) {
         case TYPE.TEXT:
             return content.message && <MessageText key={content.id} status={content.status} content={content.message} />
@@ -20,7 +20,7 @@ function renderMessage(content: MessageContent) {
         case TYPE.TOOL:
             return content.message && <MessageTool key={content.id} status={content.status} message={content.message} output={content.output} />
         case TYPE.MEDIA:
-            return <MessageMedia key={content.id} id={content.id} output={content.output} />
+            return <MessageMedia key={content.id} id={content.id} output={content.output} messageId={messageId} />
     }
 }
 
@@ -29,12 +29,12 @@ function isCorrectSubAgent(agent: AGENT | null): agent is AGENT {
     return Object.values(AGENT).includes(agent);
 }
 
-const MessageSystem = ({ status, contents, agentId, agent, textColors }: { status: MESSAGESTATUS, contents: MessageContent[], agent: AGENT | null, agentId?: string, textColors?: string }) => {
+const MessageSystem = ({ status, contents, agentId, agent, textColors, messageId }: { status: MESSAGESTATUS, contents: MessageContent[], agent: AGENT | null, messageId: string, agentId?: string, textColors?: string }) => {
     const { highlightedId } = useHighlightStore();
 
     if (isCorrectSubAgent(agent)) {
         const subAgent = getAgentByEnum(agent)
-        return <MessageSystemAgent contents={contents} messageColors={subAgent?.colors.message} />
+        return <MessageSystemAgent contents={contents} messageColors={subAgent?.colors.message} messageId={messageId} status={status} />
     }
 
     if (status === MESSAGESTATUS.QUEUED) {
@@ -64,11 +64,12 @@ const MessageSystem = ({ status, contents, agentId, agent, textColors }: { statu
                         content.contentType !== "MEDIA" && highlightedId === content.id && "animate-pulse-highlight",
                     )}
                 >
-                    {renderMessage(content)}
+                    {renderMessage(content, messageId)}
                 </div>
             ))}
 
-            {/* {status === MESSAGESTATUS.PENDING && <PendingMessage agentId={agentId || "osamu-dazai"} />} */}
+            {status === MESSAGESTATUS.FAILED && <span className="italic text-destructive font-light text-xs px-2">Failed</span>}
+            {status === MESSAGESTATUS.PENDING && <PendingMessage agentId={agentId || "osamu-dazai"} />}
         </div>
     )
 }

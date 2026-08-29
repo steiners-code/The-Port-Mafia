@@ -1,3 +1,4 @@
+import { LinkedinContentStatus, LinkedinMessageStatus } from "../../../generated/prisma";
 import { createSystemContent } from "./createSystemContent";
 import { Step, UserMessageData } from "../../../lib/types";
 import { createUserContent } from "./createUserContent";
@@ -15,6 +16,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
             select: {
                 messages: {
                     where: {
+                        status: { notIn: [LinkedinMessageStatus.QUEUED] },
                         createdAt: {
                             gte: dayStart,
                         },
@@ -24,6 +26,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
                         createdAt: true,
                         triggerType: true,
                         contents: {
+                            where: { status: { in: [LinkedinContentStatus.COMPLETED] } },
                             select: {
                                 contentType: true,
                                 message: true,
@@ -47,7 +50,7 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
         }
 
         for (const message of history.messages) {
-            if (message.contents.length === 0) break;
+            if (message.contents.length === 0) continue;
 
             switch (message.triggerType) {
                 case "USER":
@@ -61,13 +64,23 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
                     break;
 
                 case "CRON":
+                    const cronData = await createUserContent(message.contents)
+                    historyContent.push(cronData)
                     break;
             }
         }
 
+        console.log(JSON.stringify(historyContent, null, 4))
+
         return historyContent;
     } catch (error) {
         console.error(error);
-        return [userContent];
+
+        return [userContent, {
+            type: "user_input", content: [{
+                type: "text",
+                text: (error as Error).message ?? "Harness couldn't create chat history. Something went wrong!"
+            }]
+        }];
     }
 }

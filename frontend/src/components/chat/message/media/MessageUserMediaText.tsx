@@ -3,7 +3,7 @@ import { Text } from "@/lib/types/media"
 const MessageUserMediaText = ({ data }: { data: Text }) => {
     return (
         <div className="w-full h-full p-2 flex flex-col items-start gap-2 justify-between">
-            <p className="flex-1 h-full text-[0.35rem]! text-muted-foreground! whitespace-normal line-clamp-7">
+            <p className="flex-1 h-fit text-[0.35rem]! text-muted-foreground! whitespace-normal line-clamp-5">
                 {data.data}
             </p>
 

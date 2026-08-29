@@ -3,8 +3,10 @@ import { prisma } from "../../lib/db";
 
 export async function getFileContent(userId: string, fileType: File["fileType"]) {
     try {
-        const data = await prisma.mainFile.findUnique({
+        const data = await prisma.mainFile.upsert({
             where: { userId_fileType: { userId, fileType } },
+            create: { userId, fileType, content: "" },
+            update: {},
             select: { content: true }
         })
 

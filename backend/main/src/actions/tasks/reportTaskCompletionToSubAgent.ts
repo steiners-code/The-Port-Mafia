@@ -17,26 +17,26 @@ const SERVICE_HOSTS: Record<SubAgent, string> = {
 };
 
 function taskAnswersRoute(role: string) {
-    return `/internal/task-answers/${role.toLowerCase()}`;
+    return `/internal/task-report/${role.toLowerCase()}`;
 }
 
-export async function reportTaskCompletionToSubAgent(userId: string, task: MainTask & { id: string; subAgent: SubAgent; subAgentRole: string }) {
+export async function reportTaskCompletionToSubAgent(userId: string, task: MainTask) {
     const host = SERVICE_HOSTS[task.subAgent];
     if (!host) {
         throw new Error(`No internal host configured for sub-agent "${task.subAgent}".`);
     }
 
-    await fetch(`${host}${taskAnswersRoute(task.subAgentRole)}`, {
+    const res = await fetch(`${host}${taskAnswersRoute(task.subAgentRole)}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-User-Id": userId,
         },
         body: JSON.stringify({
-            taskId: task.id,
-            title: task.title,
             type: task.type,
             content: task.content,
         }),
     });
+
+    return res.ok
 }

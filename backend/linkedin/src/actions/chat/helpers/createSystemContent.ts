@@ -1,6 +1,6 @@
 import { LinkedinContentType } from "../../../generated/prisma"
+import { FunctionResultStep, Step } from "../../../lib/types"
 import { JsonValue } from "@prisma/client/runtime/client"
-import { Step } from "../../../lib/types"
 
 type SystemContent = {
     contentType: LinkedinContentType,
@@ -10,8 +10,13 @@ type SystemContent = {
 
 export async function createSystemContent(content: SystemContent[]): Promise<Step[]> {
     const systemContent: Step[] = []
+    let funcCallResults: FunctionResultStep[] = []
 
-    for (const c of content) {
+    content = content.filter(c => c.contentType !== "MEDIA")
+
+    for (const [index, c] of content.entries()) {
+        const nextC = content[index + 1];
+
         switch (c.contentType) {
             case "TEXT":
                 systemContent.push({
@@ -41,11 +46,13 @@ export async function createSystemContent(content: SystemContent[]): Promise<Ste
                 if (c.output === null || typeof c.output !== "object" || Array.isArray(c.output))
                     break;
 
-                let parsedArguments: Record<string, any> = {};
+                let parsedArguments: object = {};
                 try {
-                    parsedArguments = JSON.parse(String(c.output.funcArgsAccumulate));
+                    const trimmed = String(c.output.funcArgsAccumulate).trim();
+                    if (!trimmed) parsedArguments = {};
+                    else parsedArguments = JSON.parse(trimmed);
                 } catch {
-                    parsedArguments = { "[Error]": "Failed to parse stored tool arguments." };
+                    throw new Error("Failed to parse stored tool arguments.");
                 }
 
                 systemContent.push({
@@ -55,13 +62,20 @@ export async function createSystemContent(content: SystemContent[]): Promise<Ste
                     arguments: parsedArguments,
                 });
 
-                systemContent.push({
+                funcCallResults.push({
                     type: "function_result",
                     call_id: String(c.output.funcCallId),
                     name: String(c.output.funcCallName),
                     is_error: Boolean(c.output.funcCallIsError),
                     result: JSON.stringify(c.output.funcCallResult),
                 });
+
+                if (nextC?.contentType !== "TOOL") {
+                    systemContent.push(...funcCallResults)
+                    funcCallResults = [];
+                }
+
+                break;
         }
     }
 

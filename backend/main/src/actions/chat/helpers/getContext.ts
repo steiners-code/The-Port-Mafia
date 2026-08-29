@@ -27,3 +27,17 @@ export function buildContextBlock({ userFile, memoryFile }: ContextData): string
         memoryFile || "(empty)",
     ].join("\n");
 }
+
+export function buildCurrentTimeBlock(principalName: string, timeZone: string): string {
+    const zonedString = (new Date).toLocaleString("en-US", {
+        timeZone,
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    });
+
+    return `## Current Date & Time (${principalName}'s timezone: ${timeZone})\n${zonedString}`;
+}

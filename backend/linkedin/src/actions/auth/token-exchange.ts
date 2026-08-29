@@ -5,7 +5,7 @@ import { TypeLinkedinTokens } from "../../lib/types";
 import { calculateExpiryDate } from "../../lib/time";
 import { updateLinkedInStatus } from "../user/update-connection-status";
 
-export async function tokenExchange(code: string, redirect_uri: string, userId: string) {
+export async function tokenExchange(code: string, redirect_uri: string, userId: string, timezone: string) {
     const { data: tokenData, ...tokenRes } = await getLinkedinTokens(code, redirect_uri);
     if (!tokenRes.success || !tokenData) return tokenRes;
 
@@ -25,6 +25,7 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
                 email_verified: profileData.email_verified,
                 locale_country: profileData.locale.country,
                 locale_language: profileData.locale.language,
+                timezone,
             },
             create: {
                 userId,
@@ -36,6 +37,7 @@ export async function tokenExchange(code: string, redirect_uri: string, userId: 
                 email_verified: profileData.email_verified,
                 locale_country: profileData.locale.country,
                 locale_language: profileData.locale.language,
+                timezone,
             }
         });
     } catch (error) {

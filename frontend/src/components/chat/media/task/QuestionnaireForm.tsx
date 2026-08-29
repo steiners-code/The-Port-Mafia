@@ -1,23 +1,21 @@
 "use client";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AnswerInput, updateQuestionnaireTaskProgress } from "@/actions/tasks/update-task-progress";
 import { CheckCircleIcon, CaretDownIcon, FloppyDiskIcon, SkullIcon } from "@phosphor-icons/react";
-import { updateTaskProgress } from "@/actions/tasks/update-task-progress";
 import { useMemo, ChangeEvent, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
+import { QuestionnaireTask, Task } from "@/lib/types";
 import { Textarea } from "@/components/ui/textarea";
+import MediaTaskWrapper from "./MediaTaskWrapper";
 import { Button } from "@/components/ui/button";
-import { QuestionnaireTask } from "@/lib/types";
 import { TASKSTATUS } from "@/lib/enums";
 import { toast } from "sonner";
 
-type AnswerInput = {
-    index: number,
-    answer: string | null
-}[]
+const QuestionnaireForm = ({ taskId, data, status }: { taskId: string, data: Task, status: TASKSTATUS }) => {
+    const content = data.content as QuestionnaireTask["content"];
 
-const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, content: QuestionnaireTask["content"], status: TASKSTATUS }) => {
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState<AnswerInput>(content.map(c => ({ index: c.index, answer: c.answer })))
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +56,7 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
             (item) => item.answer !== null && item.answer.trim().length > 0
         );
 
-        const res = await updateTaskProgress({ taskId, action, answers });
+        const res = await updateQuestionnaireTaskProgress({ taskId, action, answers });
 
         setIsSubmitting(false);
 
@@ -67,7 +65,7 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
             return;
         }
 
-        queryClient.invalidateQueries({ queryKey: ["tasks", taskId] })
+        queryClient.invalidateQueries({ queryKey: ["task", taskId] })
         toast.success(res.message, { id: taskId });
     }
 
@@ -76,27 +74,8 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
     const PrimaryIcon = isComplete ? CheckCircleIcon : FloppyDiskIcon;
 
     return (
-        <>
-            <div className="space-y-8 group/form">
-                {content.map(c => (
-                    <div key={c.index} className="flex items-start group/question">
-                        <span className="font-serif font-semibold">{c.index}.</span>
-                        <div className="flex flex-col gap-2 items-start">
-                            <p className="px-2 text-foreground group-hover/form:text-muted-foreground group-hover/question:text-foreground transition-colors">{c.question}</p>
-
-                            <Textarea
-                                disabled={status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED}
-                                className="bg-transparent! h-fit! min-h-fit! ring-0! border-0! border-b-2! rounded-none! text-[1rem]! resize-none! text-inherit! group-hover/form:text-muted-foreground! focus:text-inherit! group-hover/question:text-inherit! border-inherit!"
-                                value={formData.find((item) => item.index === c.index)?.answer || ""}
-                                onChange={(e) => handleChange(e, c.index)}
-                                placeholder="Your Answer"
-                            />
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            <div className="relative w-full flex items-center justify-end gap-0! mb-20 lg:mb-0">
+        <MediaTaskWrapper data={data} buttonRender={
+            <div className="relative max-w-full flex-1 flex items-center justify-end gap-0!">
                 <Button
                     type="submit"
                     variant="secondary"
@@ -140,7 +119,26 @@ const QuestionnaireForm = ({ taskId, content, status }: { taskId: string, conten
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-        </>
+        }>
+            <div className="space-y-8 group/form">
+                {content.map(c => (
+                    <div key={c.index} className="flex items-start group/question">
+                        <span className="font-serif font-semibold">{c.index}.</span>
+                        <div className="flex flex-col gap-2 items-start">
+                            <p className="px-2 text-foreground group-hover/form:text-muted-foreground group-hover/question:text-foreground transition-colors">{c.question}</p>
+
+                            <Textarea
+                                disabled={status === TASKSTATUS.COMPLETED || status === TASKSTATUS.CANCELLED}
+                                className="bg-transparent! h-fit! min-h-fit! ring-0! border-0! border-b-2! rounded-none! text-[1rem]! resize-none! text-inherit! group-hover/form:text-muted-foreground! focus:text-inherit! group-hover/question:text-inherit! border-inherit!"
+                                value={formData.find((item) => item.index === c.index)?.answer || ""}
+                                onChange={(e) => handleChange(e, c.index)}
+                                placeholder="Your Answer"
+                            />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </MediaTaskWrapper>
     )
 }
 

@@ -58,7 +58,7 @@ export const agents: Agent[] = [
       text: "text-[#5261B0] dark:text-[#7794D1]",
       background: "bg-[#7794D1]/30 dark:bg-[#5261B0]/30",
       file: "bg-[#7794D1] dark:bg-[#5261B0] text-[#5261B0] dark:text-[#7794D1]",
-      message: "text-[#5261B 0] dark:text-[#7794D 1] bg-[#7794D1]/20! dark:bg-[#5261B0]/40!",
+      message: "text-[#5261B0] dark:text-[#7794D1] bg-[#7794D1]/20! dark:bg-[#5261B0]/40!",
     },
   },
 ];

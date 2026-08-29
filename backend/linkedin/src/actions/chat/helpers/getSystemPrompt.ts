@@ -1,4 +1,4 @@
-import { buildContextBlock, getMahaContextFiles } from "./getContext";
+import { buildContextBlock, buildCurrentTimeBlock, getMahaContextFiles } from "./getContext";
 import path from "path";
 
 let soulContent: string | null = null;
@@ -24,10 +24,11 @@ async function loadStrategy(): Promise<string> {
     return strategy;
 }
 
-export async function getSystemPrompt(userId: string, principalName: string, linkedinConnected: boolean) {
+export async function getSystemPrompt(userId: string, timeZone: string, principalName: string, linkedinConnected: boolean) {
     const soulBlock = (await loadSoul()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
     const strategyBlock = (await loadStrategy()).replaceAll("{{PRINCIPAL_NAME}}", principalName);
 
+    const timeBlock = buildCurrentTimeBlock(principalName, timeZone)
     const mahaContext = await getMahaContextFiles(userId)
     const contextBlock = buildContextBlock(mahaContext)
     const linkedinConnection = linkedinConnected ?
@@ -42,5 +43,7 @@ export async function getSystemPrompt(userId: string, principalName: string, lin
         linkedinConnection,
         "---",
         contextBlock,
+        "---",
+        timeBlock
     ].join("\n")
 }

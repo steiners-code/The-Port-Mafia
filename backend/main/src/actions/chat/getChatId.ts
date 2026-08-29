@@ -12,6 +12,7 @@ export async function getChatId(userId: string) {
                 select: {
                     firstName: true,
                     lastName: true,
+                    timezone: true,
                     connectedApps: {
                         where: {
                             app: { in: AGENT_REGISTRY.map((agent) => agent.platform) }
@@ -27,5 +28,5 @@ export async function getChatId(userId: string) {
         .filter(Boolean)
         .join(' ');
 
-    return { chatId: chat.id, principalName, connections: chat.user.connectedApps };
+    return { chatId: chat.id, principalName, connections: chat.user.connectedApps, timeZone: chat.user.timezone ?? "Asia/Karachi" };
 }

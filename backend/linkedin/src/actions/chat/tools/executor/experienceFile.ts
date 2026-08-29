@@ -1,5 +1,6 @@
 import { LinkedinContentStatus, LinkedinContentType, LinkedinFileType, LinkedinLogLevel } from "../../../../generated/prisma";
 import { getAutomatedLog } from "../../helpers/automatedMessages";
+import { sendEvent } from "../../../../lib/send-event";
 import { ToolContext } from "../definitions";
 import { prisma } from "../../../../lib/db";
 import { HarnessError } from "..";
@@ -20,7 +21,6 @@ export async function writeExperienceFile(args: { content: string }, { userId }:
         update: { content: args.content }
     })
     return {
-        success: true,
         message: "EXPERIENCE.md has been updated and saved. This is your short-term memory, current as of now — no need to write again unless something changes.",
         fileName: "EXPERIENCE.md",
         contentLength: args.content.length,
@@ -43,7 +43,7 @@ export async function readExperienceFile(args: { content: string }, { userId }: 
 }
 
 export async function displayExperienceFile(args: {}, { userId, messageId, principalName }: ToolContext) {
-    await prisma.linkedinMessageContent.create({
+    const data = await prisma.linkedinMessageContent.create({
         data: {
             chatMessageId: messageId,
             contentType: LinkedinContentType.MEDIA,
@@ -75,10 +75,9 @@ export async function displayExperienceFile(args: {}, { userId, messageId, princ
         },
     });
 
-    // await sendEvent({ event_type: EventType.CONTENTCREATED, message: { ...data } })
+    await sendEvent({ event_type: "content.created", content: { ...data, messageId, status: LinkedinContentStatus.COMPLETED } })
 
     return {
-        success: true,
         message: "EXPERIENCE.md has been surfaced to the user's screen and is now visible to them.",
         fileName: "EXPERIENCE.md",
     };

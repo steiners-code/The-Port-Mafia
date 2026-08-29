@@ -1,7 +1,6 @@
 import { reportTaskCompletionToSubAgent } from "./reportTaskCompletionToSubAgent";
-import { triggerDazaiNingenShikaku } from "../cron/triggerDazaiNingenShikaku";
-import { MainTaskStatus, SubAgent } from "../../generated/prisma";
-import { MainTask, Question } from "../../lib/types";
+import { MainTask, PostPerformance } from "../../lib/types";
+import { MainTaskStatus } from "../../generated/prisma";
 import { prisma } from "../../lib/db";
 import { t } from "elysia";
 
@@ -11,19 +10,19 @@ import { t } from "elysia";
  * hand since Elysia/TypeBox schemas and TS types aren't automatically
  * derived from each other here.
  */
-export const updateQuestionnaireBody = t.Object({
+export const updatePostPerformanceBody = t.Object({
     taskId: t.String({ minLength: 1 }),
     action: t.Union([
         t.Literal("MarkComplete"),
         t.Literal("SaveProgress"),
-        t.Literal("NingenShikaku"),
     ]),
-    answers: t.Array(
-        t.Object({
-            index: t.Integer(),
-            answer: t.String({ minLength: 1 }),
-        })
-    ),
+    data: t.Array(t.Object({
+        postId: t.String({ minLength: 1 }),
+        reactions: t.Number(),
+        comments: t.Number(),
+        reposts: t.Number(),
+        impressions: t.Number(),
+    }))
 })
 
 const CLOSED_STATUSES: MainTaskStatus[] = [
@@ -32,26 +31,34 @@ const CLOSED_STATUSES: MainTaskStatus[] = [
     MainTaskStatus.CANCELLED,
 ];
 
-type AnswerInput = { index: number; answer: string };
+type PostPerformanceInput = {
+    postId: string,
+    impressions: number,
+    reactions: number,
+    comments: number,
+    reposts: number,
+};
 
-function isValidAnswers(value: unknown): value is AnswerInput[] {
+function isValidData(value: unknown): value is PostPerformanceInput[] {
     return (
         Array.isArray(value) &&
         value.every(
             (item) =>
                 typeof item === "object" &&
                 item !== null &&
-                typeof (item as any).index === "number" &&
-                typeof (item as any).answer === "string" &&
-                (item as any).answer.trim().length > 0
+                typeof (item as any).postId === "string" &&
+                typeof (item as any).reactions === "number" &&
+                typeof (item as any).impressions === "number" &&
+                typeof (item as any).comments === "number" &&
+                typeof (item as any).reposts === "number"
         )
     );
 }
 
-type UpdateTaskProgressBody = {
+export type UpdatePostPerformanceTaskBody = {
     taskId: string;
-    action: "MarkComplete" | "SaveProgress" | "NingenShikaku";
-    answers: AnswerInput[];
+    action: "MarkComplete" | "SaveProgress";
+    data: PostPerformanceInput[];
 };
 
 /**
@@ -63,8 +70,9 @@ type UpdateTaskProgressBody = {
  * sub-agent that raised the task, NingenShikaku hands it to Dazai to
  * clean up before anything gets reported.
  */
-export async function updateTaskProgress(userId: string, body: UpdateTaskProgressBody) {
-    if (!["MarkComplete", "SaveProgress", "NingenShikaku"].includes(body.action)) {
+
+export async function updatePostPerformanceTask(userId: string, body: UpdatePostPerformanceTaskBody) {
+    if (!["MarkComplete", "SaveProgress"].includes(body.action)) {
         return {
             status: 400,
             success: false,
@@ -72,11 +80,11 @@ export async function updateTaskProgress(userId: string, body: UpdateTaskProgres
         };
     }
 
-    if (!isValidAnswers(body.answers)) {
+    if (!isValidData(body.data)) {
         return {
             status: 400,
             success: false,
-            message: "Invalid answers. Expected an array of { index: number, answer: string }.",
+            message: "Invalid data. Expected an array of {postId: string, impressions: number, reactions: number, comments: number, reposts: number}.",
         };
     }
 
@@ -98,35 +106,23 @@ export async function updateTaskProgress(userId: string, body: UpdateTaskProgres
         };
     }
 
-    /**
-     * Only QUESTIONNAIRE implemented — same boundary as the AI's
-     * update_task tool. Extend this switch when another task type lands.
-     */
-    if (task.type !== "QUESTIONNAIRE") {
-        return {
-            status: 400,
-            success: false,
-            message: `Task type "${task.type}" isn't supported yet.`,
-        };
-    }
+    const existing = task.content as PostPerformance[];
+    const existingIndices = new Set(existing.map((q) => q.postId));
 
-    const existing = task.content as Question[];
-    const existingIndices = new Set(existing.map((q) => q.index));
-
-    for (const item of body.answers) {
-        if (!existingIndices.has(item.index)) {
+    for (const item of body.data) {
+        if (!existingIndices.has(item.postId)) {
             return {
                 status: 400,
                 success: false,
-                message: `No question with index ${item.index} exists on this task.`,
+                message: `No performance request with postId ${item.postId} exists on this task.`,
             };
         }
     }
 
-    const mergedContent: Question[] = existing.map((q) => {
-        const update = body.answers.find((a) => a.index === q.index);
+    const mergedContent: PostPerformance[] = existing.map((q) => {
+        const update = body.data.find((a) => a.postId === q.postId);
         if (!update) return q;
-        return { ...q, answer: update.answer, answeredBy: "USER" as const };
+        return { ...q, ...update };
     });
 
     switch (body.action) {
@@ -165,12 +161,12 @@ export async function updateTaskProgress(userId: string, body: UpdateTaskProgres
                 };
             }
 
-            const isFullyAnswered = mergedContent.every((q) => q.answer !== null);
+            const isFullyAnswered = mergedContent.every((q) => q.impressions !== null && q.reactions !== null && q.comments !== null && q.reposts !== null);
             if (!isFullyAnswered) {
                 return {
                     status: 400,
                     success: false,
-                    message: "Not every question is answered yet — can't mark this complete.",
+                    message: "Not every post performance is provided yet — can't mark this complete.",
                 };
             }
 
@@ -185,47 +181,12 @@ export async function updateTaskProgress(userId: string, body: UpdateTaskProgres
             await reportTaskCompletionToSubAgent(userId, {
                 ...updated,
                 content: mergedContent,
-            } as MainTask & { id: string; subAgent: SubAgent });
+            } as MainTask);
 
             return {
                 status: 200,
                 success: true,
                 message: "Marked complete and sent to Maha.",
-            };
-        }
-
-        case "NingenShikaku": {
-            /**
-             * Blocked from INREVIEW — a task already sitting there means
-             * Dazai's mid-review from a prior Ningen Shikaku call. Letting
-             * this re-fire would send him a second, redundant review turn
-             * for the same task, wasting a call for nothing.
-             */
-            if (task.status === MainTaskStatus.INREVIEW) {
-                return {
-                    status: 400,
-                    success: false,
-                    message: "This task is already with Dazai for review.",
-                };
-            }
-
-            const updated = await prisma.mainTask.update({
-                where: { id: task.id },
-                data: {
-                    content: mergedContent,
-                    status: MainTaskStatus.INREVIEW,
-                },
-            });
-
-            await triggerDazaiNingenShikaku(userId, {
-                ...updated,
-                content: mergedContent,
-            } as MainTask & { id: string });
-
-            return {
-                status: 200,
-                success: true,
-                message: "Sent to Dazai for review.",
             };
         }
     }
