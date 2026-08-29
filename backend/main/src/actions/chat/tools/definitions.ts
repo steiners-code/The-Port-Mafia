@@ -8,6 +8,7 @@ export type ToolContext = {
     messageId: string;
     userId: string;
     principalName: string,
+    timeZone: string,
 };
 
 type ToolPropertySchema =

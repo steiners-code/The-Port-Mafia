@@ -283,7 +283,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         }
 
                         await updateMessageContent({
-                            context: { userId, messageId, principalName },
+                            context: { userId, messageId, principalName, timeZone },
                             contentId: state.contentId,
                             status: LinkedinContentStatus.COMPLETED,
                             logs: state.logs,
@@ -364,7 +364,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         if (errorState) {
                             errorState.logs.push({ level: LinkedinLogLevel.ERROR, message: errorMessage, createdAt: new Date() })
                             await updateMessageContent({
-                                context: { userId, messageId, principalName },
+                                context: { userId, messageId, principalName, timeZone },
                                 contentId: errorState.contentId,
                                 status: LinkedinContentStatus.FAILED,
                                 logs: errorState.logs,
@@ -388,7 +388,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
                         } else if (messageId) {
                             const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
                             await updateMessageContent({
-                                context: { userId, messageId, principalName },
+                                context: { userId, messageId, principalName, timeZone },
                                 contentId: errContentId,
                                 status: LinkedinContentStatus.FAILED,
                                 logs: [{ level: LinkedinLogLevel.ERROR, message: errorMessage, createdAt: new Date() }],
@@ -420,7 +420,7 @@ export async function generateWriterResponse({ messageId, userId, principalName,
             : [{ level: LinkedinLogLevel.ERROR, message: errorMessage, createdAt: new Date() }];
 
         await updateMessageContent({
-            context: { userId, messageId, principalName },
+            context: { userId, messageId, principalName, timeZone },
             contentId: errContentId,
             status: LinkedinContentStatus.FAILED,
             logs,

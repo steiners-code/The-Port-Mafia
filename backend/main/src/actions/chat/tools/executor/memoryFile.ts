@@ -7,15 +7,31 @@ import { HarnessError } from "..";
 
 const MAX_MEMORY_FILE_LENGTH = 2200;
 
-export async function writeMemoryFile(args: { content: string }, { userId }: ToolContext) {
+export async function writeMemoryFile(args: { content: string }, { userId, timeZone }: ToolContext) {
+    const trimmed = args.content.trim();
+    let content: string = trimmed;
+
+    const zonedString = (new Date).toLocaleString("en-US", {
+        timeZone,
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+    });
+
     if (args.content.length > MAX_MEMORY_FILE_LENGTH)
         throw new HarnessError(`Content is too long (${args.content.length} characters, max ${MAX_MEMORY_FILE_LENGTH}). Trim it down to the essentials — MEMORY.md is your short-term memory, kept only until you decide it's no longer needed. Drop anything stale before adding something new, rather than letting it pile up.`);
+
+    if (trimmed)
+        content = `${trimmed} (Recorded at ${zonedString})`
 
     await prisma.mainFile.upsert({
         where: { userId_fileType: { userId: userId, fileType: MainFileType.MEMORY } },
         create: {
             userId: userId,
-            content: args.content,
+            content,
             fileType: MainFileType.MEMORY
         },
         update: { content: args.content }

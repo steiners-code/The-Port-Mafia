@@ -56,7 +56,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
             if (reRunCount >= MAX_REITERATIONS) {
                 const capContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
                 await updateMessageContent({
-                    context: { userId, messageId, principalName },
+                    context: { userId, messageId, principalName, timeZone },
                     contentId: capContentId,
                     status: LinkedinContentStatus.COMPLETED,
                     logs: [{ level: LinkedinLogLevel.ERROR, message: "Reached max tool-call reiterations for this turn.", createdAt: new Date() }],
@@ -192,7 +192,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                         } catch { }
 
                         await updateMessageContent({
-                            context: { userId, messageId, principalName },
+                            context: { userId, messageId, principalName, timeZone },
                             contentId: state.contentId,
                             status: LinkedinContentStatus.COMPLETED,
                             logs: state.logs,
@@ -242,7 +242,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                         if (errorState) {
                             errorState.logs.push({ level: LinkedinLogLevel.ERROR, message: errorMessage, createdAt: new Date() })
                             await updateMessageContent({
-                                context: { userId, messageId, principalName },
+                                context: { userId, messageId, principalName, timeZone },
                                 contentId: errorState.contentId,
                                 status: LinkedinContentStatus.FAILED,
                                 logs: errorState.logs,
@@ -261,7 +261,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
                         } else if (messageId) {
                             const errContentId = await createMessageContent(messageId, LinkedinContentType.TEXT, 0);
                             await updateMessageContent({
-                                context: { userId, messageId, principalName },
+                                context: { userId, messageId, principalName, timeZone },
                                 contentId: errContentId,
                                 status: LinkedinContentStatus.FAILED,
                                 logs: [{ level: LinkedinLogLevel.ERROR, message: errorMessage, createdAt: new Date() }],
@@ -287,7 +287,7 @@ export async function generateAIResponse({ messageId, userId, principalName, lin
             : [{ level: LinkedinLogLevel.ERROR, message: errorMessage, createdAt: new Date() }];
 
         await updateMessageContent({
-            context: { userId, messageId, principalName },
+            context: { userId, messageId, principalName, timeZone },
             contentId: errContentId,
             status: LinkedinContentStatus.FAILED,
             logs,
