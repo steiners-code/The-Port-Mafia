@@ -64,13 +64,23 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
                     break;
 
                 case "CRON":
+                    const cronData = await createUserContent(message.contents)
+                    historyContent.push(cronData)
                     break;
             }
         }
 
+        console.log(JSON.stringify(historyContent, null, 4))
+
         return historyContent;
     } catch (error) {
         console.error(error);
-        return [userContent];
+
+        return [userContent, {
+            type: "user_input", content: [{
+                type: "text",
+                text: (error as Error).message ?? "Harness couldn't create chat history. Something went wrong!"
+            }]
+        }];
     }
 }
