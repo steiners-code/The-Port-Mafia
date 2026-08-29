@@ -26,7 +26,7 @@ type GenerateAIResponseData = {
 const generateConfig: GenerateConfig = {
     model: process.env.MAIN_GEMINI_MODEL || "gemini-3.5-flash-lite",
     apiKey: process.env.MAIN_GEMINI_API_KEY!,
-    thinking_level: "high",
+    thinking_level: "medium",
     thinking_summaries: "auto",
 }
 
@@ -53,7 +53,7 @@ export async function generateAIResponse({ messageId, userId, principalName, con
             if (reRunCount >= MAX_REITERATIONS) {
                 const capContentId = await createMessageContent(messageId, MainContentType.TEXT, 0);
                 await updateMessageContent({
-                    context: { userId, messageId, principalName },
+                    context: { userId, messageId, principalName, timeZone },
                     contentId: capContentId,
                     status: MainContentStatus.COMPLETED,
                     logs: [{ level: MainLogLevel.ERROR, message: "Reached max tool-call reiterations for this turn.", createdAt: new Date() }],
@@ -183,7 +183,7 @@ export async function generateAIResponse({ messageId, userId, principalName, con
                         })
 
                         await updateMessageContent({
-                            context: { userId, messageId, principalName },
+                            context: { userId, messageId, principalName, timeZone },
                             contentId: state.contentId,
                             status: MainContentStatus.COMPLETED,
                             logs: state.logs,
@@ -231,7 +231,7 @@ export async function generateAIResponse({ messageId, userId, principalName, con
                         if (errorState) {
                             errorState.logs.push({ level: MainLogLevel.ERROR, message: errorMessage, createdAt: new Date() })
                             await updateMessageContent({
-                                context: { userId, messageId, principalName },
+                                context: { userId, messageId, principalName, timeZone },
                                 contentId: errorState.contentId,
                                 status: MainContentStatus.FAILED,
                                 logs: errorState.logs,
@@ -250,7 +250,7 @@ export async function generateAIResponse({ messageId, userId, principalName, con
                         } else if (messageId) {
                             const errContentId = await createMessageContent(messageId, MainContentType.TEXT, 0);
                             await updateMessageContent({
-                                context: { userId, messageId, principalName },
+                                context: { userId, messageId, principalName, timeZone },
                                 contentId: errContentId,
                                 status: MainContentStatus.FAILED,
                                 logs: [{ level: MainLogLevel.ERROR, message: errorMessage, createdAt: new Date() }],
@@ -276,7 +276,7 @@ export async function generateAIResponse({ messageId, userId, principalName, con
             : [{ level: MainLogLevel.ERROR, message: errorMessage, createdAt: new Date() }];
 
         await updateMessageContent({
-            context: { userId, messageId, principalName },
+            context: { userId, messageId, principalName, timeZone },
             contentId: errContentId,
             status: MainContentStatus.FAILED,
             logs,
