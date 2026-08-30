@@ -104,14 +104,14 @@ services:
       ofelia.enabled: "true"
 
       # Job 1: LinkedIn Trigger
-      ofelia.job-run.linkedin-trigger.schedule: 0 0 0 * * *"
+      ofelia.job-run.linkedin-trigger.schedule: "0 0 * * * *"
       ofelia.job-run.linkedin-trigger.image: "curlimages/curl:latest"
       ofelia.job-run.linkedin-trigger.network: "mafia-network"
       ofelia.job-run.linkedin-trigger.command: >-
         curl -f -X GET http://mafia-linkedin:3000/cron/trigger -H "x-cron-secret: ${CRON_API_SECRET}"
 
       # Job 2: Linkedin Token Refresh
-      ofelia.job-run.linkedin-token-refresh.schedule: "0 0 * * * *"
+      ofelia.job-run.linkedin-token-refresh.schedule: "0 0 0 * * *"
       ofelia.job-run.linkedin-token-refresh.image: "curlimages/curl:latest"
       ofelia.job-run.linkedin-token-refresh.network: "mafia-network"
       ofelia.job-run.linkedin-token-refresh.command: >-
