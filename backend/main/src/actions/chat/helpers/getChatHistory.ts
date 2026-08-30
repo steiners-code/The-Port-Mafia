@@ -76,8 +76,6 @@ export async function getChatHistory(userId: string, contents: UserMessageData["
             }
         }
 
-        console.log(JSON.stringify(historyContent, null, 4))
-
         return historyContent;
     } catch (error) {
         console.error(error);
