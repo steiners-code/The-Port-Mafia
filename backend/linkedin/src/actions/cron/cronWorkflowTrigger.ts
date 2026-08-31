@@ -18,7 +18,7 @@ export async function cronWorkflowTrigger() {
         SELECT p."userId", p."timezone" 
         FROM "linkedin"."LinkedinProfile" p
         INNER JOIN "linkedin"."LinkedinToken" t ON t."userId" = p."userId"
-        -- WHERE EXTRACT(HOUR FROM (NOW() AT TIME ZONE p."timezone")) = 4
+        WHERE EXTRACT(HOUR FROM (NOW() AT TIME ZONE p."timezone")) = 4
     `;
 
     if (usersToExecute.length === 0) {
