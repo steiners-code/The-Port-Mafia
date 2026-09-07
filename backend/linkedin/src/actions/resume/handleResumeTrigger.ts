@@ -5,7 +5,6 @@ import { ObserverInput } from "../chat/strategist/handleStrategistResponse";
 import { clearRoleContentForResume, wipeAnalystRun } from "./resumeCleanup";
 import { StrategistInput } from "../chat/analyst/handleAnalystResponse";
 import { WriterInput } from "../chat/observer/handleObserverResponse";
-import { createAIChatMessage } from "../chat/helpers/chatMessage";
 import { getChatId } from "../chat/getChatId";
 import { getSeed } from "../../lib/cache";
 import { Queue } from "bullmq";
@@ -35,14 +34,13 @@ export async function resumeAnalyst(userId: string, contentId: string, messageId
     try {
         await wipeAnalystRun(userId, messageId);
 
-        const { chatId, principalName } = await getChatId(userId);
-        const newMessageId = await createAIChatMessage(chatId)
+        const { principalName } = await getChatId(userId);
         await chatQueue.add("linkedin-post", {
-            messageId: newMessageId,
+            messageId: messageId,
             userId,
             principalName,
         }, {
-            jobId: newMessageId,
+            jobId: `${messageId}-${contentId}`,
         });
 
         return {

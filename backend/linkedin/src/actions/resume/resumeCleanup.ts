@@ -12,8 +12,8 @@ import { prisma } from "../../lib/db";
  * fire, because that's effectively what it is.
  */
 export async function wipeAnalystRun(userId: string, messageId: string) {
-    await prisma.linkedinMessageContent.delete({
-        where: { id: messageId }
+    await prisma.linkedinMessageContent.deleteMany({
+        where: { chatMessageId: messageId }
     });
 
     await Promise.all([
@@ -22,6 +22,15 @@ export async function wipeAnalystRun(userId: string, messageId: string) {
     ]);
 
     await sendEvent({ event_type: "message.wiped", message: { id: messageId } })
+    await sendEvent({
+        event_type: "message.created", message: {
+            id: messageId,
+            status: "QUEUED",
+            agent: null,
+            triggerType: "SYSTEM",
+            createdAt: new Date()
+        }
+    })
 }
 
 /**
