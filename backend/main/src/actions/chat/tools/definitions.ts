@@ -1,6 +1,7 @@
 import { readMemoryFile, writeMemoryFile, displayMemoryFile } from "./executor/memoryFile";
 import { displayUserFile, readUserFile, writeUserFile } from "./executor/userFile";
 import { getTasks, getWholeTaskById } from "./executor/tasks";
+import { readAboutThePortMafia } from "./executor/project";
 import { updateTask } from "./executor/updateTask";
 import { ToolName } from "./registry";
 
@@ -174,4 +175,9 @@ export const TOOLS: ToolMap = {
         },
         execute: updateTask
     },
+    read_about_the_port_mafia: {
+        description: "Read the entire history, execution workflow, ownership of the mafia. This includes all the details one may need to know. This info is not necessary for daily tasks and should only be read ONCE the user asks. CRITICAL: Never read this for simple daily tasks. Only read this when user asks you anything about project owner or project workflow. SUPER CRITICAL: Execute this tool only ONCE!!!!",
+        parameters: { type: "object", properties: {}, required: [] },
+        execute: readAboutThePortMafia
+    }
 }

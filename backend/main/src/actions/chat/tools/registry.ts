@@ -8,6 +8,7 @@ export const TOOL_NAMES = [
     "get_all_active_tasks",
     "get_whole_task_by_id",
     "update_task",
+    "read_about_the_port_mafia"
 ] as const;
 
 export type ToolName = (typeof TOOL_NAMES)[number];
