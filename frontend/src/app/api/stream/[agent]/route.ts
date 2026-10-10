@@ -36,9 +36,6 @@ export async function GET(
         headers: { cookie, accept: "text/event-stream" },
     });
 
-    console.log(url);
-    console.log(JSON.stringify(upstream, null, 4))
-
     if (!upstream.ok || !upstream.body) {
         return new Response("Upstream connection failed", {
             status: upstream.status || 502,
